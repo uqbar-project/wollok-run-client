@@ -1,0 +1,43 @@
+@import "../_theme.scss";
+
+.container {
+  flex-direction: column;
+  margin: auto;
+  font-family: "monospace";
+
+  h1 {
+    font-size: 1.5em;
+    margin-bottom: 2vh;
+  }
+
+  .description {
+    flex-direction: column;
+    margin-left: 1vw;
+    padding-left: 1vw;
+    border-left: 2px solid $color-primary;
+  }
+}
+
+.board {
+  flex-direction: column-reverse;
+  width: 90vh;
+  height: 90vh;
+
+  div {
+    flex: 1 1 auto;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  &,
+  & > div > div {
+    position: relative;
+    border: 1px solid #33333333;
+  }
+}

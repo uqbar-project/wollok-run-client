@@ -1,0 +1,28 @@
+@import "../_theme.scss";
+
+.root {
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+
+  .navigationPanel {
+    width: 20%;
+    height: 100%;
+    border: 1px solid;
+    cursor: pointer;
+
+    ul {
+      width: 100%;
+    }
+
+    .selected {
+      background-color: $color-highlight;
+    }
+  }
+
+  .editor {
+    width: 80%;
+    height: 100%;
+    border: 1px solid;
+  }
+}
