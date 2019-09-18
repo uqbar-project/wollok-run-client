@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import CodeEditor from 'react-simple-code-editor'
 import 'react-splitter-layout/lib/index.css'
 
@@ -7,7 +7,7 @@ export type EditorProps = {
   onCodeChange: (code: string) => void,
 }
 
-export default ({ code, onCodeChange }: EditorProps) => {
+const Editor = ({ code, onCodeChange }: EditorProps) => {
   return (
     <CodeEditor
       value={code}
@@ -19,3 +19,5 @@ export default ({ code, onCodeChange }: EditorProps) => {
     />
   )
 }
+
+export default memo(Editor)

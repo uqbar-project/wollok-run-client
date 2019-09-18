@@ -1,12 +1,13 @@
 import cytoscape, { ElementDefinition } from 'cytoscape'
-import React, { useEffect, useRef } from 'react'
-import { Evaluation, Module } from 'wollok-ts/dist/src'
+import React, { memo, useEffect, useRef } from 'react'
+import { Evaluation, Id, Module } from 'wollok-ts/dist/src'
 import { NULL_ID, RuntimeObject } from 'wollok-ts/dist/src/interpreter'
 import $ from './ObjectDiagram.module.scss'
 
 const { values, keys } = Object
 
-const style = [
+
+const NODE_STYLES = [
   {
     selector: 'edge',
     style: {
@@ -42,18 +43,16 @@ const style = [
   },
 ]
 
-const cy = cytoscape({ style, headless: true })
-
-cy.on('drag', (e) => {
+const cy = cytoscape({ style: NODE_STYLES, headless: true }).on('drag', (e) => {
   cy.on('layoutstart', () => e.target.lock())
   cy.on('layoutstop', () => e.target.unlock())
 })
 
-type Props = {
+export type ObjectDiagramProps = {
   evaluation?: Evaluation
 }
 
-export default ({ evaluation }: Props) => {
+const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
   const ref = useRef(null)
 
   useEffect(() => {
@@ -86,13 +85,14 @@ export default ({ evaluation }: Props) => {
       return { label: `${module}#${id}` }
     }
 
-    function elementFromObject(obj: RuntimeObject): ElementDefinition[] {
+    function elementFromObject(obj: RuntimeObject, alreadyVisited: Id[] = []): ElementDefinition[] {
       const { id, fields } = obj
+      if (alreadyVisited.includes(id)) return []
       return [
         { data: { id, ...decoration(obj) } },
         ...keys(fields).flatMap(name => [
           { data: { id: `${id}_${fields[name]}`, label: name, source: id, target: fields[name] } },
-          ...elementFromObject(evaluation!.instance(fields[name])),
+          ...elementFromObject(evaluation!.instance(fields[name]), [...alreadyVisited, id]),
         ]),
       ]
     }
@@ -103,7 +103,7 @@ export default ({ evaluation }: Props) => {
         !module.startsWith('wollok') &&
         !!evaluation.environment.getNodeByFQN<Module>(module).name
       )
-      .flatMap(elementFromObject)
+      .flatMap(obj => elementFromObject(obj))
 
     cy.add(elements)
     cy.layout({
@@ -115,3 +115,5 @@ export default ({ evaluation }: Props) => {
 
   return <div className={$.diagram} ref={ref} />
 }
+
+export default memo(ObjectDiagram)

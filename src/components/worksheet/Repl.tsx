@@ -1,4 +1,4 @@
-import React, { KeyboardEvent, useState } from 'react'
+import React, { KeyboardEvent, memo, useState } from 'react'
 import CodeEditor from 'react-simple-code-editor'
 import 'react-splitter-layout/lib/index.css'
 import { build, Environment, Evaluation, fill, interpret, link, parse, Raw, Singleton } from 'wollok-ts/dist/src'
@@ -12,7 +12,7 @@ export type ReplProps = {
   onEvaluationChange: (evaluation: Evaluation) => void,
 }
 
-export default ({ environment, onEvaluationChange }: ReplProps) => {
+const Repl = ({ environment, onEvaluationChange }: ReplProps) => {
   const [code, setCode] = useState('')
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -61,3 +61,5 @@ export default ({ environment, onEvaluationChange }: ReplProps) => {
     />
   )
 }
+
+export default memo(Repl)

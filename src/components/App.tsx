@@ -1,9 +1,18 @@
+import { Redirect, Router } from '@reach/router'
+import whyDidYouRender from '@welldone-software/why-did-you-render'
 import React from 'react'
+import $ from './App.module.scss'
 import Worksheet from './worksheet/Worksheet'
+
+// if (process.env.NODE_ENV !== 'production')
+whyDidYouRender(React)
 
 const App = () => {
   return (
-    <Worksheet />
+    <Router className={$.app}>
+      <Worksheet path='/worksheet' />
+      <Redirect from='/' to='/worksheet' default noThrow />
+    </Router>
   )
 }
 
