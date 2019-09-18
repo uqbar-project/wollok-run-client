@@ -15,6 +15,7 @@
     "node-sass": "^4.12.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-icons": "^3.7.0",
     "react-scripts": "3.0.1",
     "react-simple-code-editor": "^0.9.14",
     "react-splitter-layout": "^4.0.0",
@@ -23,7 +24,7 @@
     "typescript": "3.5.3",
     "use-interval": "^1.1.0",
     "uuid": "^3.3.2",
-    "wollok-ts": "uqbar-project/wollok-ts"
+    "wollok-ts": "github:uqbar-project/wollok-ts"
   },
   "scripts": {
     "start": "react-scripts start",

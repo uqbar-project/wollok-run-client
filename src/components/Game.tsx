@@ -2,8 +2,8 @@ import useEventListener from '@use-it/event-listener'
 import React, { KeyboardEvent, useEffect, useState } from 'react'
 import useInterval from 'use-interval'
 import { v4 as uuid } from 'uuid'
-import { buildEnvironment, Evaluation, Id, interpret, tools } from 'wollok-ts'
-import natives from 'wollok-ts/dist/wre/wre.natives'
+import { buildEnvironment, Evaluation, Id, interpret } from 'wollok-ts/dist/src'
+import natives from 'wollok-ts/dist/src/wre/wre.natives'
 import $ from './Game.module.scss'
 import Spinner from './Spinner'
 
@@ -55,8 +55,7 @@ const Board = ({ board }: BoardProps) => {
 }
 
 const gameInstance = ({ environment, instances }: Evaluation) => {
-  const { resolve } = tools.default(environment)
-  return instances[resolve('wollok.game.game').id]
+  return instances[environment.getNodeByFQN('wollok.game.game').id]
 }
 
 const emptyBoard = (evaluation: Evaluation) => {
@@ -102,8 +101,7 @@ export default () => {
     evaluation.instances[id] = { id, module: 'wollok.lang.List', fields: {}, innerValue: ['S!keydown', `S!${event.code}`] }
 
     const { sendMessage } = interpret(evaluation.environment, natives)
-    const { resolve } = tools.default(evaluation.environment)
-    sendMessage('queueEvent', resolve('wollok.lang.io').id, id)(evaluation)
+    sendMessage('queueEvent', evaluation.environment.getNodeByFQN('wollok.lang.io').id, id)(evaluation)
 
     setEvaluation(evaluation)
   })
@@ -112,9 +110,8 @@ export default () => {
     if (!evaluation) return
 
     const { sendMessage } = interpret(evaluation.environment, natives)
-    const { resolve } = tools.default(evaluation.environment)
 
-    sendMessage('flushEvents', resolve('wollok.lang.io').id)(evaluation)
+    sendMessage('flushEvents', evaluation.environment.getNodeByFQN('wollok.lang.io').id)(evaluation)
 
     const visuals = evaluation.instances[gameInstance(evaluation).fields.visuals].innerValue
     const currentVisualStates = visuals.map((id: Id) => {
