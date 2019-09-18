@@ -1,3 +1,5 @@
+import Tooltip from 'rc-tooltip'
+import 'rc-tooltip/assets/bootstrap_white.css'
 import React, { useEffect, useState } from 'react'
 import { IoIosCheckmarkCircle as OKIcon, IoIosCloseCircle as ErrorIcon } from 'react-icons/io'
 import SplitterLayout from 'react-splitter-layout'
@@ -36,23 +38,22 @@ export default () => {
     if (code.trim() !== editorCode.trim()) updateEnvironment(code)
   }
 
-
   return (
     <div className={$.worksheet}>
       <SplitterLayout vertical percentage customClassName={$.workspace} secondaryInitialSize={20} >
         <SplitterLayout percentage>
           <Editor code={editorCode} onCodeChange={onEditorCodeChange} />
-          {/* <div>{evaluation && JSON.stringify(evaluation.instances, undefined, 2)}</div> */}
           <ObjectDiagram evaluation={evaluation} />
         </SplitterLayout>
         <Repl onEvaluationChange={setEvaluation} environment={environment} />
       </SplitterLayout>
-      <div className={`${$.statusBar} ${problem ? $.error : $.ok}`}>
-        {problem
-          ? <> <ErrorIcon /> {problem} </>
-          : <> <OKIcon /> OK </>
-        }
-
+      <div className={$.statusBar}>
+        <Tooltip placement='topLeft' trigger={['hover']} overlay={problem || 'All is good :)'}>
+          {problem
+            ? <ErrorIcon className={$.error} />
+            : <OKIcon className={$.ok} />
+          }
+        </Tooltip>
       </div>
     </div>
   )
