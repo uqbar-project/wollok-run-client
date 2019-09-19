@@ -1,5 +1,6 @@
+import { RouteComponentProps } from '@reach/router'
 import useEventListener from '@use-it/event-listener'
-import React, { KeyboardEvent, useEffect, useState } from 'react'
+import React, { KeyboardEvent, memo, useEffect, useState } from 'react'
 import useInterval from 'use-interval'
 import { v4 as uuid } from 'uuid'
 import { buildEnvironment, Evaluation, Id, interpret } from 'wollok-ts/dist/src'
@@ -69,8 +70,8 @@ const emptyBoard = (evaluation: Evaluation) => {
   )
 }
 
-
-export default () => {
+export type GameProps = RouteComponentProps
+const Game = ({ }: GameProps) => {
 
   const [evaluation, setEvaluation] = useState<Evaluation>()
   const [board, setBoard] = useState<string[][][]>([])
@@ -161,3 +162,5 @@ export default () => {
     </div>
   )
 }
+
+export default memo(Game)
