@@ -1,6 +1,5 @@
 import React, { KeyboardEvent, memo, useState } from 'react'
 import CodeEditor from 'react-simple-code-editor'
-import 'react-splitter-layout/lib/index.css'
 import { build, Environment, Evaluation, fill, interpret, link, parse, Raw, Singleton } from 'wollok-ts/dist/src'
 import { VOID_ID } from 'wollok-ts/dist/src/interpreter'
 import natives from 'wollok-ts/dist/src/wre/wre.natives'
@@ -57,7 +56,6 @@ const Repl = ({ environment, onEvaluationChange }: ReplProps) => {
       placeholder='Write expressions to evaluate here (ctrl+Enter)'
       highlight={text => text}
       padding={4}
-      style={{ minHeight: '100vh' }}
     />
   )
 }

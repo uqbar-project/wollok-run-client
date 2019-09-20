@@ -1,6 +1,5 @@
 import React, { memo } from 'react'
 import CodeEditor from 'react-simple-code-editor'
-import 'react-splitter-layout/lib/index.css'
 
 export type EditorProps = {
   code: string,
@@ -15,7 +14,7 @@ const Editor = ({ code, onCodeChange }: EditorProps) => {
       placeholder='Write your Wollok object definitions here'
       highlight={text => text}
       padding={4}
-      style={{ minHeight: '100vh' }}
+      style={{ minHeight: '100%' }}
     />
   )
 }
