@@ -4,7 +4,7 @@ import { parse } from 'query-string'
 import Tooltip from 'rc-tooltip'
 import React, { memo, useEffect, useState } from 'react'
 import { IoIosCheckmarkCircle as OKIcon, IoIosCloseCircle as ErrorIcon } from 'react-icons/io'
-import SplitterLayout from 'react-splitter-layout'
+import Splitter from 'react-splitter-layout'
 import { buildEnvironment, Environment, Evaluation } from 'wollok-ts/dist/src'
 import Editor from './Editor'
 import ObjectDiagram from './ObjectDiagram'
@@ -49,13 +49,13 @@ const Worksheet = ({ location }: WorksheetProps) => {
 
   return (
     <div className={$.worksheet}>
-      <SplitterLayout vertical percentage customClassName={$.workspace} secondaryInitialSize={20} >
-        <SplitterLayout percentage>
+      <Splitter vertical percentage customClassName={$.workspace} secondaryInitialSize={20} >
+        <Splitter percentage>
           <Editor code={editorCode} onCodeChange={onEditorCodeChange} />
           <ObjectDiagram evaluation={evaluation} />
-        </SplitterLayout>
+        </Splitter>
         <Repl onEvaluationChange={setEvaluation} environment={environment} />
-      </SplitterLayout>
+      </Splitter>
       <div className={$.statusBar}>
         <Tooltip placement='topLeft' trigger={['hover']} overlay={problem || 'All is good :)'}>
           {problem

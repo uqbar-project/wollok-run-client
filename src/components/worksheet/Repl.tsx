@@ -1,5 +1,6 @@
 import React, { KeyboardEvent, memo, useState } from 'react'
 import CodeEditor from 'react-simple-code-editor'
+import Splitter from 'react-splitter-layout'
 import { build, Environment, Evaluation, fill, interpret, link, parse, Raw, Singleton } from 'wollok-ts/dist/src'
 import { VOID_ID } from 'wollok-ts/dist/src/interpreter'
 import natives from 'wollok-ts/dist/src/wre/wre.natives'
@@ -48,15 +49,18 @@ const Repl = ({ environment, onEvaluationChange }: ReplProps) => {
 
 
   return (
-    <CodeEditor
-      className={$.repl}
-      value={code}
-      onValueChange={setCode}
-      onKeyDown={onKeyDown}
-      placeholder='Write expressions to evaluate here (ctrl+Enter)'
-      highlight={text => text}
-      padding={4}
-    />
+    <Splitter percentage>
+      <CodeEditor
+        className={$.repl}
+        value={code}
+        onValueChange={setCode}
+        onKeyDown={onKeyDown}
+        placeholder='Write expressions to evaluate here (ctrl+Enter)'
+        highlight={text => text}
+        padding={4}
+      />
+      <div>Results</div>
+    </Splitter>
   )
 }
 
