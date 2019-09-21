@@ -9,7 +9,6 @@ import Worksheet from './components/worksheet/Worksheet'
 import './index.scss'
 import * as serviceWorker from './serviceWorker'
 
-
 if (process.env.NODE_ENV !== 'production') whyDidYouRender(React)
 
 

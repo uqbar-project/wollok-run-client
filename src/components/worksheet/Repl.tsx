@@ -1,4 +1,5 @@
 import React, { KeyboardEvent, memo, useState } from 'react'
+import Slider from 'react-input-slider'
 import SimpleCodeEditor from 'react-simple-code-editor'
 import Splitter from 'react-splitter-layout'
 import { build, Environment, Evaluation, fill, interpret, link, List, parse, Raw, Sentence, Singleton } from 'wollok-ts/dist/src'
@@ -21,10 +22,11 @@ export type ReplProps = {
 const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) => {
   const [code, setCode] = useState('')
   const [outputs, setOutputs] = useState<List<Output | undefined>>([])
+  const [displayedOutput, setDisplayedOutput] = useState(0)
 
   const evaluate = () => {
     try {
-      const allSentences = parse.body.tryParse(`{\n${code.trim()}\n}`).sentences
+      const allSentences = parse.body.tryParse(`{${code.trim()}\n}`).sentences
       const lines = Math.max(...allSentences.map(sentence => sentence.source!.start.line))
       const sentencesByLine = allSentences.reduce((sentences, sentence) => {
         const line = sentence.source!.start.line
@@ -77,6 +79,7 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
       })
 
       setOutputs(newOutputs)
+      setDisplayedOutput(newOutputs.length)
       const lastOutput = [...newOutputs].reverse().find(output => !!output)
       if (lastOutput) onEvaluationChange(lastOutput.evaluation)
 
@@ -95,11 +98,26 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
   }
 
   return (
-    <div>
+    <div className={$.repl}>
       <Splitter percentage>
         <div className={$.rplContainer}>
+          <Slider
+            style={{ maxHeight: `${outputs.length}em` }}
+            className={$.slider}
+            axis='y'
+            y={displayedOutput}
+            ymin={1}
+            ymax={outputs.length}
+            onChange={({ y: nextDisplayedOutput }: any) => {
+              setDisplayedOutput(nextDisplayedOutput)
+
+              if (displayedOutput !== nextDisplayedOutput && outputs[nextDisplayedOutput - 1]) {
+                onEvaluationChange(outputs[nextDisplayedOutput - 1]!.evaluation)
+              }
+            }}
+          />
           <CodeEditor
-            className={$.repl}
+            className={$.editor}
             value={code}
             onValueChange={setCode}
             onKeyDown={onKeyDown}
@@ -110,7 +128,7 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
           <button onClick={evaluate}>RUN</button>
         </div>
         <CodeEditor
-          className={$.results}
+          className={$.editor}
           value={outputs.map(output => output ? output.description : '').join('\n')}
           readOnly
           onValueChange={() => { }}
