@@ -24,7 +24,7 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
 
   const evaluate = () => {
     try {
-      const allSentences = parse.body.tryParse(`{${code.trim()}}`).sentences
+      const allSentences = parse.body.tryParse(`{\n${code.trim()}\n}`).sentences
       const lines = Math.max(...allSentences.map(sentence => sentence.source!.start.line))
       const sentencesByLine = allSentences.reduce((sentences, sentence) => {
         const line = sentence.source!.start.line
@@ -35,7 +35,7 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
 
       const environmentsPerLine = Array.from({ length: lines }, (_, i) => {
         const lineSentences = sentencesByLine[i + 1]
-        if (!lineSentences) return
+        if (!lineSentences) return undefined
 
 
         const nextLineIndex = allSentences.findIndex(({ source }) => source!.start.line > i)
@@ -58,7 +58,7 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
       })
 
       const newOutputs = environmentsPerLine.map(environment => {
-        if (!environment) return
+        if (!environment) return undefined
 
         const { buildEvaluation, stepAll, sendMessage } = interpret(environment, natives)
         const evaluation = buildEvaluation()
