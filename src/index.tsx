@@ -9,7 +9,9 @@ import Worksheet from './components/worksheet/Worksheet'
 import './index.scss'
 import * as serviceWorker from './serviceWorker'
 
+
 if (process.env.NODE_ENV !== 'production') whyDidYouRender(React)
+
 
 const Routes = () => (
   <Router>
@@ -19,6 +21,13 @@ const Routes = () => (
   </Router>
 )
 
-ReactDOM.render(<Routes />, document.getElementById('root'))
+const root = document.getElementById('root')!
+
+root.style.height = `${window.innerHeight}px`
+window.addEventListener('resize', () => {
+  root.style.height = `${window.innerHeight}px`
+})
+
+ReactDOM.render(<Routes />, root)
 
 serviceWorker.unregister()
