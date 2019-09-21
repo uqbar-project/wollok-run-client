@@ -1,5 +1,7 @@
 import React, { memo } from 'react'
-import CodeEditor from 'react-simple-code-editor'
+import SimpleCodeEditor from 'react-simple-code-editor'
+
+const CodeEditor = memo(SimpleCodeEditor)
 
 export type EditorProps = {
   code: string,
