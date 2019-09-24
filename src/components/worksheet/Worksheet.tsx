@@ -6,6 +6,7 @@ import React, { memo, useEffect, useState } from 'react'
 import { IoIosCheckmarkCircle as OKIcon, IoIosCloseCircle as ErrorIcon } from 'react-icons/io'
 import Splitter from 'react-splitter-layout'
 import { buildEnvironment, Environment, Evaluation } from 'wollok-ts/dist/src'
+import useInterval from '../../hooks/useInterval'
 import Editor from './Editor'
 import ObjectDiagram from './ObjectDiagram'
 import Repl from './Repl'
@@ -26,8 +27,11 @@ const Worksheet = ({ location }: WorksheetProps) => {
 
   useEffect(() => {
     updateEnvironment(editorCode)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useInterval(() => {
+    navigate(`${location!.pathname}?code=${compressToEncodedURIComponent(editorCode)}`, { replace: true })
+  }, 2000)
 
 
   const updateEnvironment = (code: string) => {
@@ -42,9 +46,8 @@ const Worksheet = ({ location }: WorksheetProps) => {
   }
 
   const onEditorCodeChange = (code: string) => {
-    navigate(`${location!.pathname}?code=${compressToEncodedURIComponent(code)}`, { replace: true })
     setEditorCode(code)
-    if (code.trim() !== editorCode.trim()) updateEnvironment(code)
+    updateEnvironment(code)
   }
 
   return (

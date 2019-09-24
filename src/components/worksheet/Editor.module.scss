@@ -1,0 +1,18 @@
+.editor {
+  .keyword {
+    color: #2e72d8;
+    font-weight: bold;
+  }
+
+  .value {
+    color: #ff3bc3;
+    font-weight: bold;
+  }
+
+  .comment,
+  .comment .keyword,
+  .comment .value {
+    color: #5ac418;
+    font-weight: bold;
+  }
+}

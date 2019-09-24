@@ -31,7 +31,7 @@ const NODE_STYLES = [
   {
     selector: 'node[type = "object"]',
     style: {
-      'background-color': 'blue',
+      'background-color': '#2e72d8',
     },
   },
   {
@@ -39,6 +39,8 @@ const NODE_STYLES = [
     style: {
       'background-opacity': 0,
       'text-valign': 'center',
+      'color': '#ff3bc3',
+      'font-weight': 'bold',
     },
   },
 ]
