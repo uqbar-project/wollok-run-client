@@ -53,18 +53,30 @@ const fetchFile = async (path: string) => {
 }
 
 type Cell = {img: string, dialog?: string}
-class Board extends React.Component {
+export type Board = Cell[][][]
+type BoardProps = { sketch: (sketch: p5) => void }
+class GameBoard extends React.Component<BoardProps> {
 
   private wrapper: React.RefObject<HTMLDivElement> = React.createRef()
 
   componentDidMount() {
+    this.setSketch(this.props)
+  }
+
+  componentWillReceiveProps(newprops: BoardProps) {
+    if (this.props.sketch !== newprops.sketch) {
+      this.setSketch(newprops)
+    }
+  }
+
+  setSketch(props: BoardProps) {
     const current = this.wrapper.current
     if (current) {
       if (current.childNodes[0]) {
         current.removeChild(current.childNodes[0])
       }
       // tslint:disable-next-line: no-unused-expression
-      new p5(sketch, current)
+      new p5(props.sketch, current)
     }
   }
 
@@ -74,7 +86,6 @@ class Board extends React.Component {
     )
   }
 }
-// type BoardProps = { board: Cell[][][] }
 // const Board = ({ board }: BoardProps) => {
 //   return (
 //     <div className={$.board}>
@@ -105,7 +116,7 @@ const emptyBoard = (evaluation: Evaluation): Cell[][][] => {
   const width = evaluation.instance(gameInst.get('width')!.id).innerValue
   const height = evaluation.instance(gameInst.get('height')!.id).innerValue
   const ground = evaluation.instance(gameInst.get('ground')!.id) &&
-    `${game.cwd}/assets/${evaluation.instance(gameInst.get('ground')!.id).innerValue}`
+    `${evaluation.instance(gameInst.get('ground')!.id).innerValue}`
   return Array.from(Array(height), () =>
     Array.from(Array(width), () => ground ? [{img: ground}] : [])
   )
@@ -114,7 +125,7 @@ const emptyBoard = (evaluation: Evaluation): Cell[][][] => {
 export type GameProps = RouteComponentProps
 const Game = ({ }: GameProps) => {
   const [evaluation, setEvaluation] = useState<Evaluation>()
-  const [board, setBoard] = useState<Cell[][][]>([])
+  const [board, setBoard] = useState<Board>([])
   const [initTime, setInitTime] = useState<Date>(new Date())
 
   useEffect(() => {
@@ -187,7 +198,7 @@ const Game = ({ }: GameProps) => {
     const current = JSON.stringify(board)
     const next = emptyBoard(evaluation)
     for (const { position: { x, y }, image, dialog } of currentVisualStates) {
-      next[y][x].push({img: `${game.cwd}/assets/${image}`, dialog})
+      next[y][x].push({img: `${image}`, dialog})
     }
 
     if (JSON.stringify(next) !== current) setBoard(next)
@@ -204,7 +215,7 @@ const Game = ({ }: GameProps) => {
         ? <>
           <h1>{title}</h1>
           <div>
-            <Board />
+            <GameBoard sketch={sketch(board)} />
             <div className={$.description}>
               {game.description.split('\n').map((line, i) =>
                 <div key={i}>{line}</div>

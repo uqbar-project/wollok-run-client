@@ -1,56 +1,53 @@
-import * as p5 from "p5";
+import * as p5 from 'p5'
+// import 'p5/lib/addons/p5.sound'
+import { Board } from './Game'
 
-import "p5/lib/addons/p5.sound";
+const imagePaths = [
+  'agua.png',
+  'capturaJuego.png',
+  'desierto.jpg',
+  'DonFuego.png',
+  'DonRoca.png',
+  'elementoRadioactivo.png',
+  'fantasticos.jpg',
+  'fire.gif',
+  'pepita-grande.png',
+  'pepita-gris.png',
+  'pocionNaranja.png',
+  'suelo.png',
+  'thumbnail_12.png',
+  'thumbnail_13.png',
+  'thumbnail_14.png',
+  'thumbnail_16.png',
+  'thumbnail_1.png',
+  'thumbnail_3.png',
+  'thumbnail_44.png',
+  'thumbnail_8.png',
+  'tierra.jpg',
+]
+const cwd = 'games/2019-o-tpi-juego-loscuatrofantasticos'
 
-export default function(sketch: p5) {
-  let fft: p5.FFT;
-  let noise: p5.Noise;
-  let filter: p5.BandPass;
+const CELL_SIZE = 50
+
+export default (board: Board) => (sketch: p5) => {
+  const imgs: { [id: string]: p5.Image }  = { }
 
   sketch.setup = function setup() {
-    sketch.createCanvas(400,400)
-    sketch.fill(255, 40, 255);
-
-    filter = new p5.BandPass();
-
-    noise = new p5.Noise('white');
-    // disconnect unfiltered noise,
-    // and connect to filter
-    noise.disconnect();
-    noise.connect(filter);
-    noise.start();
-
-    fft = new p5.FFT();
-  };
+    sketch.createCanvas(500, 500)
+    imagePaths.forEach((path: string) => {
+      imgs[path] = sketch.loadImage(`${cwd}/assets/${path}`)
+    })
+  }
 
   sketch.draw = function draw() {
-    sketch.background(30);
-
-    // set the BandPass frequency based on mouseX
-    const freq = sketch.map(sketch.mouseX, 0, sketch.width, 20, 10000);
-    filter.freq(freq);
-    // give the filter a narrow band (lower res = wider bandpass)
-    filter.res(50);
-
-    // draw filtered spectrum
-    const spectrum = fft.analyze();
-    sketch.noStroke();
-    for (let i = 0; i < spectrum.length; i++) {
-      const x = sketch.map(i, 0, spectrum.length, 0, sketch.width);
-      const h = -sketch.height + sketch.map(spectrum[i], 0, 255, sketch.height, 0);
-      sketch.rect(x, sketch.height, sketch.width / spectrum.length, h);
-    }
-
-    isMouseOverCanvas();
-  };
-
-  function isMouseOverCanvas() {
-    const mX = sketch.mouseX;
-    const mY = sketch.mouseY;
-    if (mX > 0 && mX < sketch.width && mY < sketch.height && mY > 0) {
-      noise.amp(0.5, 0.2);
-    } else {
-      noise.amp(0, 0.2);
-    }
+    sketch.background(300)
+    board.forEach((row, y) => {
+      row.forEach((cell, x) => {
+        cell.forEach(({img}) => {
+          sketch.image(imgs[img], x * CELL_SIZE, y * CELL_SIZE)
+        })
+      })
+    })
   }
+
 }
