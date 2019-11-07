@@ -18,6 +18,8 @@ program PepitaGame {
 	game.addVisual(villaGesell)
 	game.addVisual(pepita)
 
+	game.onTick(200, "ASD", { game.removeVisual(pepita) })
+
 //	TECLADO
 //	keyboard.h().onPressDo { game.say(pepita, "Hola chiques!") }
 

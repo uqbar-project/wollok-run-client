@@ -31,10 +31,10 @@
     "react-splitter-layout": "^4.0.0",
     "tslint": "^5.18.0",
     "tslint-react": "^4.0.0",
-    "typescript": "3.5.3",
+    "typescript": "^3.7.1-rc",
     "use-interval": "^1.1.0",
     "uuid": "^3.3.2",
-    "wollok-ts": "github:uqbar-project/wollok-ts"
+    "wollok-ts": "^1.8.1"
   },
   "scripts": {
     "start": "react-scripts start",

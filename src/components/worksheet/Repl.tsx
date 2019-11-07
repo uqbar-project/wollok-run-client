@@ -2,9 +2,9 @@ import React, { KeyboardEvent, memo, useState } from 'react'
 import Slider from 'react-input-slider'
 import SimpleCodeEditor from 'react-simple-code-editor'
 import Splitter from 'react-splitter-layout'
-import { build, Environment, Evaluation, fill, interpret, link, List, parse, Raw, Sentence, Singleton } from 'wollok-ts/dist/src'
-import { VOID_ID } from 'wollok-ts/dist/src/interpreter'
-import natives from 'wollok-ts/dist/src/wre/wre.natives'
+import { build, Environment, Evaluation, fill, interpret, link, List, parse, Raw, Sentence, Singleton } from 'wollok-ts/dist'
+import { RuntimeObject, VOID_ID } from 'wollok-ts/dist/interpreter'
+import natives from 'wollok-ts/dist/wre/wre.natives'
 import $ from './Repl.module.scss'
 
 const CodeEditor = memo(SimpleCodeEditor)
@@ -31,7 +31,7 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
       const sentencesByLine = allSentences.reduce((sentences, sentence) => {
         const line = sentence.source!.start.line
         if (!sentences[line]) sentences[line] = []
-        sentences[line].push(sentence)
+        sentences[line].push(sentence as Sentence)
         return sentences
       }, {} as { [line: number]: Sentence[] })
 
@@ -72,7 +72,9 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
         let description: string
         if (response !== VOID_ID) {
           sendMessage('toString', response)(evaluation)
-          description = evaluation.instance(evaluation.currentFrame().popOperand()).innerValue
+          const wDescription: RuntimeObject = evaluation.instance(evaluation.currentFrame().popOperand())
+          wDescription.assertIsString()
+          description = wDescription.innerValue
         } else description = response
 
         return { description, evaluation }

@@ -1,7 +1,7 @@
 import cytoscape, { ElementDefinition } from 'cytoscape'
 import React, { memo, useEffect, useRef } from 'react'
-import { Evaluation, Id, Module } from 'wollok-ts/dist/src'
-import { NULL_ID, RuntimeObject } from 'wollok-ts/dist/src/interpreter'
+import { Evaluation, Id, Module } from 'wollok-ts/dist'
+import { NULL_ID, RuntimeObject } from 'wollok-ts/dist/interpreter'
 import $ from './ObjectDiagram.module.scss'
 
 const { values, keys } = Object
@@ -88,7 +88,8 @@ const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
     }
 
     function elementFromObject(obj: RuntimeObject, alreadyVisited: Id[] = []): ElementDefinition[] {
-      const { id, fields } = obj
+      const { id } = obj
+      const fields = obj.context().locals
       if (alreadyVisited.includes(id)) return []
       return [
         { data: { id, ...decoration(obj) } },

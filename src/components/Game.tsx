@@ -2,9 +2,9 @@ import { RouteComponentProps } from '@reach/router'
 import useEventListener from '@use-it/event-listener'
 import React, { KeyboardEvent, memo, useEffect, useState } from 'react'
 import useInterval from 'use-interval'
-import { v4 as uuid } from 'uuid'
-import { buildEnvironment, Evaluation, Id, interpret } from 'wollok-ts/dist/src'
-import natives from 'wollok-ts/dist/src/wre/wre.natives'
+import { buildEnvironment, Evaluation, Id, interpret } from 'wollok-ts/dist';
+import { RuntimeObject } from 'wollok-ts/dist/interpreter'
+import natives from 'wollok-ts/dist/wre/wre.natives'
 import $ from './Game.module.scss'
 import Spinner from './Spinner'
 
@@ -61,10 +61,10 @@ const gameInstance = ({ environment, instances }: Evaluation) => {
 
 const emptyBoard = (evaluation: Evaluation) => {
   const gameInst = gameInstance(evaluation)
-  const width = evaluation.instances[gameInst.fields.width].innerValue
-  const height = evaluation.instances[gameInst.fields.height].innerValue
-  const ground = evaluation.instances[gameInst.fields.ground] &&
-    `${game.cwd}/assets/${evaluation.instances[gameInst.fields.ground].innerValue}`
+  const width = evaluation.instance(gameInst.get('width')!.id).innerValue
+  const height = evaluation.instance(gameInst.get('height')!.id).innerValue
+  const ground = evaluation.instance(gameInst.get('ground')!.id) &&
+    `${game.cwd}/assets/${evaluation.instance(gameInst.get('ground')!.id).innerValue}`
   return Array.from(Array(height), () =>
     Array.from(Array(width), () => ground ? [ground] : [])
   )
@@ -75,7 +75,7 @@ const Game = ({ }: GameProps) => {
 
   const [evaluation, setEvaluation] = useState<Evaluation>()
   const [board, setBoard] = useState<string[][][]>([])
-
+  const [initTime, setInitTime] = useState<Date>(new Date())
 
   useEffect(() => {
     Promise.all(game.sources.map(fetchFile)).then(files => {
@@ -84,7 +84,7 @@ const Game = ({ }: GameProps) => {
       const cleanEval = buildEvaluation()
 
       runProgram(game.main, cleanEval)
-
+      setInitTime(new Date())
       setEvaluation(cleanEval)
       setBoard(emptyBoard(cleanEval))
     })
@@ -96,10 +96,9 @@ const Game = ({ }: GameProps) => {
 
     event.preventDefault()
 
-    const id = uuid()
-    evaluation.instances['S!keydown'] = { id: 'S!keydown', module: 'wollok.lang.String', fields: {}, innerValue: 'keydown' }
-    evaluation.instances[`S!${event.code}`] = { id: `S!${event.code}`, module: 'wollok.lang.String', fields: {}, innerValue: event.code }
-    evaluation.instances[id] = { id, module: 'wollok.lang.List', fields: {}, innerValue: ['S!keydown', `S!${event.code}`] }
+    const left = evaluation.createInstance('wollok.lang.String', 'keydown')
+    const right = evaluation.createInstance( 'wollok.lang.String', event.code)
+    const id = evaluation.createInstance('wollok.lang.List', [left, right])
 
     const { sendMessage } = interpret(evaluation.environment, natives)
     sendMessage('queueEvent', evaluation.environment.getNodeByFQN('wollok.lang.io').id, id)(evaluation)
@@ -112,16 +111,24 @@ const Game = ({ }: GameProps) => {
 
     const { sendMessage } = interpret(evaluation.environment, natives)
 
-    sendMessage('flushEvents', evaluation.environment.getNodeByFQN('wollok.lang.io').id)(evaluation)
-
-    const visuals = evaluation.instances[gameInstance(evaluation).fields.visuals].innerValue
+    const io = evaluation.environment.getNodeByFQN('wollok.lang.io').id
+    const t = new Date().getTime() - initTime.getTime()
+    const time = evaluation.createInstance('wollok.lang.Number', t)
+    sendMessage('flushEvents', io, time)(evaluation)
+    const wVisuals: RuntimeObject = evaluation.instances[gameInstance(evaluation).get('visuals')!.id]
+    wVisuals.assertIsCollection()
+    const visuals = wVisuals.innerValue
     const currentVisualStates = visuals.map((id: Id) => {
       const currentFrame = evaluation.frameStack[evaluation.frameStack.length - 1]
 
       sendMessage('position', id)(evaluation)
       const position = evaluation.instances[currentFrame.operandStack.pop()!]
-      const x = evaluation.instances[position.fields.x].innerValue
-      const y = evaluation.instances[position.fields.y].innerValue
+      const wx: RuntimeObject = evaluation.instances[position.get('x')!.id]
+      wx.assertIsNumber()
+      const x = wx.innerValue
+      const wy: RuntimeObject = evaluation.instances[position.get('y')!.id]
+      wy.assertIsNumber()
+      const y = wy.innerValue
 
       sendMessage('image', id)(evaluation)
       const image = evaluation.instances[currentFrame.operandStack.pop()!].innerValue
@@ -141,7 +148,7 @@ const Game = ({ }: GameProps) => {
 
   }, 1000 / FPS)
 
-  const title = evaluation ? evaluation.instances[gameInstance(evaluation).fields.title].innerValue : ''
+  const title = evaluation ? evaluation.instances[gameInstance(evaluation).get('title')!.id].innerValue : ''
 
   return (
     <div className={$.container}>
