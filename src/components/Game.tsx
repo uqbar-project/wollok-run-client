@@ -1,33 +1,47 @@
 import { RouteComponentProps } from '@reach/router'
 import useEventListener from '@use-it/event-listener'
+import p5 from 'p5'
 import React, { KeyboardEvent, memo, useEffect, useState } from 'react'
 import useInterval from 'use-interval'
 import { buildEnvironment, Evaluation, Id, interpret } from 'wollok-ts/dist'
 import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import natives from 'wollok-ts/dist/wre/wre.natives'
 import $ from './Game.module.scss'
-import Spinner from './Spinner'
-import p5 from 'p5'
 import sketch from './sketch'
+import Spinner from './Spinner'
 
 const FPS = 30
 
+// const game = {
+//   cwd: 'games/pepita',
+//   main: 'pepitaGame.PepitaGame',
+//   sources: [
+//     'src/ciudades.wlk',
+//     'src/comidas.wlk',
+//     'src/pepita.wlk',
+//     'src/pepitaGame.wpgm',
+//   ],
+//   description: `
+//     - Presioná [↑] para ir hacia arriba.\n
+//     - Presioná [↓] para ir hacia abajo.\n
+//     - Presioná [←] para ir hacia la izquierda.\n
+//     - Presioná [→] para ir hacia la derecha.\n
+//     - Presioná [B] para ir a Buenos Aires.\n
+//     - Presioná [V] para ir a Villa Gesell.
+//   `,
+// }
+
 const game = {
-  cwd: 'games/pepita',
-  main: 'pepitaGame.PepitaGame',
+  cwd: 'games/2019-o-tpi-juego-loscuatrofantasticos',
+  main: 'juego.ejemplo',
   sources: [
-    'src/ciudades.wlk',
-    'src/comidas.wlk',
-    'src/pepita.wlk',
-    'src/pepitaGame.wpgm',
+    'src/elementos.wlk',
+    'src/personajes.wlk',
+    'src/mundos.wlk',
+    'src/juego.wpgm',
   ],
   description: `
-    - Presioná [↑] para ir hacia arriba.\n
-    - Presioná [↓] para ir hacia abajo.\n
-    - Presioná [←] para ir hacia la izquierda.\n
-    - Presioná [→] para ir hacia la derecha.\n
-    - Presioná [B] para ir a Buenos Aires.\n
-    - Presioná [V] para ir a Villa Gesell.
+    - Agarrá los fueguitos y evitá todo lo demas!
   `,
 }
 
@@ -39,6 +53,27 @@ const fetchFile = async (path: string) => {
 }
 
 type Cell = {img: string, dialog?: string}
+class Board extends React.Component {
+
+  private wrapper: React.RefObject<HTMLDivElement> = React.createRef()
+
+  componentDidMount() {
+    const current = this.wrapper.current
+    if (current) {
+      if (current.childNodes[0]) {
+        current.removeChild(current.childNodes[0])
+      }
+      // tslint:disable-next-line: no-unused-expression
+      new p5(sketch, current)
+    }
+  }
+
+  render() {
+    return (
+      <div ref={this.wrapper} />
+    )
+  }
+}
 // type BoardProps = { board: Cell[][][] }
 // const Board = ({ board }: BoardProps) => {
 //   return (
@@ -78,11 +113,9 @@ const emptyBoard = (evaluation: Evaluation): Cell[][][] => {
 
 export type GameProps = RouteComponentProps
 const Game = ({ }: GameProps) => {
-  const wrapper: React.RefObject<HTMLDivElement> = React.createRef()
   const [evaluation, setEvaluation] = useState<Evaluation>()
   const [board, setBoard] = useState<Cell[][][]>([])
   const [initTime, setInitTime] = useState<Date>(new Date())
-  // const [canvas, setCanvas] = useState<p5>()
 
   useEffect(() => {
     Promise.all(game.sources.map(fetchFile)).then(files => {
@@ -116,13 +149,14 @@ const Game = ({ }: GameProps) => {
   useInterval(() => {
     if (!evaluation) return
 
-    const current2 =wrapper.current
-    console.log(current2)
-    new p5(sketch,current2!)
-    
     const { sendMessage } = interpret(evaluation.environment, natives)
 
     const io = evaluation.environment.getNodeByFQN('wollok.lang.io').id
+
+    // const wDebug = evaluation.instance(io).get('dialog')
+    // const debug = wDebug ? (wDebug.innerValue as string) : undefined
+    // console.log(debug)
+
     const t = new Date().getTime() - initTime.getTime()
     const time = evaluation.createInstance('wollok.lang.Number', t)
     sendMessage('flushEvents', io, time)(evaluation)
@@ -170,9 +204,7 @@ const Game = ({ }: GameProps) => {
         ? <>
           <h1>{title}</h1>
           <div>
-            {/* <Board board={board} /> */}
-            <div ref={wrapper} />
-
+            <Board />
             <div className={$.description}>
               {game.description.split('\n').map((line, i) =>
                 <div key={i}>{line}</div>
