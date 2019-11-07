@@ -18,10 +18,11 @@ program PepitaGame {
 	game.addVisual(villaGesell)
 	game.addVisual(pepita)
 
-	game.onTick(200, "ASD", { game.removeVisual(pepita) })
+	game.onTick(200, "ASD", { game.getObjectsIn(game.at(0,0)).forEach({it => game.removeVisual(it)})  })
+	game.whenCollideDo(pepita, { ciudad => game.removeVisual(ciudad) })
 
 //	TECLADO
-//	keyboard.h().onPressDo { game.say(pepita, "Hola chiques!") }
+	keyboard.h().onPressDo { game.say(pepita, "Hola chiques!") }
 
 	keyboard.v().onPressDo { pepita.volaHacia(villaGesell) }
 	keyboard.b().onPressDo { pepita.volaHacia(buenosAires) }

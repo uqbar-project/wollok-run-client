@@ -2,7 +2,7 @@ import { RouteComponentProps } from '@reach/router'
 import useEventListener from '@use-it/event-listener'
 import React, { KeyboardEvent, memo, useEffect, useState } from 'react'
 import useInterval from 'use-interval'
-import { buildEnvironment, Evaluation, Id, interpret } from 'wollok-ts/dist';
+import { buildEnvironment, Evaluation, Id, interpret } from 'wollok-ts/dist'
 import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import natives from 'wollok-ts/dist/wre/wre.natives'
 import $ from './Game.module.scss'
@@ -36,7 +36,8 @@ const fetchFile = async (path: string) => {
   return { name, content }
 }
 
-type BoardProps = { board: string[][][] }
+type Cell = {img: string, dialog?: string}
+type BoardProps = { board: Cell[][][] }
 const Board = ({ board }: BoardProps) => {
   return (
     <div className={$.board}>
@@ -44,8 +45,11 @@ const Board = ({ board }: BoardProps) => {
         <div key={y}>
           {row.map((cell, x) =>
             <div key={x}>
-              {cell.map((image, i) =>
-                <img key={i} src={image} alt={image} />
+              {cell.map(({img, dialog}, i) =>
+                <div key={i}>
+                  <img src={img} alt={img} />
+                  <span>{dialog}</span>
+                </div>
               )}
             </div>
           )}
@@ -59,14 +63,14 @@ const gameInstance = ({ environment, instances }: Evaluation) => {
   return instances[environment.getNodeByFQN('wollok.game.game').id]
 }
 
-const emptyBoard = (evaluation: Evaluation) => {
+const emptyBoard = (evaluation: Evaluation): Cell[][][] => {
   const gameInst = gameInstance(evaluation)
   const width = evaluation.instance(gameInst.get('width')!.id).innerValue
   const height = evaluation.instance(gameInst.get('height')!.id).innerValue
   const ground = evaluation.instance(gameInst.get('ground')!.id) &&
     `${game.cwd}/assets/${evaluation.instance(gameInst.get('ground')!.id).innerValue}`
   return Array.from(Array(height), () =>
-    Array.from(Array(width), () => ground ? [ground] : [])
+    Array.from(Array(width), () => ground ? [{img: ground}] : [])
   )
 }
 
@@ -74,7 +78,7 @@ export type GameProps = RouteComponentProps
 const Game = ({ }: GameProps) => {
 
   const [evaluation, setEvaluation] = useState<Evaluation>()
-  const [board, setBoard] = useState<string[][][]>([])
+  const [board, setBoard] = useState<Cell[][][]>([])
   const [initTime, setInitTime] = useState<Date>(new Date())
 
   useEffect(() => {
@@ -133,13 +137,16 @@ const Game = ({ }: GameProps) => {
       sendMessage('image', id)(evaluation)
       const image = evaluation.instances[currentFrame.operandStack.pop()!].innerValue
 
-      return { position: { x, y }, image }
+      const wDialog = evaluation.instance(id).get('dialog')
+      const dialog = wDialog ? (wDialog.innerValue as string) : undefined
+
+      return { position: { x, y }, image, dialog }
     })
 
     const current = JSON.stringify(board)
     const next = emptyBoard(evaluation)
-    for (const { position: { x, y }, image } of currentVisualStates) {
-      next[y][x].push(`${game.cwd}/assets/${image}`)
+    for (const { position: { x, y }, image, dialog } of currentVisualStates) {
+      next[y][x].push({img: `${game.cwd}/assets/${image}`, dialog})
     }
 
     if (JSON.stringify(next) !== current) setBoard(next)
