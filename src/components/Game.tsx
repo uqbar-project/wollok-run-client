@@ -7,6 +7,8 @@ import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import natives from 'wollok-ts/dist/wre/wre.natives'
 import $ from './Game.module.scss'
 import Spinner from './Spinner'
+import p5 from 'p5'
+import sketch from './sketch'
 
 const FPS = 30
 
@@ -37,27 +39,27 @@ const fetchFile = async (path: string) => {
 }
 
 type Cell = {img: string, dialog?: string}
-type BoardProps = { board: Cell[][][] }
-const Board = ({ board }: BoardProps) => {
-  return (
-    <div className={$.board}>
-      {board.map((row, y) =>
-        <div key={y}>
-          {row.map((cell, x) =>
-            <div key={x}>
-              {cell.map(({img, dialog}, i) =>
-                <div key={i}>
-                  <img src={img} alt={img} />
-                  <span>{dialog}</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
+// type BoardProps = { board: Cell[][][] }
+// const Board = ({ board }: BoardProps) => {
+//   return (
+//     <div className={$.board}>
+//       {board.map((row, y) =>
+//         <div key={y}>
+//           {row.map((cell, x) =>
+//             <div key={x}>
+//               {cell.map(({img, dialog}, i) =>
+//                 <div key={i}>
+//                   <img src={img} alt={img} />
+//                   <span>{dialog}</span>
+//                 </div>
+//               )}
+//             </div>
+//           )}
+//         </div>
+//       )}
+//     </div>
+//   )
+// }
 
 const gameInstance = ({ environment, instances }: Evaluation) => {
   return instances[environment.getNodeByFQN('wollok.game.game').id]
@@ -76,10 +78,11 @@ const emptyBoard = (evaluation: Evaluation): Cell[][][] => {
 
 export type GameProps = RouteComponentProps
 const Game = ({ }: GameProps) => {
-
+  const wrapper: React.RefObject<HTMLDivElement> = React.createRef()
   const [evaluation, setEvaluation] = useState<Evaluation>()
   const [board, setBoard] = useState<Cell[][][]>([])
   const [initTime, setInitTime] = useState<Date>(new Date())
+  // const [canvas, setCanvas] = useState<p5>()
 
   useEffect(() => {
     Promise.all(game.sources.map(fetchFile)).then(files => {
@@ -113,6 +116,10 @@ const Game = ({ }: GameProps) => {
   useInterval(() => {
     if (!evaluation) return
 
+    const current2 =wrapper.current
+    console.log(current2)
+    new p5(sketch,current2!)
+    
     const { sendMessage } = interpret(evaluation.environment, natives)
 
     const io = evaluation.environment.getNodeByFQN('wollok.lang.io').id
@@ -163,7 +170,9 @@ const Game = ({ }: GameProps) => {
         ? <>
           <h1>{title}</h1>
           <div>
-            <Board board={board} />
+            {/* <Board board={board} /> */}
+            <div ref={wrapper} />
+
             <div className={$.description}>
               {game.description.split('\n').map((line, i) =>
                 <div key={i}>{line}</div>
