@@ -4,7 +4,7 @@ import { Evaluation, Id, interpret } from 'wollok-ts/dist'
 import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import natives from 'wollok-ts/dist/wre/wre.natives'
 
-type Cell = {img: string, dialog?: any}
+type Cell = { img: string, dialog?: any }
 type Board = Cell[][][]
 
 const CELL_SIZE = 50
@@ -20,7 +20,7 @@ const emptyBoard = (evaluation: Evaluation): Board => {
   const ground = evaluation.instance(gameInst.get('ground')!.id) &&
     `${evaluation.instance(gameInst.get('ground')!.id).innerValue}`
   return Array.from(Array(height), () =>
-    Array.from(Array(width), () => ground ? [{img: ground}] : [])
+    Array.from(Array(width), () => ground ? [{ img: ground }] : [])
   )
 }
 
@@ -80,7 +80,7 @@ const currentVisualStates = (evaluation: Evaluation) => {
 }
 
 export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluation) => (sketch: p5) => {
-  const imgs: { [id: string]: p5.Image }  = { }
+  const imgs: { [id: string]: p5.Image } = {}
   let board: Board
   let initTime: Date
 
@@ -107,18 +107,20 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
     const current = JSON.stringify(board)
     const next = emptyBoard(evaluation)
     for (const { position: { x, y }, image, dialog } of currentVisualStates(evaluation)) {
-      next[y][x].push({img: `${image}`, dialog})
+      next[y][x].push({ img: `${image}`, dialog })
     }
     if (JSON.stringify(next) !== current) board = next
   }
 
   function drawBoard() {
-    sketch.background(300)
     board.forEach((row, y) => {
       row.forEach((cell, x) => {
-        cell.forEach(({img}) => {
+        cell.forEach(({ img, dialog }) => {
           const imageObject = imgs[img]
-          sketch.image(imageObject, x * CELL_SIZE, sketch.height - y * CELL_SIZE - imageObject.height)
+          const yPosition = sketch.height - y * CELL_SIZE - imageObject.height
+          const xPosition = x * CELL_SIZE
+          sketch.image(imageObject, xPosition, yPosition)
+          sketch.text(dialog, xPosition , yPosition)
         })
       })
     })
