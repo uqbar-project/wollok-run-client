@@ -15,62 +15,56 @@ const fetchFile = async (path: string) => {
   return { name, content }
 }
 const imagePaths = [
-  'agua.png',
-  'capturaJuego.png',
-  'desierto.jpg',
-  'DonFuego.png',
-  'DonRoca.png',
-  'elementoRadioactivo.png',
-  'fantasticos.jpg',
-  'fire.gif',
-  'pepita-grande.png',
-  'pepita-gris.png',
-  'pocionNaranja.png',
+  'alpiste.png',
+  'ciudad.png',
+  'fondo2.jpg',
+  'fondo.jpg',
+  'jugador.png',
+  'manzana.png',
+  'muro.png',
+  'pepita1.png',
+  'pepita2.png',
+  'pepitaCanchera.png',
+  'pepita-gorda-raw.png',
+  'pepita.png',
+  'pepona.png',
   'suelo.png',
-  'thumbnail_12.png',
-  'thumbnail_13.png',
-  'thumbnail_14.png',
-  'thumbnail_16.png',
-  'thumbnail_1.png',
-  'thumbnail_3.png',
-  'thumbnail_44.png',
-  'thumbnail_8.png',
-  'tierra.jpg',
 ]
 
+// const game = {
+//   cwd: 'games/2019-o-tpi-juego-loscuatrofantasticos',
+//   main: 'juego.ejemplo',
+//   sources: [
+//     'src/elementos.wlk',
+//     'src/personajes.wlk',
+//     'src/mundos.wlk',
+//     'src/juego.wpgm',
+//   ],
+//   description: `
+//     - Agarrá los fueguitos y evitá todo lo demas!
+//   `,
+//   imagePaths,
+// }
+
 const game = {
-  cwd: 'games/2019-o-tpi-juego-loscuatrofantasticos',
-  main: 'juego.ejemplo',
+  cwd: 'games/pepita',
+  main: 'pepitaGame.PepitaGame',
   sources: [
-    'src/elementos.wlk',
-    'src/personajes.wlk',
-    'src/mundos.wlk',
-    'src/juego.wpgm',
+    'src/ciudades.wlk',
+    'src/comidas.wlk',
+    'src/pepita.wlk',
+    'src/pepitaGame.wpgm',
   ],
   description: `
-    - Agarrá los fueguitos y evitá todo lo demas!
+    - Presioná [↑] para ir hacia arriba.\n
+    - Presioná [↓] para ir hacia abajo.\n
+    - Presioná [←] para ir hacia la izquierda.\n
+    - Presioná [→] para ir hacia la derecha.\n
+    - Presioná [B] para ir a Buenos Aires.\n
+    - Presioná [V] para ir a Villa Gesell.
   `,
   imagePaths,
 }
-
-// const game = {
-//   cwd: 'games/pepita',
-//   main: 'pepitaGame.PepitaGame',
-//   sources: [
-//     'src/ciudades.wlk',
-//     'src/comidas.wlk',
-//     'src/pepita.wlk',
-//     'src/pepitaGame.wpgm',
-//   ],
-//   description: `
-//     - Presioná [↑] para ir hacia arriba.\n
-//     - Presioná [↓] para ir hacia abajo.\n
-//     - Presioná [←] para ir hacia la izquierda.\n
-//     - Presioná [→] para ir hacia la derecha.\n
-//     - Presioná [B] para ir a Buenos Aires.\n
-//     - Presioná [V] para ir a Villa Gesell.
-//   `,
-// }
 
 type BoardProps = { sketch: (sketch: p5) => void }
 class GameBoard extends React.Component<BoardProps> {

@@ -117,7 +117,8 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
     board.forEach((row, y) => {
       row.forEach((cell, x) => {
         cell.forEach(({img}) => {
-          sketch.image(imgs[img], x * CELL_SIZE, y * CELL_SIZE)
+          const imageObject = imgs[img]
+          sketch.image(imageObject, x * CELL_SIZE, sketch.height - y * CELL_SIZE - imageObject.height)
         })
       })
     })
