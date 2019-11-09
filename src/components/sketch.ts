@@ -37,6 +37,7 @@ const flushEvents = (evaluation: Evaluation, initTime: Date): void => {
   const time = evaluation.createInstance('wollok.lang.Number', t)
   sendMessage('flushEvents', io, time)(evaluation)
 }
+
 // interface VisualState {
 //   position: {
 //     x: any,

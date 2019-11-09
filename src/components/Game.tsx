@@ -104,30 +104,9 @@ class GameBoard extends React.Component<BoardProps> {
     )
   }
 }
-// const Board = ({ board }: BoardProps) => {
-//   return (
-//     <div className={$.board}>
-//       {board.map((row, y) =>
-//         <div key={y}>
-//           {row.map((cell, x) =>
-//             <div key={x}>
-//               {cell.map(({img, dialog}, i) =>
-//                 <div key={i}>
-//                   <img src={img} alt={img} />
-//                   <span>{dialog}</span>
-//                 </div>
-//               )}
-//             </div>
-//           )}
-//         </div>
-//       )}
-//     </div>
-//   )
-// }
-
 
 export type GameProps = RouteComponentProps
-const Game = ({ }: GameProps) => {
+const Game = (_: GameProps) => {
   const [evaluation, setEvaluation] = useState<Evaluation>()
 
   useEffect(() => {
