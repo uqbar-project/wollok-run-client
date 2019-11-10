@@ -113,14 +113,15 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
   }
 
   function drawBoard() {
-    board.forEach((row, y) => {
-      row.forEach((cell, x) => {
+    board.forEach((row, _y) => {
+      const y = sketch.height - _y * CELL_SIZE
+      row.forEach((cell, _x) => {
+        const x = _x * CELL_SIZE
         cell.forEach(({ img, message }) => {
           const imageObject = imgs[img]
-          const yPosition = sketch.height - y * CELL_SIZE - imageObject.height
-          const xPosition = x * CELL_SIZE
-          sketch.image(imageObject, xPosition, yPosition)
-          if (message) sketch.text(message, xPosition , yPosition)
+          const yPosition = y - imageObject.height
+          sketch.image(imageObject, x, yPosition)
+          if (message) sketch.text(message, x , yPosition)
         })
       })
     })
