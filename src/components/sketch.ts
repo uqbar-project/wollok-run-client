@@ -1,10 +1,10 @@
-import * as p5 from 'p5'
+import p5 from 'p5'
 // import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id, interpret } from 'wollok-ts/dist'
 import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import natives from 'wollok-ts/dist/wre/wre.natives'
 
-type Cell = { img: string, dialog?: any }
+type Cell = {img: string, message?: any}
 type Board = Cell[][][]
 
 const CELL_SIZE = 50
@@ -29,7 +29,7 @@ const flushEvents = (evaluation: Evaluation, initTime: Date): void => {
 
   const io = evaluation.environment.getNodeByFQN('wollok.lang.io').id
 
-  // const wDebug = evaluation.instance(io).get('dialog')
+  // const wDebug = evaluation.instance(io).get('message')
   // const debug = wDebug ? (wDebug.innerValue as string) : undefined
   // console.log(debug)
 
@@ -44,7 +44,7 @@ const flushEvents = (evaluation: Evaluation, initTime: Date): void => {
 //     y: any
 //   },
 //   image: any,
-//   dialog?: any
+//   message?: any
 // }
 
 const currentVisualStates = (evaluation: Evaluation) => {
@@ -69,11 +69,11 @@ const currentVisualStates = (evaluation: Evaluation) => {
     const wImage: RuntimeObject = evaluation.instances[currentFrame.operandStack.pop()!]
     wImage.assertIsString()
     const image = wImage.innerValue
-    const wDialog: RuntimeObject | undefined = evaluation.instance(id).get('dialog')
-    // wDialog?.assertIsString()
-    const dialog = wDialog ? wDialog.innerValue : undefined
+    const wMessage: RuntimeObject | undefined = evaluation.instance(id).get('message')
+    // wMessage?.assertIsString()
+    const message = wMessage ? wMessage.innerValue : undefined
 
-    return { position: { x, y }, image, dialog }
+    return { position: { x, y }, image, message }
   })
 
 
@@ -106,8 +106,8 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
   function updateBoard() {
     const current = JSON.stringify(board)
     const next = emptyBoard(evaluation)
-    for (const { position: { x, y }, image, dialog } of currentVisualStates(evaluation)) {
-      next[y][x].push({ img: `${image}`, dialog })
+    for (const { position: { x, y }, image, message } of currentVisualStates(evaluation)) {
+      next[y][x].push({img: `${image}`, message})
     }
     if (JSON.stringify(next) !== current) board = next
   }
@@ -115,12 +115,12 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
   function drawBoard() {
     board.forEach((row, y) => {
       row.forEach((cell, x) => {
-        cell.forEach(({ img, dialog }) => {
+        cell.forEach(({ img, message }) => {
           const imageObject = imgs[img]
           const yPosition = sketch.height - y * CELL_SIZE - imageObject.height
           const xPosition = x * CELL_SIZE
           sketch.image(imageObject, xPosition, yPosition)
-          sketch.text(dialog, xPosition , yPosition)
+          if (message) sketch.text(message, xPosition , yPosition)
         })
       })
     })
