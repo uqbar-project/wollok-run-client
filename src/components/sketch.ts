@@ -144,7 +144,8 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
     
     if(keyCode >= 48 && keyCode<= 57) return `Digit${key}`
     if(keyCode >= 65 && keyCode <= 90) return `Key${key.toUpperCase()}`
-    if(keyCode === 18) return 'Alt'
+    if(keyCode === 18) return 'AltLeft'
+    if(keyCode == 225) return 'AltRight' 
     if(keyCode === 8) return 'Backspace'
     if(keyCode === 17) return 'Control'
     if(keyCode === 46) return 'Delete'
