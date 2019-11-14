@@ -4,7 +4,7 @@ import { Evaluation, Id, interpret } from 'wollok-ts/dist'
 import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import natives from 'wollok-ts/dist/wre/wre.natives'
 
-type Cell = {img: string, message?: any}
+type Cell = { img: string, message?: any }
 type Board = Cell[][][]
 
 const CELL_SIZE = 50
@@ -77,7 +77,8 @@ const currentVisualStates = (evaluation: Evaluation) => {
     const wMessageTime: RuntimeObject | undefined = actor.get('messageTime')
     // wMessage?.assertIsString()
     const text = wMessage ? wMessage.innerValue : undefined
-    const message = text ? {text, time: wMessageTime ? wMessageTime.innerValue : undefined} : undefined
+    const message = text ? { text, time: wMessageTime ? wMessageTime.innerValue : undefined } : undefined
+    console.log(message)
     return { position: { x, y }, image, message }
   })
 
@@ -111,7 +112,7 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
     const current = JSON.stringify(board)
     const next = emptyBoard(evaluation)
     for (const { position: { x, y }, image, message } of currentVisualStates(evaluation)) {
-      next[y][x].push({img: `${image}`, message})
+      next[y][x].push({ img: `${image}`, message })
     }
     if (JSON.stringify(next) !== current) board = next
   }
@@ -125,27 +126,20 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
           const imageObject = imgs[img]
           const yPosition = y - imageObject.height
           sketch.image(imageObject, x, yPosition)
-          if (message && message.time > currentTime(initTime)) sketch.text(message.text, x , yPosition)
+          if (message && message.time > currentTime(initTime)) sketch.text(message.text, x, yPosition)
         })
       })
     })
   }
 
-
-  // TODO: Use p5
-  // useEventListener<KeyboardEvent>('keydown', (event: any) => {
-  //   if (!evaluation) return
-
-  //   event.preventDefault()
-
-  //   const left = evaluation.createInstance('wollok.lang.String', 'keydown')
-  //   const right = evaluation.createInstance( 'wollok.lang.String', event.code)
-  //   const id = evaluation.createInstance('wollok.lang.List', [left, right])
-
-  //   const { sendMessage } = interpret(evaluation.environment, natives)
-  //   sendMessage('queueEvent', evaluation.environment.getNodeByFQN('wollok.lang.io').id, id)(evaluation)
-
-  //   setEvaluation(evaluation)
-  // })
-
+  sketch.keyPressed = () => {
+    var wKeyCode = `Key${sketch.key.toUpperCase()}`
+    console.log(wKeyCode)
+    const left = evaluation.createInstance('wollok.lang.String', 'keydown')
+    const right = evaluation.createInstance('wollok.lang.String', wKeyCode)
+    const id = evaluation.createInstance('wollok.lang.List', [left, right])
+    const { sendMessage } = interpret(evaluation.environment, natives)
+    sendMessage('queueEvent', evaluation.environment.getNodeByFQN('wollok.lang.io').id, id)(evaluation)
+    console.log(evaluation)
+  }
 }
