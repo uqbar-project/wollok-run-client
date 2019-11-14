@@ -24,6 +24,9 @@ const emptyBoard = (evaluation: Evaluation): Board => {
   )
 }
 
+const currentTime = (initTime: Date): number =>
+  new Date().getTime() - initTime.getTime()
+
 const flushEvents = (evaluation: Evaluation, initTime: Date): void => {
   const { sendMessage } = interpret(evaluation.environment, natives)
 
@@ -33,7 +36,7 @@ const flushEvents = (evaluation: Evaluation, initTime: Date): void => {
   // const debug = wDebug ? (wDebug.innerValue as string) : undefined
   // console.log(debug)
 
-  const t = new Date().getTime() - initTime.getTime()
+  const t = currentTime(initTime)
   const time = evaluation.createInstance('wollok.lang.Number', t)
   sendMessage('flushEvents', io, time)(evaluation)
 }
@@ -69,13 +72,14 @@ const currentVisualStates = (evaluation: Evaluation) => {
     const wImage: RuntimeObject = evaluation.instances[currentFrame.operandStack.pop()!]
     wImage.assertIsString()
     const image = wImage.innerValue
-    const wMessage: RuntimeObject | undefined = evaluation.instance(id).get('message')
+    const actor = evaluation.instance(id)
+    const wMessage: RuntimeObject | undefined = actor.get('message')
+    const wMessageTime: RuntimeObject | undefined = actor.get('messageTime')
     // wMessage?.assertIsString()
-    const message = wMessage ? wMessage.innerValue : undefined
-
+    const text = wMessage ? wMessage.innerValue : undefined
+    const message = text ? {text, time: wMessageTime ? wMessageTime.innerValue : undefined} : undefined
     return { position: { x, y }, image, message }
   })
-
 
 }
 
@@ -121,7 +125,7 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
           const imageObject = imgs[img]
           const yPosition = y - imageObject.height
           sketch.image(imageObject, x, yPosition)
-          if (message) sketch.text(message, x , yPosition)
+          if (message && message.time > currentTime(initTime)) sketch.text(message.text, x , yPosition)
         })
       })
     })

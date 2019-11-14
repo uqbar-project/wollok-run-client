@@ -18,7 +18,7 @@ program PepitaGame {
 	game.addVisual(villaGesell)
 	game.addVisual(pepita)
 
-	game.onTick(2000, "ASD", { pepita.move(pepita.position().right(1))})
+	game.onTick(1000, "ASD", { pepita.move(pepita.position().right(1))})
 	game.whenCollideDo(pepita, { ciudad => game.removeVisual(ciudad)
 	game.say(pepita,"LLegue") })
 
