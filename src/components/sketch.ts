@@ -133,13 +133,28 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
   }
 
   sketch.keyPressed = () => {
-    var wKeyCode = `Key${sketch.key.toUpperCase()}`
-    console.log(wKeyCode)
     const left = evaluation.createInstance('wollok.lang.String', 'keydown')
-    const right = evaluation.createInstance('wollok.lang.String', wKeyCode)
+    const right = evaluation.createInstance('wollok.lang.String', wKeyCode(sketch.key,sketch.keyCode))
     const id = evaluation.createInstance('wollok.lang.List', [left, right])
     const { sendMessage } = interpret(evaluation.environment, natives)
     sendMessage('queueEvent', evaluation.environment.getNodeByFQN('wollok.lang.io').id, id)(evaluation)
-    console.log(evaluation)
+  }
+  
+  function wKeyCode(key : string, keyCode : number){
+    
+    if(keyCode >= 48 && keyCode<= 57) return `Digit${key}`
+    if(keyCode >= 65 && keyCode <= 90) return `Key${key.toUpperCase()}`
+    if(keyCode === 18) return 'Alt'
+    if(keyCode === 8) return 'Backspace'
+    if(keyCode === 17) return 'Control'
+    if(keyCode === 46) return 'Delete'
+    if(keyCode >= 37 && keyCode <= 40) return key
+    if(keyCode === 13) return 'Enter'
+    if(keyCode === 189) return 'Minus'
+    if(keyCode === 187) return 'Plus'
+    if(keyCode === 191) return 'Slash'
+    if(keyCode === 32) return 'Space'
+    if(keyCode === 16) return 'Shift'
+    return ''
   }
 }
