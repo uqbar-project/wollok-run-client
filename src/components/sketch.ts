@@ -24,21 +24,29 @@ const emptyBoard = (evaluation: Evaluation): Board => {
   )
 }
 
-const currentTime = (initTime: Date): number =>
-  new Date().getTime() - initTime.getTime()
-
-const flushEvents = (evaluation: Evaluation, initTime: Date): void => {
+const flushEvents = (evaluation: Evaluation, ms: number): void => {
   const { sendMessage } = interpret(evaluation.environment, natives)
-
   const io = evaluation.environment.getNodeByFQN('wollok.lang.io').id
-
-  // const wDebug = evaluation.instance(io).get('message')
-  // const debug = wDebug ? (wDebug.innerValue as string) : undefined
-  // console.log(debug)
-
-  const t = currentTime(initTime)
-  const time = evaluation.createInstance('wollok.lang.Number', t)
+  const time = evaluation.createInstance('wollok.lang.Number', ms)
   sendMessage('flushEvents', io, time)(evaluation)
+}
+
+function wKeyCode(key: string, keyCode: number) {
+  if (keyCode >= 48 && keyCode <= 57) return `Digit${key}`
+  if (keyCode >= 65 && keyCode <= 90) return `Key${key.toUpperCase()}`
+  if (keyCode === 18) return 'AltLeft'
+  if (keyCode === 225) return 'AltRight'
+  if (keyCode === 8) return 'Backspace'
+  if (keyCode === 17) return 'Control'
+  if (keyCode === 46) return 'Delete'
+  if (keyCode >= 37 && keyCode <= 40) return key
+  if (keyCode === 13) return 'Enter'
+  if (keyCode === 189) return 'Minus'
+  if (keyCode === 187) return 'Plus'
+  if (keyCode === 191) return 'Slash'
+  if (keyCode === 32) return 'Space'
+  if (keyCode === 16) return 'Shift'
+  return undefined
 }
 
 // interface VisualState {
@@ -78,7 +86,6 @@ const currentVisualStates = (evaluation: Evaluation) => {
     // wMessage?.assertIsString()
     const text = wMessage ? wMessage.innerValue : undefined
     const message = text ? { text, time: wMessageTime ? wMessageTime.innerValue : undefined } : undefined
-    console.log(message)
     return { position: { x, y }, image, message }
   })
 
@@ -87,10 +94,8 @@ const currentVisualStates = (evaluation: Evaluation) => {
 export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluation) => (sketch: p5) => {
   const imgs: { [id: string]: p5.Image } = {}
   let board: Board
-  let initTime: Date
 
   sketch.setup = () => {
-    initTime = new Date()
     sketch.createCanvas(500, 500)
     loadImages()
   }
@@ -103,7 +108,7 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
 
   sketch.draw = () => {
     if (!evaluation) return
-    flushEvents(evaluation, initTime)
+    flushEvents(evaluation, currentTime())
     updateBoard()
     drawBoard()
   }
@@ -117,7 +122,7 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
     if (JSON.stringify(next) !== current) board = next
   }
 
-  function drawBoard() {
+  function drawBoard() { // TODO: Draw by layer, not cell
     board.forEach((row, _y) => {
       const y = sketch.height - _y * CELL_SIZE
       row.forEach((cell, _x) => {
@@ -126,7 +131,7 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
           const imageObject = imgs[img]
           const yPosition = y - imageObject.height
           sketch.image(imageObject, x, yPosition)
-          if (message && message.time > currentTime(initTime)) sketch.text(message.text, x, yPosition)
+          if (message && message.time > currentTime()) sketch.text(message.text, x, yPosition)
         })
       })
     })
@@ -134,28 +139,12 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
 
   sketch.keyPressed = () => {
     const left = evaluation.createInstance('wollok.lang.String', 'keydown')
-    const right = evaluation.createInstance('wollok.lang.String', wKeyCode(sketch.key,sketch.keyCode))
+    const right = evaluation.createInstance('wollok.lang.String', wKeyCode(sketch.key, sketch.keyCode))
     const id = evaluation.createInstance('wollok.lang.List', [left, right])
     const { sendMessage } = interpret(evaluation.environment, natives)
     sendMessage('queueEvent', evaluation.environment.getNodeByFQN('wollok.lang.io').id, id)(evaluation)
+    return false
   }
-  
-  function wKeyCode(key : string, keyCode : number){
-    
-    if(keyCode >= 48 && keyCode<= 57) return `Digit${key}`
-    if(keyCode >= 65 && keyCode <= 90) return `Key${key.toUpperCase()}`
-    if(keyCode === 18) return 'AltLeft'
-    if(keyCode == 225) return 'AltRight' 
-    if(keyCode === 8) return 'Backspace'
-    if(keyCode === 17) return 'Control'
-    if(keyCode === 46) return 'Delete'
-    if(keyCode >= 37 && keyCode <= 40) return key
-    if(keyCode === 13) return 'Enter'
-    if(keyCode === 189) return 'Minus'
-    if(keyCode === 187) return 'Plus'
-    if(keyCode === 191) return 'Slash'
-    if(keyCode === 32) return 'Space'
-    if(keyCode === 16) return 'Shift'
-    return ''
-  }
+
+  function currentTime() { return sketch.millis() }
 }
