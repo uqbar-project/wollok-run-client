@@ -7,6 +7,8 @@ import $ from './Game.module.scss'
 import Sketch from './Sketch'
 import { gameInstance } from './Sketch'
 import Spinner from './Spinner'
+import * as git from 'isomorphic-git'
+import * as BrowserFS from  'browserfs'
 
 const natives = wre as Natives
 
@@ -73,7 +75,6 @@ const game = {
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
   const [evaluation, setEvaluation] = useState<Evaluation>()
-
   useEffect(() => {
     Promise.all(game.sources.map(fetchFile)).then(files => {
       const environment = buildEnvironment(files)
@@ -84,6 +85,14 @@ const Game = (_: GameProps) => {
     })
   }, [])
 
+  useEffect(() => {
+    BrowserFS.configure({ fs: "IndexedDB", options: {} }, function (err) {
+      if (err) return console.log(err);
+      // window["fs"] = BrowserFS.BFSRequire("fs");
+      git.plugins.set('fs', BrowserFS.BFSRequire("fs"));
+    });
+  }, [])
+
 
   const title = evaluation ? evaluation.instances[gameInstance(evaluation).get('title')!.id].innerValue : ''
 
@@ -91,6 +100,7 @@ const Game = (_: GameProps) => {
     <div className={$.container}>
       {evaluation
         ? <>
+          <button onClick={cloneRepository}>Cargar</button>
           <h1>{title}</h1>
           <div>
             <Sketch game={game} evaluation={evaluation} />
@@ -108,3 +118,23 @@ const Game = (_: GameProps) => {
 }
 
 export default memo(Game)
+
+
+
+async function cloneRepository() {
+
+
+
+
+  await git.clone({
+    dir: '/',
+    corsProxy: 'http://localhost:9999',
+    url: 'https://github.com/wollok/pepitaGame',
+    singleBranch: true,
+    depth: 1
+  })
+  console.log('done')
+  BrowserFS.BFSRequire("fs").readdir('src', (_err, files) => {
+    console.log(files)
+  })
+}
