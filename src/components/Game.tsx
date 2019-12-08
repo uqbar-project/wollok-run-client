@@ -8,7 +8,8 @@ import Sketch from './Sketch'
 import { gameInstance } from './Sketch'
 import Spinner from './Spinner'
 import * as git from 'isomorphic-git'
-import * as BrowserFS from  'browserfs'
+import * as BrowserFS from 'browserfs'
+
 
 const natives = wre as Natives
 
@@ -76,9 +77,10 @@ export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
   const [evaluation, setEvaluation] = useState<Evaluation>()
   useEffect(() => {
-    Promise.all(game.sources.map(fetchFile)).then(files => {
+    Promise.all(game.sources.map(fetchFile)).then(async files => {
       const environment = buildEnvironment(files)
       const { buildEvaluation, runProgram } = interpret(environment, natives)
+      await cloneRepository()
       const cleanEval = buildEvaluation()
       runProgram(game.main, cleanEval)
       setEvaluation(cleanEval)
@@ -89,10 +91,9 @@ const Game = (_: GameProps) => {
     BrowserFS.configure({ fs: "IndexedDB", options: {} }, function (err) {
       if (err) return console.log(err);
       // window["fs"] = BrowserFS.BFSRequire("fs");
-      git.plugins.set('fs', BrowserFS.BFSRequire("fs"));
-    });
+      git.plugins.set('fs', BrowserFS.BFSRequire("fs"))
+    })
   }, [])
-
 
   const title = evaluation ? evaluation.instances[gameInstance(evaluation).get('title')!.id].innerValue : ''
 
@@ -122,10 +123,6 @@ export default memo(Game)
 
 
 async function cloneRepository() {
-
-
-
-
   await git.clone({
     dir: '/',
     corsProxy: 'http://localhost:9999',
@@ -134,7 +131,7 @@ async function cloneRepository() {
     depth: 1
   })
   console.log('done')
-  BrowserFS.BFSRequire("fs").readdir('src', (_err, files) => {
-    console.log(files)
-  })
+  // BrowserFS.BFSRequire("fs").readFile('assets/jugador.png', (_err, files) => {
+  //   console.log(files)
+  // })
 }

@@ -105,9 +105,14 @@ export default ({game: { imagePaths, cwd }, evaluation}: SketchProps) => {
   const imgs: { [id: string]: p5.Image } = {}
   let board: Board
 
-  function loadImages(sketch: p5) {
-    imagePaths.forEach((path: string) => {
-      imgs[path] = sketch.loadImage(`${cwd}/assets/${path}`)
+  sketch.setup = () => {
+    sketch.createCanvas(500, 500)
+    loadImages()
+  }
+
+  function loadImages() {
+    game.imagePaths.forEach((path: string) => {
+      imgs[path] = sketch.loadImage(`https://raw.githubusercontent.com/wollok/pepitaGame/master/assets/${path}`)
     })
   }
 
