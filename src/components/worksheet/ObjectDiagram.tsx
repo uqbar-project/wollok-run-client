@@ -1,6 +1,6 @@
 import cytoscape, { ElementDefinition } from 'cytoscape'
 import React, { memo, useEffect, useRef } from 'react'
-import { Evaluation, Id, Module } from 'wollok-ts/dist'
+import { Evaluation, Id } from 'wollok-ts/dist'
 import { NULL_ID, RuntimeObject } from 'wollok-ts/dist/interpreter'
 import $ from './ObjectDiagram.module.scss'
 
@@ -67,18 +67,21 @@ const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
 
     if (!evaluation) return
 
-    function decoration({ module, id, innerValue }: RuntimeObject): {} {
-      if (id === NULL_ID || module === 'wollok.lang.Number') return {
+    function decoration(obj: RuntimeObject): {} {
+      const { id, innerValue } = obj
+      const moduleNode = obj.module()
+      const moduleName = moduleNode.fullyQualifiedName()
+
+      if (id === NULL_ID || moduleName === 'wollok.lang.Number') return {
         type: 'literal',
         label: `${innerValue}`,
       }
 
-      if (module === 'wollok.lang.String') return {
+      if (moduleName === 'wollok.lang.String') return {
         type: 'literal',
         label: `"${innerValue}"`,
       }
 
-      const moduleNode = evaluation!.environment.getNodeByFQN<Module>(module)
       if (moduleNode.is('Singleton') && moduleNode.name) return {
         type: 'object',
         label: moduleNode.name,
@@ -101,11 +104,10 @@ const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
     }
 
     const elements: ElementDefinition[] = values(evaluation.instances)
-      .filter(({ module }) =>
-        module !== 'main.repl' &&
-        !module.startsWith('wollok') &&
-        !!evaluation.environment.getNodeByFQN<Module>(module).name
-      )
+      .filter((obj) => {
+        const name = obj.module().fullyQualifiedName()
+        return name && name !== 'worksheet.main.repl' && !name.startsWith('wollok')
+      })
       .flatMap(obj => elementFromObject(obj))
 
     cy.add(elements)

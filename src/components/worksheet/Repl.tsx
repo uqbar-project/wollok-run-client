@@ -55,7 +55,7 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
         )
 
         const replModule = build.Singleton('repl', closureLiteral.value as Singleton<Raw>)()
-        const mainPackage = build.Package('main')(replModule)
+        const mainPackage = build.Package('worksheet')(build.Package('main')(replModule))
         return link([fill(mainPackage)], baseEnvironment)
       })
 
@@ -66,13 +66,13 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
         const evaluation = buildEvaluation()
         stepAll(evaluation)
 
-        sendMessage('apply', environment.getNodeByFQN<Singleton>('main.repl').id)(evaluation)
-        const response = evaluation.currentFrame().popOperand()
+        sendMessage('apply', environment.getNodeByFQN<Singleton>('worksheet.main.repl').id)(evaluation)
+        const response = evaluation.currentFrame()!.popOperand()
 
         let description: string
         if (response !== VOID_ID) {
           sendMessage('toString', response)(evaluation)
-          const wDescription: RuntimeObject = evaluation.instance(evaluation.currentFrame().popOperand())
+          const wDescription: RuntimeObject = evaluation.instance(evaluation.currentFrame()!.popOperand())
           wDescription.assertIsString()
           description = wDescription.innerValue
         } else description = response

@@ -9,6 +9,8 @@ type Board = Cell[][][]
 
 const CELL_SIZE = 50
 
+const io = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.io.io').id
+
 export const gameInstance = ({ environment, instances }: Evaluation) => {
   return instances[environment.getNodeByFQN('wollok.game.game').id]
 }
@@ -26,9 +28,8 @@ const emptyBoard = (evaluation: Evaluation): Board => {
 
 const flushEvents = (evaluation: Evaluation, ms: number): void => {
   const { sendMessage } = interpret(evaluation.environment, natives)
-  const io = evaluation.environment.getNodeByFQN('wollok.lang.io').id
   const time = evaluation.createInstance('wollok.lang.Number', ms)
-  sendMessage('flushEvents', io, time)(evaluation)
+  sendMessage('flushEvents', io(evaluation), time)(evaluation)
 }
 
 function wKeyCode(key: string, keyCode: number) {
@@ -142,7 +143,7 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
     const right = evaluation.createInstance('wollok.lang.String', wKeyCode(sketch.key, sketch.keyCode))
     const id = evaluation.createInstance('wollok.lang.List', [left, right])
     const { sendMessage } = interpret(evaluation.environment, natives)
-    sendMessage('queueEvent', evaluation.environment.getNodeByFQN('wollok.lang.io').id, id)(evaluation)
+    sendMessage('queueEvent', io(evaluation), id)(evaluation)
     return false
   }
 

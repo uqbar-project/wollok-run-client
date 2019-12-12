@@ -36,7 +36,7 @@ const Worksheet = ({ location }: WorksheetProps) => {
 
   const updateEnvironment = (code: string) => {
     try {
-      setEnvironment(buildEnvironment([{ name: 'main', content: code }]))
+      setEnvironment(buildEnvironment([{ name: 'worksheet/main', content: code }]))
       setProblem(undefined)
     } catch (error) {
       setEnvironment(undefined)

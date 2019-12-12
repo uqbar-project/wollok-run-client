@@ -11,8 +11,9 @@ import Spinner from './Spinner'
 const fetchFile = async (path: string) => {
   const source = await fetch(`${game.cwd}/${path}`)
   const name = source.url.slice(source.url.lastIndexOf('/') + 1)
+  const dir = game.cwd.slice(game.cwd.lastIndexOf('/') + 1)
   const content = await source.text()
-  return { name, content }
+  return { name: `${dir}/${name}`, content }
 }
 const imagePaths = [
   'alpiste.png',
@@ -48,7 +49,7 @@ const imagePaths = [
 
 const game = {
   cwd: 'games/pepita',
-  main: 'pepitaGame.PepitaGame',
+  main: 'pepita.pepitaGame.PepitaGame',
   sources: [
     'src/ciudades.wlk',
     'src/comidas.wlk',
