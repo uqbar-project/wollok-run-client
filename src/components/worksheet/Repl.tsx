@@ -3,9 +3,11 @@ import Slider from 'react-input-slider'
 import SimpleCodeEditor from 'react-simple-code-editor'
 import Splitter from 'react-splitter-layout'
 import { build, Environment, Evaluation, fill, interpret, link, List, parse, Raw, Sentence, Singleton } from 'wollok-ts/dist'
-import { RuntimeObject, VOID_ID } from 'wollok-ts/dist/interpreter'
-import natives from 'wollok-ts/dist/wre/wre.natives'
+import { Natives, RuntimeObject, VOID_ID } from 'wollok-ts/dist/interpreter'
+import wre from 'wollok-ts/dist/wre/wre.natives'
 import $ from './Repl.module.scss'
+
+const natives = wre as Natives
 
 const CodeEditor = memo(SimpleCodeEditor)
 

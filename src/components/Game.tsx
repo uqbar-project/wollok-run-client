@@ -2,11 +2,14 @@ import { RouteComponentProps } from '@reach/router'
 import p5 from 'p5'
 import React, { memo, useEffect, useState } from 'react'
 import { buildEnvironment, Evaluation, interpret } from 'wollok-ts/dist'
-import natives from 'wollok-ts/dist/wre/wre.natives'
+import { Natives } from 'wollok-ts/dist/interpreter'
+import wre from 'wollok-ts/dist/wre/wre.natives'
 import $ from './Game.module.scss'
 import sketch from './sketch'
 import { gameInstance } from './sketch'
 import Spinner from './Spinner'
+
+const natives = wre as Natives
 
 const fetchFile = async (path: string) => {
   const source = await fetch(`${game.cwd}/${path}`)

@@ -35,7 +35,7 @@
     "typescript": "^3.7.1-rc",
     "use-interval": "^1.1.0",
     "uuid": "^3.3.2",
-    "wollok-ts": "^1.8.1"
+    "wollok-ts": "2.0.2"
   },
   "scripts": {
     "start": "react-scripts start",

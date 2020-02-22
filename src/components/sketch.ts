@@ -1,8 +1,10 @@
 import p5 from 'p5'
 // import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id, interpret } from 'wollok-ts/dist'
-import { RuntimeObject } from 'wollok-ts/dist/interpreter'
-import natives from 'wollok-ts/dist/wre/wre.natives'
+import { Natives, RuntimeObject } from 'wollok-ts/dist/interpreter'
+import wre from 'wollok-ts/dist/wre/wre.natives'
+
+const natives = wre as Natives
 
 type Cell = { img: string, message?: any }
 type Board = Cell[][][]
