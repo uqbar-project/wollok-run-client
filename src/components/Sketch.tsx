@@ -1,4 +1,6 @@
 import p5 from 'p5'
+import React from 'react'
+import Sketch from 'react-p5'
 // import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id, interpret } from 'wollok-ts/dist'
 import { Natives, RuntimeObject } from 'wollok-ts/dist/interpreter'
@@ -94,26 +96,19 @@ const currentVisualStates = (evaluation: Evaluation) => {
 
 }
 
-export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluation) => (sketch: p5) => {
+interface SketchProps {
+  game: { imagePaths: string[]; cwd: string },
+  evaluation: Evaluation
+}
+
+export default ({game: { imagePaths, cwd }, evaluation}: SketchProps) => {
   const imgs: { [id: string]: p5.Image } = {}
   let board: Board
 
-  sketch.setup = () => {
-    sketch.createCanvas(500, 500)
-    loadImages()
-  }
-
-  function loadImages() {
-    game.imagePaths.forEach((path: string) => {
-      imgs[path] = sketch.loadImage(`${game.cwd}/assets/${path}`)
+  function loadImages(sketch: p5) {
+    imagePaths.forEach((path: string) => {
+      imgs[path] = sketch.loadImage(`${cwd}/assets/${path}`)
     })
-  }
-
-  sketch.draw = () => {
-    if (!evaluation) return
-    flushEvents(evaluation, currentTime())
-    updateBoard()
-    drawBoard()
   }
 
   function updateBoard() {
@@ -125,7 +120,7 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
     if (JSON.stringify(next) !== current) board = next
   }
 
-  function drawBoard() { // TODO: Draw by layer, not cell
+  function drawBoard(sketch: p5) { // TODO: Draw by layer, not cell
     board.forEach((row, _y) => {
       const y = sketch.height - _y * CELL_SIZE
       row.forEach((cell, _x) => {
@@ -134,13 +129,28 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
           const imageObject = imgs[img]
           const yPosition = y - imageObject.height
           sketch.image(imageObject, x, yPosition)
-          if (message && message.time > currentTime()) sketch.text(message.text, x, yPosition)
+          if (message && message.time > currentTime(sketch)) sketch.text(message.text, x, yPosition)
         })
       })
     })
   }
 
-  sketch.keyPressed = () => {
+  function currentTime(sketch: p5) { return sketch.millis() }
+
+
+  function draw(sketch: p5) {
+    if (!evaluation) return
+    flushEvents(evaluation, currentTime(sketch))
+    updateBoard()
+    drawBoard(sketch)
+  }
+
+  function setup(sketch: p5, canvasParentRef: any) {
+    sketch.createCanvas(500, 500).parent(canvasParentRef)
+    loadImages(sketch)
+  }
+
+  function keyPressed(sketch: p5) {
     const left = evaluation.createInstance('wollok.lang.String', 'keydown')
     const right = evaluation.createInstance('wollok.lang.String', wKeyCode(sketch.key, sketch.keyCode))
     const id = evaluation.createInstance('wollok.lang.List', [left, right])
@@ -149,5 +159,5 @@ export default (game: { imagePaths: string[]; cwd: string }, evaluation: Evaluat
     return false
   }
 
-  function currentTime() { return sketch.millis() }
+  return <Sketch setup={setup as any} draw={draw as any} keyPressed={keyPressed as any} />
 }

@@ -1,12 +1,11 @@
 import { RouteComponentProps } from '@reach/router'
-import p5 from 'p5'
 import React, { memo, useEffect, useState } from 'react'
 import { buildEnvironment, Evaluation, interpret } from 'wollok-ts/dist'
 import { Natives } from 'wollok-ts/dist/interpreter'
 import wre from 'wollok-ts/dist/wre/wre.natives'
 import $ from './Game.module.scss'
-import sketch from './sketch'
-import { gameInstance } from './sketch'
+import Sketch from './Sketch'
+import { gameInstance } from './Sketch'
 import Spinner from './Spinner'
 
 const natives = wre as Natives
@@ -70,38 +69,6 @@ const game = {
   imagePaths,
 }
 
-type BoardProps = { sketch: (sketch: p5) => void }
-class GameBoard extends React.Component<BoardProps> {
-
-  private wrapper: React.RefObject<HTMLDivElement> = React.createRef()
-
-  componentDidMount() {
-    this.setSketch(this.props)
-  }
-
-  componentWillReceiveProps(newprops: BoardProps) {
-    if (this.props.sketch !== newprops.sketch) {
-      this.setSketch(newprops)
-    }
-  }
-
-  setSketch(props: BoardProps) {
-    const current = this.wrapper.current
-    if (current) {
-      if (current.childNodes[0]) {
-        current.removeChild(current.childNodes[0])
-      }
-      // tslint:disable-next-line: no-unused-expression
-      new p5(props.sketch, current)
-    }
-  }
-
-  render() {
-    return (
-      <div ref={this.wrapper} />
-    )
-  }
-}
 
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
@@ -126,7 +93,7 @@ const Game = (_: GameProps) => {
         ? <>
           <h1>{title}</h1>
           <div>
-            <GameBoard sketch={sketch(game, evaluation)} />
+            <Sketch game={game} evaluation={evaluation} />
             <div className={$.description}>
               {game.description.split('\n').map((line, i) =>
                 <div key={i}>{line}</div>
