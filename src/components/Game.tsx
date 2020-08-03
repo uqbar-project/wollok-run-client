@@ -1,4 +1,6 @@
 import { RouteComponentProps } from '@reach/router'
+import * as BrowserFS from 'browserfs'
+import * as git from 'isomorphic-git'
 import React, { memo, useEffect, useState } from 'react'
 import { buildEnvironment, Evaluation, interpret } from 'wollok-ts/dist'
 import { Natives } from 'wollok-ts/dist/interpreter'
@@ -7,9 +9,6 @@ import $ from './Game.module.scss'
 import Sketch from './Sketch'
 import { gameInstance } from './Sketch'
 import Spinner from './Spinner'
-import * as git from 'isomorphic-git'
-import * as BrowserFS from 'browserfs'
-
 
 const natives = wre as Natives
 
@@ -52,7 +51,7 @@ const imagePaths = [
 //   imagePaths,
 // }
 
-const game = {
+let game = {
   cwd: 'games/pepita',
   main: 'pepita.pepitaGame.PepitaGame',
   sources: [
@@ -89,7 +88,7 @@ const Game = (_: GameProps) => {
 
   useEffect(() => {
     BrowserFS.configure({ fs: "IndexedDB", options: {} }, function (err) {
-      if (err) return console.log(err);
+      if (err) return console.log(err)
       // window["fs"] = BrowserFS.BFSRequire("fs");
       git.plugins.set('fs', BrowserFS.BFSRequire("fs"))
     })
@@ -121,7 +120,6 @@ const Game = (_: GameProps) => {
 export default memo(Game)
 
 
-
 async function cloneRepository() {
   await git.clone({
     dir: '/',
@@ -131,7 +129,7 @@ async function cloneRepository() {
     depth: 1
   })
   console.log('done')
-  // BrowserFS.BFSRequire("fs").readFile('assets/jugador.png', (_err, files) => {
-  //   console.log(files)
-  // })
+  BrowserFS.BFSRequire("fs").readdir('src', (_err, files) => {
+    game.sources = files!;
+  })
 }

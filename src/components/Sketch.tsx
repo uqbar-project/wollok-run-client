@@ -1,4 +1,5 @@
 import p5 from 'p5'
+import p5Types from 'p5'
 import React from 'react'
 import Sketch from 'react-p5'
 // import 'p5/lib/addons/p5.sound'
@@ -101,17 +102,26 @@ interface SketchProps {
   evaluation: Evaluation
 }
 
-export default ({game: { imagePaths, cwd }, evaluation}: SketchProps) => {
+export default ({game, evaluation}: SketchProps) => {
   const imgs: { [id: string]: p5.Image } = {}
   let board: Board
 
-  sketch.setup = () => {
-    sketch.createCanvas(500, 500)
-    loadImages()
+
+  const draw = (sketch: p5Types) => {
+    if (!evaluation) return
+    flushEvents(evaluation, currentTime(sketch))
+    updateBoard()
+    drawBoard(sketch)
   }
 
-  function loadImages() {
+  const setup = (sketch: p5Types, canvasParentRef: any) => {
+    sketch.createCanvas(500, 500).parent(canvasParentRef)
+    loadImages(sketch)
+  }
+
+  function loadImages(sketch: p5Types) {
     game.imagePaths.forEach((path: string) => {
+      console.log(path);
       imgs[path] = sketch.loadImage(`https://raw.githubusercontent.com/wollok/pepitaGame/master/assets/${path}`)
     })
   }
@@ -141,19 +151,6 @@ export default ({game: { imagePaths, cwd }, evaluation}: SketchProps) => {
   }
 
   function currentTime(sketch: p5) { return sketch.millis() }
-
-
-  function draw(sketch: p5) {
-    if (!evaluation) return
-    flushEvents(evaluation, currentTime(sketch))
-    updateBoard()
-    drawBoard(sketch)
-  }
-
-  function setup(sketch: p5, canvasParentRef: any) {
-    sketch.createCanvas(500, 500).parent(canvasParentRef)
-    loadImages(sketch)
-  }
 
   function keyPressed(sketch: p5) {
     const left = evaluation.createInstance('wollok.lang.String', 'keydown')
