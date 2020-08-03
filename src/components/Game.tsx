@@ -12,13 +12,18 @@ import Spinner from './Spinner'
 
 const natives = wre as Natives
 
-const fetchFile = async (path: string) => {
-  const source = await fetch(`${game.cwd}/${path}`)
-  const name = source.url.slice(source.url.lastIndexOf('/') + 1)
-  const dir = game.cwd.slice(game.cwd.lastIndexOf('/') + 1)
-  const content = await source.text()
-  return { name: `${dir}/${name}`, content }
+const fetchFile = (path: string) => {
+  // const source = await fetch(`${game.cwd}/${path}`)
+  // const name = source.url.slice(source.url.lastIndexOf('/') + 1)
+  // const dir = game.cwd.slice(game.cwd.lastIndexOf('/') + 1)
+  // const content = await source.text()
+  // return { name: `${dir}/${name}`, content }
+  return {
+    name: 'pepita/' + path.split('/').pop(),
+    content: BrowserFS.BFSRequire('fs').readFileSync(path)!.toString(),
+  }
 }
+
 const imagePaths = [
   'alpiste.png',
   'ciudad.png',
@@ -51,7 +56,7 @@ const imagePaths = [
 //   imagePaths,
 // }
 
-let game = {
+const game = {
   cwd: 'games/pepita',
   main: 'pepita.pepitaGame.PepitaGame',
   sources: [
@@ -69,28 +74,35 @@ let game = {
     - Presioná [V] para ir a Villa Gesell.
   `,
   imagePaths,
+  assetSource: 'https://raw.githubusercontent.com/wollok/pepitaGame/master/assets/',
+}
+
+// const chosenGame = {
+//   user: 'pdepjm',
+//   repo: 'juego-overcooked',
+// }
+const chosenGame = {
+  user: 'wollok',
+  repo: 'pepitaGame',
 }
 
 
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
   const [evaluation, setEvaluation] = useState<Evaluation>()
-  useEffect(() => {
-    Promise.all(game.sources.map(fetchFile)).then(async files => {
-      const environment = buildEnvironment(files)
-      const { buildEvaluation, runProgram } = interpret(environment, natives)
-      await cloneRepository()
-      const cleanEval = buildEvaluation()
-      runProgram(game.main, cleanEval)
-      setEvaluation(cleanEval)
-    })
-  }, [])
 
   useEffect(() => {
-    BrowserFS.configure({ fs: "IndexedDB", options: {} }, function (err) {
+    BrowserFS.configure({ fs: 'InMemory', options: {} }, err => {
       if (err) return console.log(err)
-      // window["fs"] = BrowserFS.BFSRequire("fs");
-      git.plugins.set('fs', BrowserFS.BFSRequire("fs"))
+      git.plugins.set('fs', BrowserFS.BFSRequire('fs')) // Reminder: move FS init if cloneRepository isnt here
+      cloneRepository().then(() => {
+        const files =  game.sources.map(fetchFile)
+        const environment = buildEnvironment(files)
+        const { buildEvaluation, runProgram } = interpret(environment, natives)
+        const cleanEval = buildEvaluation()
+        runProgram(game.main, cleanEval)
+        setEvaluation(cleanEval)
+      })
     })
   }, [])
 
@@ -124,12 +136,17 @@ async function cloneRepository() {
   await git.clone({
     dir: '/',
     corsProxy: 'http://localhost:9999',
-    url: 'https://github.com/wollok/pepitaGame',
+    url: `https://github.com/${chosenGame.user}/${chosenGame.repo}`,
     singleBranch: true,
-    depth: 1
+    depth: 1,
   })
-  console.log('done')
-  BrowserFS.BFSRequire("fs").readdir('src', (_err, files) => {
-    game.sources = files!;
-  })
+  const srcDir = 'src'
+  const files  = BrowserFS.BFSRequire('fs').readdirSync(srcDir)
+  const validSuffixes = ['wlk', 'wpgm']
+  game.sources = files!
+    .filter(file => validSuffixes
+    .some(suffix => file.endsWith(`.${suffix}`)))
+    .map(file => `${srcDir}/${file}`)
+  game.imagePaths = BrowserFS.BFSRequire('fs').readdirSync('assets')
+  game.assetSource = `https://raw.githubusercontent.com/${chosenGame.user}/${chosenGame.repo}/master/assets/`
 }

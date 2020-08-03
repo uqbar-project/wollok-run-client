@@ -98,7 +98,7 @@ const currentVisualStates = (evaluation: Evaluation) => {
 }
 
 interface SketchProps {
-  game: { imagePaths: string[]; cwd: string },
+  game: { imagePaths: string[]; cwd: string; assetSource: string },
   evaluation: Evaluation
 }
 
@@ -122,7 +122,7 @@ export default ({game, evaluation}: SketchProps) => {
   function loadImages(sketch: p5Types) {
     game.imagePaths.forEach((path: string) => {
       console.log(path);
-      imgs[path] = sketch.loadImage(`https://raw.githubusercontent.com/wollok/pepitaGame/master/assets/${path}`)
+      imgs[path] = sketch.loadImage(game.assetSource + path)
     })
   }
 
