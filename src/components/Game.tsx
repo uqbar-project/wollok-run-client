@@ -13,52 +13,19 @@ import Spinner from './Spinner'
 const natives = wre as Natives
 
 const fetchFile = (path: string) => {
-  // const source = await fetch(`${game.cwd}/${path}`)
-  // const name = source.url.slice(source.url.lastIndexOf('/') + 1)
-  // const dir = game.cwd.slice(game.cwd.lastIndexOf('/') + 1)
-  // const content = await source.text()
-  // return { name: `${dir}/${name}`, content }
   return {
-    name: 'pepita/' + path.split('/').pop(),
+    name: 'game/' + path.split('/').pop(),
     content: BrowserFS.BFSRequire('fs').readFileSync(path)!.toString(),
   }
 }
 
-const imagePaths = [
-  'alpiste.png',
-  'ciudad.png',
-  'fondo2.jpg',
-  'fondo.jpg',
-  'jugador.png',
-  'manzana.png',
-  'muro.png',
-  'pepita1.png',
-  'pepita2.png',
-  'pepitaCanchera.png',
-  'pepita-gorda-raw.png',
-  'pepita.png',
-  'pepona.png',
-  'suelo.png',
-]
-
-// const game = {
-//   cwd: 'games/2019-o-tpi-juego-loscuatrofantasticos',
-//   main: 'juego.ejemplo',
-//   sources: [
-//     'src/elementos.wlk',
-//     'src/personajes.wlk',
-//     'src/mundos.wlk',
-//     'src/juego.wpgm',
-//   ],
-//   description: `
-//     - Agarrá los fueguitos y evitá todo lo demas!
-//   `,
-//   imagePaths,
-// }
+const chosenGame = {
+  user: 'wollok',
+  repo: 'pepitaGame',
+}
 
 const game = {
-  cwd: 'games/pepita',
-  main: 'pepita.pepitaGame.PepitaGame',
+  main: 'game.pepitaGame.PepitaGame',
   sources: [
     'src/ciudades.wlk',
     'src/comidas.wlk',
@@ -73,18 +40,10 @@ const game = {
     - Presioná [B] para ir a Buenos Aires.\n
     - Presioná [V] para ir a Villa Gesell.
   `,
-  imagePaths,
-  assetSource: 'https://raw.githubusercontent.com/wollok/pepitaGame/master/assets/',
+  imagePaths: [''],
+  assetSource: `https://raw.githubusercontent.com/${chosenGame.user}/${chosenGame.repo}/master/assets/`,
 }
 
-// const chosenGame = {
-//   user: 'pdepjm',
-//   repo: 'juego-overcooked',
-// }
-const chosenGame = {
-  user: 'wollok',
-  repo: 'pepitaGame',
-}
 
 
 export type GameProps = RouteComponentProps
@@ -133,6 +92,7 @@ export default memo(Game)
 
 
 async function cloneRepository() {
+  // const gameLocation = `${chosenGame.user}-${chosenGame.repo}`
   await git.clone({
     dir: '/',
     corsProxy: 'http://localhost:9999',
@@ -140,13 +100,17 @@ async function cloneRepository() {
     singleBranch: true,
     depth: 1,
   })
-  const srcDir = 'src'
+  setGame()
+}
+
+function setGame() {
+  const srcDir = `src`
   const files  = BrowserFS.BFSRequire('fs').readdirSync(srcDir)
   const validSuffixes = ['wlk', 'wpgm']
   game.sources = files!
     .filter(file => validSuffixes
     .some(suffix => file.endsWith(`.${suffix}`)))
     .map(file => `${srcDir}/${file}`)
-  game.imagePaths = BrowserFS.BFSRequire('fs').readdirSync('assets')
+  game.imagePaths = BrowserFS.BFSRequire('fs').readdirSync(`assets`)
   game.assetSource = `https://raw.githubusercontent.com/${chosenGame.user}/${chosenGame.repo}/master/assets/`
 }

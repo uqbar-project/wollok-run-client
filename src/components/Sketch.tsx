@@ -66,15 +66,18 @@ function wKeyCode(key: string, keyCode: number) {
 
 const currentVisualStates = (evaluation: Evaluation) => {
   const { sendMessage } = interpret(evaluation.environment, natives)
-
   const wVisuals: RuntimeObject = evaluation.instances[gameInstance(evaluation).get('visuals')!.id]
   wVisuals.assertIsCollection()
   const visuals = wVisuals.innerValue
   return visuals.map((id: Id) => {
-    const currentFrame = evaluation.frameStack[evaluation.frameStack.length - 1]
-
-    sendMessage('position', id)(evaluation)
-    const position = evaluation.instances[currentFrame.operandStack.pop()!]
+    const currentFrame = evaluation.currentFrame()!
+    let position
+    try {
+      sendMessage('position', id)(evaluation)
+      position = evaluation.instances[currentFrame.operandStack.pop()!]
+    } catch (e) {
+      position = evaluation.instances[id].get('position')!
+    }
     const wx: RuntimeObject = evaluation.instance(position.get('x')!.id)
     wx.assertIsNumber()
     const x = wx.innerValue
@@ -98,7 +101,7 @@ const currentVisualStates = (evaluation: Evaluation) => {
 }
 
 interface SketchProps {
-  game: { imagePaths: string[]; cwd: string; assetSource: string },
+  game: { imagePaths: string[]; assetSource: string },
   evaluation: Evaluation
 }
 
