@@ -125,8 +125,7 @@ export default ({ game, evaluation }: SketchProps) => {
 
   function loadImages(sketch: p5Types) {
     game.imagePaths.forEach((path: string) => {
-      console.log(path);
-      imgs[path] = sketch.loadImage(game.assetSource + path)
+      imgs[path.split('/').pop()!] = sketch.loadImage(game.assetSource + path)
     })
   }
 

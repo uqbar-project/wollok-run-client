@@ -16,6 +16,8 @@ const SRC_DIR = `src`
 const WOLLOK_FILE_EXTENSION = 'wlk'
 const WOLLOK_PROGRAM_EXTENSION = 'wpgm'
 const EXPECTED_WOLLOK_EXTENSIONS = [WOLLOK_FILE_EXTENSION, WOLLOK_PROGRAM_EXTENSION]
+const VALID_MEDIA_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
+const GAME_DIR = 'game'
 
 const fetchFile = (path: string) => {
   return {
@@ -90,7 +92,7 @@ export default memo(Game)
 
 async function cloneRepository(repoUri: string) {
   await git.clone({
-    dir: '/',
+    dir: GAME_DIR,
     corsProxy: 'http://localhost:9999',
     url: `https://github.com/${repoUri}`,
     singleBranch: true,
@@ -100,15 +102,28 @@ async function cloneRepository(repoUri: string) {
 }
 
 function buildGameProject(repoUri: string): GameProject {
-  const files = BrowserFS.BFSRequire('fs').readdirSync(SRC_DIR)
+  const files = BrowserFS.BFSRequire('fs').readdirSync(`${GAME_DIR}/${SRC_DIR}`)
   const wpgmGame = files.find(file => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
   if (!wpgmGame) throw new Error('Program not found')
   const main = `game.${wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '')}`
-  const sources = files
-    .filter(file => EXPECTED_WOLLOK_EXTENSIONS.some(suffix => file.endsWith(`.${suffix}`)))
-    .map(file => `${SRC_DIR}/${file}`)
-  const imagePaths = BrowserFS.BFSRequire('fs').readdirSync(`assets`)
-  const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/assets/`
+  const sources = getAllFilePathsFrom(GAME_DIR, EXPECTED_WOLLOK_EXTENSIONS)
+  const imagePaths = getAllFilePathsFrom(GAME_DIR, VALID_MEDIA_EXTENSIONS).map(path => path.substr(GAME_DIR.length + 1))
+  const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/`
   const description = '' // TODO: Load README
   return { main, sources, imagePaths, assetSource, description }
+}
+
+function getAllFilePathsFrom(parentDirectory: string, validSuffixes?: string[]): string[] {
+ const browserFS = BrowserFS.BFSRequire('fs')
+ const allFiles = browserFS
+  .readdirSync(parentDirectory)
+  .map(directoryEntry => {
+      const fullPath = `${parentDirectory}/${directoryEntry}`
+      return browserFS.statSync(fullPath).isDirectory() ?
+        getAllFilePathsFrom(fullPath, validSuffixes) : fullPath
+    })
+  .flat()
+ return validSuffixes ?
+    allFiles.filter((file: string) => validSuffixes!.some(suffix => file.endsWith(`.${suffix}`))) :
+    allFiles
 }
