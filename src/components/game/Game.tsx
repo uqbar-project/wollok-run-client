@@ -5,11 +5,11 @@ import React, { memo, useEffect, useState } from 'react'
 import { buildEnvironment, Evaluation, interpret, Package } from 'wollok-ts/dist'
 import { Natives } from 'wollok-ts/dist/interpreter'
 import wre from 'wollok-ts/dist/wre/wre.natives'
+import Spinner from '../Spinner'
 import $ from './Game.module.scss'
 import GameSelector from './GameSelector'
 import Sketch from './Sketch'
 import { gameInstance } from './Sketch'
-import Spinner from './Spinner'
 
 const natives = wre as Natives
 const SRC_DIR = `src`
