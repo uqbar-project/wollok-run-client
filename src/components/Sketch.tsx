@@ -6,6 +6,7 @@ import Sketch from 'react-p5'
 import { Evaluation, Id, interpret } from 'wollok-ts/dist'
 import { Natives, RuntimeObject } from 'wollok-ts/dist/interpreter'
 import wre from 'wollok-ts/dist/wre/wre.natives'
+import { GameProject } from './Game'
 
 const natives = wre as Natives
 
@@ -101,11 +102,11 @@ const currentVisualStates = (evaluation: Evaluation) => {
 }
 
 interface SketchProps {
-  game: { imagePaths: string[]; assetSource: string },
+  game: GameProject
   evaluation: Evaluation
 }
 
-export default ({game, evaluation}: SketchProps) => {
+export default ({ game, evaluation }: SketchProps) => {
   const imgs: { [id: string]: p5.Image } = {}
   let board: Board
 
