@@ -10,6 +10,7 @@ import $ from './Game.module.scss'
 import GameSelector from './GameSelector'
 import Sketch from './Sketch'
 import { gameInstance } from './Sketch'
+import ReactMarkdown from 'react-markdown'
 
 const natives = wre as Natives
 const SRC_DIR = `src`
@@ -75,11 +76,7 @@ const Game = (props: GameProps) => {
           <h1>{title}</h1>
           <div>
             <Sketch game={game} evaluation={evaluation} />
-            <div className={$.description}>
-              {game.description.split('\n').map((line, i) =>
-                <div key={i}>{line}</div>
-              )}
-            </div>
+            <ReactMarkdown source={game.description} className={$.description} />
           </div>
         </>
       }
@@ -109,7 +106,12 @@ function buildGameProject(repoUri: string): GameProject {
   const sources = getAllFilePathsFrom(GAME_DIR, EXPECTED_WOLLOK_EXTENSIONS)
   const imagePaths = getAllFilePathsFrom(GAME_DIR, VALID_MEDIA_EXTENSIONS).map(path => path.substr(GAME_DIR.length + 1))
   const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/`
-  const description = '' // TODO: Load README
+  let description
+  try {
+    description = BrowserFS.BFSRequire('fs').readFileSync(`${GAME_DIR}/README.md`).toString()
+  } catch {
+    description = '## No description found'
+  }
   return { main, sources, imagePaths, assetSource, description }
 }
 
