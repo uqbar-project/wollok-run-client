@@ -1,4 +1,4 @@
-import cytoscape, { ElementDefinition } from 'cytoscape'
+import cytoscape, { ElementDefinition, Stylesheet } from 'cytoscape'
 import React, { memo, useEffect, useRef } from 'react'
 import { Evaluation, Id } from 'wollok-ts/dist'
 import { NULL_ID, RuntimeObject } from 'wollok-ts/dist/interpreter'
@@ -7,7 +7,7 @@ import $ from './ObjectDiagram.module.scss'
 const { values, keys } = Object
 
 
-const NODE_STYLES = [
+const NODE_STYLES: Stylesheet[] = [
   {
     selector: 'edge',
     style: {
@@ -103,7 +103,7 @@ const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
       ]
     }
 
-    const elements: ElementDefinition[] = values(evaluation.instances)
+    const elements: ElementDefinition[] = values(evaluation.listInstances())
       .filter((obj) => {
         const name = obj.module().fullyQualifiedName()
         return name && name !== 'worksheet.main.repl' && !name.startsWith('wollok')

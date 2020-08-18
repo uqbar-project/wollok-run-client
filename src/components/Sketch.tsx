@@ -15,8 +15,8 @@ const CELL_SIZE = 50
 
 const io = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.io.io').id
 
-export const gameInstance = ({ environment, instances }: Evaluation) => {
-  return instances[environment.getNodeByFQN('wollok.game.game').id]
+export const gameInstance = (evaluation: Evaluation) => {
+  return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
 }
 
 const emptyBoard = (evaluation: Evaluation): Board => {
@@ -66,14 +66,14 @@ function wKeyCode(key: string, keyCode: number) {
 const currentVisualStates = (evaluation: Evaluation) => {
   const { sendMessage } = interpret(evaluation.environment, natives)
 
-  const wVisuals: RuntimeObject = evaluation.instances[gameInstance(evaluation).get('visuals')!.id]
+  const wVisuals: RuntimeObject = evaluation.instance(gameInstance(evaluation).get('visuals')!.id)
   wVisuals.assertIsCollection()
   const visuals = wVisuals.innerValue
   return visuals.map((id: Id) => {
-    const currentFrame = evaluation.frameStack[evaluation.frameStack.length - 1]
+    const currentFrame = evaluation.currentFrame()!
 
     sendMessage('position', id)(evaluation)
-    const position = evaluation.instances[currentFrame.operandStack.pop()!]
+    const position = evaluation.instance(currentFrame.operandStack.pop()!)
     const wx: RuntimeObject = evaluation.instance(position.get('x')!.id)
     wx.assertIsNumber()
     const x = wx.innerValue
@@ -82,7 +82,7 @@ const currentVisualStates = (evaluation: Evaluation) => {
     const y = wy.innerValue
 
     sendMessage('image', id)(evaluation)
-    const wImage: RuntimeObject = evaluation.instances[currentFrame.operandStack.pop()!]
+    const wImage: RuntimeObject = evaluation.instance(currentFrame.operandStack.pop()!)
     wImage.assertIsString()
     const image = wImage.innerValue
     const actor = evaluation.instance(id)
@@ -101,7 +101,7 @@ interface SketchProps {
   evaluation: Evaluation
 }
 
-export default ({game: { imagePaths, cwd }, evaluation}: SketchProps) => {
+export default ({ game: { imagePaths, cwd }, evaluation }: SketchProps) => {
   const imgs: { [id: string]: p5.Image } = {}
   let board: Board
 
