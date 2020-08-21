@@ -1,0 +1,45 @@
+@import "../../theme";
+
+.container {
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  background-color: $color-background-primary;
+
+  & > div {
+    padding: 0.25rem;
+
+    display: flex;
+    flex-direction: column-reverse;
+    flex-grow: 1;
+    overflow-y: auto;
+
+    background-color: $color-background-secondary;
+
+    & > div:not(:first-child) {
+      margin-bottom: 0.25rem;
+    }
+  }
+}
+
+.element {
+  border-radius: 0.2rem;
+  min-height: 2.5em;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background-color: $color-background-tertiary;
+}
+
+.highlighted {
+  background-color: $color-background-highlight;
+}
+
+.clickable {
+  cursor: pointer;
+}

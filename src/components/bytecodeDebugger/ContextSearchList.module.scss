@@ -1,0 +1,25 @@
+@import "../../theme";
+
+.context {
+  &:not(:last-child) {
+    border-bottom: 1px solid $color-background-secondary;
+    padding-bottom: 0.25rem;
+  }
+
+  & > div {
+    flex-direction: column;
+
+    & > div {
+      display: flex;
+      justify-content: space-between;
+
+      & > :first-child {
+        width: 50%;
+      }
+
+      & > :last-child {
+        width: 50%;
+      }
+    }
+  }
+}

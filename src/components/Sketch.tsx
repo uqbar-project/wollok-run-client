@@ -8,14 +8,17 @@ import wre from 'wollok-ts/dist/wre/wre.natives'
 
 const natives = wre as Natives
 
-type Cell = { img: string, message?: any }
+type Cell = {
+  img: string
+  message?: any
+}
 type Board = Cell[][][]
 
 const CELL_SIZE = 50
 
 const io = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.io.io').id
 
-export const gameInstance = (evaluation: Evaluation) => {
+export const gameInstance = (evaluation: Evaluation): RuntimeObject => {
   return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
 }
 
@@ -97,11 +100,14 @@ const currentVisualStates = (evaluation: Evaluation) => {
 }
 
 interface SketchProps {
-  game: { imagePaths: string[]; cwd: string },
+  game: {
+    imagePaths: string[]
+    cwd: string
+  }
   evaluation: Evaluation
 }
 
-export default ({ game: { imagePaths, cwd }, evaluation }: SketchProps) => {
+const SketchComponent = ({ game: { imagePaths, cwd }, evaluation }: SketchProps) => {
   const imgs: { [id: string]: p5.Image } = {}
   let board: Board
 
@@ -161,3 +167,5 @@ export default ({ game: { imagePaths, cwd }, evaluation }: SketchProps) => {
 
   return <Sketch setup={setup as any} draw={draw as any} keyPressed={keyPressed as any} />
 }
+
+export default SketchComponent

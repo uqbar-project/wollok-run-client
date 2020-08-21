@@ -17,8 +17,8 @@ type Output = {
 }
 
 export type ReplProps = {
-  environment?: Environment,
-  onEvaluationChange: (evaluation: Evaluation) => void,
+  environment?: Environment
+  onEvaluationChange: (evaluation: Evaluation) => void
 }
 
 const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) => {
@@ -52,10 +52,10 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
             ...previousLinesSentences,
             ...lineInitialSentences,
             ...lineLastSentence.is('Expression') ? [build.Return(lineLastSentence)] :
-              lineLastSentence.is('Assignment') ? [lineLastSentence, build.Return(lineLastSentence.variable)] :
-                lineLastSentence.is('Variable') ? [lineLastSentence, build.Return(build.Reference(lineLastSentence.name))] :
-                  [lineLastSentence]
-          ]
+            lineLastSentence.is('Assignment') ? [lineLastSentence, build.Return(lineLastSentence.variable)] :
+            lineLastSentence.is('Variable') ? [lineLastSentence, build.Return(build.Reference(lineLastSentence.name))] :
+            [lineLastSentence],
+          ],
         })
 
         const replModule = build.Singleton('repl', closureLiteral.value)()

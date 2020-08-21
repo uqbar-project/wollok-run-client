@@ -30,9 +30,7 @@ const NODE_STYLES: Stylesheet[] = [
   },
   {
     selector: 'node[type = "object"]',
-    style: {
-      'background-color': '#2e72d8',
-    },
+    style: { 'background-color': '#2e72d8' },
   },
   {
     selector: 'node[type = "literal"]',
@@ -67,7 +65,7 @@ const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
 
     if (!evaluation) return
 
-    function decoration(obj: RuntimeObject): {} {
+    function decoration(obj: RuntimeObject) {
       const { id, innerValue } = obj
       const moduleNode = obj.module()
       const moduleName = moduleNode.fullyQualifiedName()
