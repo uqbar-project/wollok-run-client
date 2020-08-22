@@ -24,3 +24,6 @@ yarn-error.log*
 
 # local
 /public/games
+
+# proxy
+cors-proxy.pid*
