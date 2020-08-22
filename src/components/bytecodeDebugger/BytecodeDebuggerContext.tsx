@@ -9,6 +9,10 @@ interface BytecodeDebuggerState {
   selectedFrame?: Frame
   setSelectedFrame: Dispatch<Frame>
   stepEvaluation(): void
+  instanceSearch: string
+  setInstanceSearch: Dispatch<string>
+  contextSearch: string
+  setContextSearch: Dispatch<string>
 }
 
 type BytecodeDebuggerContextProps = {
@@ -25,6 +29,8 @@ const BytecodeDebuggerContextProvider = ({ children }: BytecodeDebuggerContextPr
 
   const [evaluation, setEvaluation] = useState(buildEvaluation())
   const [selectedFrame, setSelectedFrame] = useState(evaluation.currentFrame())
+  const [instanceSearch, setInstanceSearch] = useState('')
+  const [contextSearch, setContextSearch] = useState('')
   
   const stepEvaluation = () => {
     const next = evaluation.copy()
@@ -36,9 +42,10 @@ const BytecodeDebuggerContextProvider = ({ children }: BytecodeDebuggerContextPr
   return (
     <BytecodeDebuggerContext.Provider value={{
       evaluation,
-      selectedFrame,
-      setSelectedFrame,
       stepEvaluation,
+      selectedFrame, setSelectedFrame,
+      instanceSearch, setInstanceSearch,
+      contextSearch, setContextSearch,
     }}>
       {children}
     </BytecodeDebuggerContext.Provider>

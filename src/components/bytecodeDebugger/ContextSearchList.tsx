@@ -11,12 +11,14 @@ const { keys } = Object
 export type ContextSearchListProps = { }
 
 const ContextSearchList = ({ }: ContextSearchListProps) => {
-  const { evaluation } = useContext(BytecodeDebuggerContext)
+  const { evaluation, contextSearch, setContextSearch } = useContext(BytecodeDebuggerContext)
 
   return (
     <SearchList
       title = 'Contexts'
       elements={evaluation.listContexts().map(id => evaluation.context(id))}
+      search={contextSearch}
+      setSearch={setContextSearch}
       searchTerms={context => [
         shortId(context.id),
         ...keys(context.locals).flatMap(name => [name, shortId(context.locals[name])]),

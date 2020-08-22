@@ -12,7 +12,6 @@ import InstanceSearchList from './InstanceSearchList'
 import Context, { BytecodeDebuggerContext } from './BytecodeDebuggerContext'
 
 // TODO:
-// - Make Id's links to open their context / instance
 // - Add context hierarchy to frame details
 // - Extract simple Section component, with h2 and content
 // - Move FrameStack to separate file

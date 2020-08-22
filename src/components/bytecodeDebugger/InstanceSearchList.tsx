@@ -8,11 +8,13 @@ import Instance from './Instance'
 export type InstanceSearchListProps = { }
 
 const InstanceSearchList = ({ }: InstanceSearchListProps) => {
-  const { evaluation } = useContext(BytecodeDebuggerContext)
+  const { evaluation, instanceSearch, setInstanceSearch } = useContext(BytecodeDebuggerContext)
 
   return (
     <SearchList
       title = 'Instances'
+      search={instanceSearch}
+      setSearch={setInstanceSearch}
       elements={evaluation.listInstances()}
       searchTerms={instance => [qualifiedId(instance)]}
     >

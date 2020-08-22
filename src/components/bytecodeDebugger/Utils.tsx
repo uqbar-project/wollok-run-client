@@ -19,10 +19,12 @@ export const contextHierarchy = (evaluation: Evaluation, start: IdType | null): 
 export type IdProps = { id: IdType }
 
 export const Id = ({ id }: IdProps) => {
-  const { evaluation } = useContext(BytecodeDebuggerContext)
+  const { evaluation, setContextSearch, setInstanceSearch } = useContext(BytecodeDebuggerContext)
   const instance = evaluation.maybeInstance(id)
   return (
-    <div className={$.id}>{instance ? qualifiedId(instance) : shortId(id)}</div>
+    <div className={$.id} onClick={() => {instance ? setInstanceSearch(qualifiedId(instance)) : setContextSearch(shortId(id)) }}>
+      {instance ? qualifiedId(instance) : shortId(id)}
+    </div>
   )
 }
 
