@@ -73,12 +73,10 @@ const currentVisualStates = (evaluation: Evaluation) => {
   const visuals = wVisuals.innerValue
   return visuals.map((id: Id) => {
     const currentFrame = evaluation.currentFrame()!
-    let position
-    try {
+    let position = evaluation.instance(id).get('position')
+    if (!position) {
       sendMessage('position', id)(evaluation)
       position = evaluation.instance(currentFrame.operandStack.pop()!)
-    } catch (e) {
-      position = evaluation.instance(id).get('position')!
     }
     const wx: RuntimeObject = evaluation.instance(position.get('x')!.id)
     wx.assertIsNumber()
