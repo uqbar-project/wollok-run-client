@@ -1,18 +1,30 @@
 import { List, Id as IdType } from 'wollok-ts'
-import { Instruction as InstructionType, RuntimeObject } from 'wollok-ts/dist/interpreter'
-import React, { ReactNode, useRef, useEffect, HTMLAttributes } from 'react'
+import { Instruction as InstructionType, RuntimeObject, Evaluation, Context } from 'wollok-ts/dist/interpreter'
+import React, { ReactNode, useRef, useEffect, HTMLAttributes, useContext } from 'react'
 import $ from './Utils.module.scss'
+import { BytecodeDebuggerContext } from './BytecodeDebuggerContext'
 
 const { isArray } = Array
 
 export const shortId = (id: IdType) => `#${id.slice(id.lastIndexOf('-') + 1)}`
 export const qualifiedId = (instance: RuntimeObject) => `${instance.moduleFQN}${shortId(instance.id)}`
 
+export const contextHierarchy = (evaluation: Evaluation, start: IdType | null): List<Context> => {
+  if(!start) return []
+  const context = evaluation.context(start)
+  return [context, ...contextHierarchy(evaluation, context.parent)]
+}
+
+
 export type IdProps = { id: IdType }
 
-export const Id = ({ id }: IdProps) => (
-  <div className={$.id}>{shortId(id)}</div>
-)
+export const Id = ({ id }: IdProps) => {
+  const { evaluation } = useContext(BytecodeDebuggerContext)
+  const instance = evaluation.maybeInstance(id)
+  return (
+    <div className={$.id}>{instance ? qualifiedId(instance) : shortId(id)}</div>
+  )
+}
 
 export type InstructionProps = {
   instruction: InstructionType

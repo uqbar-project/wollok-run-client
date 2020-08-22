@@ -12,20 +12,17 @@ export type SearchListProps<T> = {
 
 const SearchList = <T extends unknown>({ title, elements, searchTerms, children }: SearchListProps<T>) => {
   const [search, setSearch] = useState('')
+  const content = elements
+    .filter(element => searchTerms(element).some(term => term.includes(search)))
+    .map(element => children(element, search))
 
   return (
     <div className={$.container}>
       <h2>
-        {title}
-        <span><SearchIcon/><input onChange={({ target }) => setSearch(target.value)}/></span>
+        {title}({content.length}/{elements.length})
+        <div><SearchIcon/><input onChange={({ target }) => setSearch(target.value)}/></div>
       </h2>
-      <div>
-        {
-          elements
-            .filter(element => searchTerms(element).some(term => term.includes(search)))
-            .map(element => children(element, search))
-        }
-      </div>
+      <div>{content}</div>
     </div>
   )
 }

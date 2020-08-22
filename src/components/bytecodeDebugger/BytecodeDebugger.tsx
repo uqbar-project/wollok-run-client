@@ -12,16 +12,16 @@ import InstanceSearchList from './InstanceSearchList'
 import Context, { BytecodeDebuggerContext } from './BytecodeDebuggerContext'
 
 // TODO:
-// - Expand instances to see inner values and locals from inherited contexts
 // - Make Id's links to open their context / instance
+// - Add context hierarchy to frame details
 // - Extract simple Section component, with h2 and content
 // - Move FrameStack to separate file
-// - Add context hierarchy to frame details
-// - Augment instances id's with the qualified version
+// - Remove the 2 specific SearchList subcomponents?
 // - Save evaluations to navigable story
 // - More Steps and GC buttons
 // - Open a test somehow
 // - Add logs directly to tab (would be nice to have actually collapsable nested contexts)
+// - Expand and collapse contexts
 
 
 const layoutConfiguration = {

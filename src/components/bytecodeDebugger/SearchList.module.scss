@@ -11,8 +11,9 @@
   & > h2 {
     display: flex;
 
-    span {
+    div {
       margin-left: 0.5em;
+      width: 1%;
 
       display: flex;
       align-items: center;
@@ -30,7 +31,7 @@
       padding: 0 1.4em;
 
       flex: 1 1;
-      min-width: 10em;
+      min-width: 0;
 
       border: 1px solid $color-font-title;
       border-radius: 1em;
@@ -48,8 +49,9 @@
     flex-grow: 1;
     overflow-y: auto;
 
-    & > div:not(:first-child) {
-      margin-bottom: 0.25rem;
+    & > *:not(:last-child) {
+      border-bottom: 1px solid $color-background-secondary;
+      padding-bottom: 0.25rem;
     }
   }
 }

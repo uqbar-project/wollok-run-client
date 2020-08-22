@@ -1,8 +1,8 @@
 import React, { useContext } from 'react'
 import SearchList from './SearchList'
-import { shortId, qualifiedId } from './Utils'
-import $ from './ContextSearchList.module.scss'
+import { shortId } from './Utils'
 import { BytecodeDebuggerContext } from './BytecodeDebuggerContext'
+import Context from './Context'
 
 
 const { keys } = Object
@@ -23,24 +23,11 @@ const ContextSearchList = ({ }: ContextSearchListProps) => {
       ]}
     >
       { (context, search) => (
-        <div className={$.context}>
-          <h3>{shortId(context.id)}</h3>
-          <div>
-            {
-              keys(context.locals)
-                .filter(name => name.includes(search) || shortId(context.locals[name]).includes(search))
-                .map(name => {
-                  const instance = evaluation.maybeInstance(context.locals[name])
-                  return (
-                    <div key={name}>
-                      <div>{name}:</div>
-                      <div>{instance ? qualifiedId(instance) : shortId(context.locals[name])}</div>
-                    </div>
-                  )
-                })
-            }
-          </div>
-        </div>
+        <Context
+          context={context}
+          nameFilter={name => name.includes(search) || shortId(context.locals[name]).includes(search)}
+          key={context.id}
+        />
       )}
     </SearchList>
   )

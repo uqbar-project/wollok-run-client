@@ -1,0 +1,19 @@
+.locals {
+  margin-left: 0.75em;
+
+  display: flex;
+  flex-direction: column;
+
+  & > div {
+    display: flex;
+    justify-content: space-between;
+
+    & > :first-child {
+      width: 50%;
+    }
+
+    & > :last-child {
+      width: 50%;
+    }
+  }
+}
