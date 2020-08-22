@@ -1,26 +1,23 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import $ from './Details.module.scss'
-import { Frame } from 'wollok-ts/dist/interpreter'
 import { Instruction, ScrollTarget, Id } from './Utils'
 import classNames from 'classnames'
 import Stack, { Stackable } from './Stack'
+import { BytecodeDebuggerContext } from './BytecodeDebuggerContext'
 
-const { keys } = Object
 
+export type DetailsProp = { }
 
-export type DetailsProp = {
-  actions: Record<string, () => void>
-  frame?: Frame
-}
-
-const Details = ({ actions, frame }: DetailsProp) => {
+const Details = ({ }: DetailsProp) => {
   
+  const { stepEvaluation, selectedFrame: frame } = useContext(BytecodeDebuggerContext)
+
   const operandStack = frame?.operandStack?.map<Stackable>(operand => ({ label: <Id id={operand}/> })) ?? []
 
   return (
     <div className={$.container}>
       <div className={$.actions}>
-        {keys(actions).map(name => <button onClick={actions[name]} key={name}>{name}</button>)}
+        <button onClick={stepEvaluation}>Step</button>
       </div>
       <div className={$.details}>
         <div>

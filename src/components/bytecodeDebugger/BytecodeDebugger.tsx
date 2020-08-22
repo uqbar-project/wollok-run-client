@@ -1,8 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { Layout, Model as LayoutModel, TabNode } from 'flexlayout-react'
-import { interpret, buildEnvironment, Evaluation } from 'wollok-ts/dist'
-import { Natives } from 'wollok-ts/dist/interpreter'
-import wre from 'wollok-ts/dist/wre/wre.natives'
 import { RouteComponentProps } from '@reach/router'
 import 'flexlayout-react/style/dark.css'
 import $ from './BytecodeDebugger.module.scss'
@@ -12,12 +9,15 @@ import Details from './Details'
 import classNames from 'classnames'
 import ContextSearchList from './ContextSearchList'
 import InstanceSearchList from './InstanceSearchList'
+import Context, { BytecodeDebuggerContext } from './BytecodeDebuggerContext'
 
 // TODO:
-// - Augment instances id's with the qualified version (might need to move evaluation to a React Context for this)
-// - Make Id's links to open their context / instance
 // - Expand instances to see inner values and locals from inherited contexts
+// - Make Id's links to open their context / instance
+// - Extract simple Section component, with h2 and content
+// - Move FrameStack to separate file
 // - Add context hierarchy to frame details
+// - Augment instances id's with the qualified version
 // - Save evaluations to navigable story
 // - More Steps and GC buttons
 // - Open a test somehow
@@ -76,25 +76,18 @@ const className = (originalName: string) => {
   }
 }
 
-const environment = buildEnvironment([])
-const { buildEvaluation, step } = interpret(environment, wre as Natives)
-const baseEvaluation: Evaluation = buildEvaluation()
-
-type Props = RouteComponentProps
-
-const BytecodeDebugger = ({}: Props) => {
-  const [layout] = useState(LayoutModel.fromJson(layoutConfiguration))
-  const [evaluation, setEvaluation] = useState(baseEvaluation)
-  const [selectedFrame, setSelectedFrame] = useState(baseEvaluation.currentFrame())
-
-  const actions = {
-    Step() {
-      const next = evaluation.copy()
-      step(next)
-      setEvaluation(next)
-      setSelectedFrame(next.currentFrame())
-    },
+const componentForNode = (node: TabNode) => {
+  switch(node.getComponent()) {
+    case 'FrameStack': return <FrameStack />
+    case 'Details': return <Details />
+    case 'Contexts': return <ContextSearchList />
+    case 'Instances': return <InstanceSearchList />
+    default: return undefined
   }
+}
+
+const FrameStack = () => {
+  const { evaluation, selectedFrame, setSelectedFrame } = useContext(BytecodeDebuggerContext)
 
   const frameStack = evaluation.listFrames().map<Stackable>((frame, index, frames) => {
     const previousFrame = frames[index - 1]
@@ -107,17 +100,18 @@ const BytecodeDebugger = ({}: Props) => {
     }
   })
 
-  const componentForNode = (node: TabNode) => {
-    switch(node.getComponent()) {
-      case 'FrameStack': return <Stack title='Frame Stack' elements={frameStack}/>
-      case 'Details': return <Details actions={actions} frame={selectedFrame}/>
-      case 'Contexts': return <ContextSearchList evaluation={evaluation} />
-      case 'Instances': return <InstanceSearchList evaluation={evaluation} />
-      default: return undefined
-    }
-  }
-  
-  return <Layout model={layout} factory={componentForNode} classNameMapper={className}/>
+  return <Stack title='Frame Stack' elements={frameStack}/>
+}
+
+
+const BytecodeDebugger = ({}: RouteComponentProps) => {
+  const [layout] = useState(LayoutModel.fromJson(layoutConfiguration))
+
+  return (
+    <Context>
+      <Layout model={layout} factory={componentForNode} classNameMapper={className}/>
+    </Context>
+  )
 }
 
 export default BytecodeDebugger

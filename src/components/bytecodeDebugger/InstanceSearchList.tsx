@@ -1,14 +1,13 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import SearchList from './SearchList'
-import { Evaluation } from 'wollok-ts'
 import { qualifiedId } from './Utils'
+import { BytecodeDebuggerContext } from './BytecodeDebuggerContext'
 
 
-export type InstanceSearchListProps = {
-  evaluation: Evaluation
-}
+export type InstanceSearchListProps = { }
 
-const InstanceSearchList = ({ evaluation }: InstanceSearchListProps) => {
+const InstanceSearchList = ({ }: InstanceSearchListProps) => {
+  const { evaluation } = useContext(BytecodeDebuggerContext)
   return (
     <SearchList
       title = 'Instances'

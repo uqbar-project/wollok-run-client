@@ -1,18 +1,18 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import SearchList from './SearchList'
-import { Evaluation } from 'wollok-ts'
 import { shortId, qualifiedId } from './Utils'
 import $ from './ContextSearchList.module.scss'
+import { BytecodeDebuggerContext } from './BytecodeDebuggerContext'
 
 
 const { keys } = Object
 
 
-export type ContextSearchListProps = {
-  evaluation: Evaluation
-}
+export type ContextSearchListProps = { }
 
-const ContextSearchList = ({ evaluation }: ContextSearchListProps) => {
+const ContextSearchList = ({ }: ContextSearchListProps) => {
+  const { evaluation } = useContext(BytecodeDebuggerContext)
+
   return (
     <SearchList
       title = 'Contexts'
