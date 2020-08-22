@@ -85,7 +85,7 @@ const Game = (_: GameProps) => {
   }, [])
 
 
-  const title = evaluation ? evaluation.instances[gameInstance(evaluation).get('title')!.id].innerValue : ''
+  const title = evaluation ? evaluation.instance(gameInstance(evaluation).get('title')!.id).innerValue : ''
 
   return (
     <div className={$.container}>
