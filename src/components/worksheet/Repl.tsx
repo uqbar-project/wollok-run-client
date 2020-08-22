@@ -2,7 +2,7 @@ import React, { KeyboardEvent, memo, useState } from 'react'
 import Slider from 'react-input-slider'
 import SimpleCodeEditor from 'react-simple-code-editor'
 import Splitter from 'react-splitter-layout'
-import { build, Environment, Evaluation, fill, interpret, link, List, parse, Raw, Sentence, Singleton } from 'wollok-ts/dist'
+import { build, Environment, Evaluation, fill, interpret, link, List, parse, Sentence } from 'wollok-ts/dist'
 import { Natives, RuntimeObject, VOID_ID } from 'wollok-ts/dist/interpreter'
 import wre from 'wollok-ts/dist/wre/wre.natives'
 import $ from './Repl.module.scss'
@@ -28,7 +28,7 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
 
   const evaluate = () => {
     try {
-      const allSentences = parse.body.tryParse(`{${code.trim()}\n}`).sentences
+      const allSentences = parse.Body.tryParse(`{${code.trim()}\n}`).sentences
       const lines = Math.max(...allSentences.map(sentence => sentence.source!.start.line))
       const sentencesByLine = allSentences.reduce((sentences, sentence) => {
         const line = sentence.source!.start.line
@@ -47,16 +47,18 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
         const lineLastSentence = lineSentences[lineSentences.length - 1]
         const lineInitialSentences = lineSentences.slice(0, Math.max(lineSentences.length - 1, 0))
 
-        const closureLiteral = build.Closure('')(
-          ...previousLinesSentences,
-          ...lineInitialSentences,
-          ...lineLastSentence.is('Expression') ? [build.Return(lineLastSentence)] :
-            lineLastSentence.is('Assignment') ? [lineLastSentence, build.Return(lineLastSentence.variable)] :
-              lineLastSentence.is('Variable') ? [lineLastSentence, build.Return(build.Reference(lineLastSentence.name))] :
-                [lineLastSentence]
-        )
+        const closureLiteral = build.Closure({
+          sentences: [
+            ...previousLinesSentences,
+            ...lineInitialSentences,
+            ...lineLastSentence.is('Expression') ? [build.Return(lineLastSentence)] :
+              lineLastSentence.is('Assignment') ? [lineLastSentence, build.Return(lineLastSentence.variable)] :
+                lineLastSentence.is('Variable') ? [lineLastSentence, build.Return(build.Reference(lineLastSentence.name))] :
+                  [lineLastSentence]
+          ]
+        })
 
-        const replModule = build.Singleton('repl', closureLiteral.value as Singleton<Raw>)()
+        const replModule = build.Singleton('repl', closureLiteral.value)()
         const mainPackage = build.Package('worksheet')(build.Package('main')(replModule))
         return link([fill(mainPackage)], baseEnvironment)
       })
@@ -68,7 +70,7 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
         const evaluation = buildEvaluation()
         stepAll(evaluation)
 
-        sendMessage('apply', environment.getNodeByFQN<Singleton>('worksheet.main.repl').id)(evaluation)
+        sendMessage('apply', environment.getNodeByFQN<'Singleton'>('worksheet.main.repl').id)(evaluation)
         const response = evaluation.currentFrame()!.popOperand()
 
         let description: string

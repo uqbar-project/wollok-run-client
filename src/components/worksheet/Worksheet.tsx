@@ -21,12 +21,13 @@ const Worksheet = ({ location }: WorksheetProps) => {
   const [environment, setEnvironment] = useState<Environment>()
   const [evaluation, setEvaluation] = useState<Evaluation>()
   const [editorCode, setEditorCode] = useState<string>(queryParameters.code
-    ? decompressFromEncodedURIComponent(queryParameters.code)
+    ? decompressFromEncodedURIComponent(queryParameters.code) ?? ''
     : ''
   )
 
   useEffect(() => {
     updateEnvironment(editorCode)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useInterval(() => {

@@ -2,15 +2,14 @@ import { RouteComponentProps } from '@reach/router'
 import * as BrowserFS from 'browserfs'
 import * as git from 'isomorphic-git'
 import React, { memo, useEffect, useState } from 'react'
-import { buildEnvironment, Evaluation, interpret, Package } from 'wollok-ts/dist'
+import ReactMarkdown from 'react-markdown'
+import { buildEnvironment, Evaluation, interpret } from 'wollok-ts/dist'
 import { Natives } from 'wollok-ts/dist/interpreter'
 import wre from 'wollok-ts/dist/wre/wre.natives'
 import Spinner from '../Spinner'
 import $ from './Game.module.scss'
 import GameSelector from './GameSelector'
-import Sketch from './Sketch'
-import { gameInstance } from './Sketch'
-import ReactMarkdown from 'react-markdown'
+import Sketch, { gameInstance } from './Sketch'
 
 const natives = wre as Natives
 const SRC_DIR = `src`
@@ -43,7 +42,7 @@ const Game = (props: GameProps) => {
   const repoUri = new URLSearchParams(props.location!.search).get('github')
 
   useEffect(() => {
-    BrowserFS.configure({ fs: 'InMemory', options: {} }, err => {
+    BrowserFS.configure({ fs: 'InMemory', options: {} }, (err: any) => {
       if (err) throw new Error('FS error')
       git.plugins.set('fs', BrowserFS.BFSRequire('fs')) // Reminder: move FS init if cloneRepository isnt here
       if (repoUri) loadGame(repoUri)
@@ -54,7 +53,7 @@ const Game = (props: GameProps) => {
     cloneRepository(uri).then((project: GameProject) => {
       const files = project.sources.map(fetchFile)
       const environment = buildEnvironment(files)
-      const programWollokFile = environment.getNodeByFQN<Package>(`${project.main}`)
+      const programWollokFile = environment.getNodeByFQN<'Package'>(`${project.main}`)
       const mainWollokProgramName = programWollokFile.members[0].name
       const { buildEvaluation, runProgram } = interpret(environment, natives)
       const cleanEval = buildEvaluation()
@@ -64,7 +63,7 @@ const Game = (props: GameProps) => {
     })
   }
 
-  const title = evaluation ? evaluation.instances[gameInstance(evaluation).get('title')!.id].innerValue : ''
+  const title = evaluation ? evaluation.instance(gameInstance(evaluation).get('title')!.id).innerValue : ''
 
   return (
     <div className={$.container}>
@@ -100,7 +99,7 @@ async function cloneRepository(repoUri: string) {
 
 function buildGameProject(repoUri: string): GameProject {
   const files = BrowserFS.BFSRequire('fs').readdirSync(`${GAME_DIR}/${SRC_DIR}`)
-  const wpgmGame = files.find(file => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
+  const wpgmGame = files.find((file: string) => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
   if (!wpgmGame) throw new Error('Program not found')
   const main = `game.${wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '')}`
   const sources = getAllFilePathsFrom(GAME_DIR, EXPECTED_WOLLOK_EXTENSIONS)
@@ -119,7 +118,7 @@ function getAllFilePathsFrom(parentDirectory: string, validSuffixes?: string[]):
  const browserFS = BrowserFS.BFSRequire('fs')
  const allFiles = browserFS
   .readdirSync(parentDirectory)
-  .map(directoryEntry => {
+  .map((directoryEntry: string) => {
       const fullPath = `${parentDirectory}/${directoryEntry}`
       return browserFS.statSync(fullPath).isDirectory() ?
         getAllFilePathsFrom(fullPath, validSuffixes) : fullPath
