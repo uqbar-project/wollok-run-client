@@ -30,14 +30,14 @@ h1 {
 h2 {
   font: $font-title-2;
   color: $color-font-title;
-  padding: 0.25em 0;
+  padding: $size-margin-large 0;
 }
 
 h3 {
   font: $font-title-3;
   color: $color-font-title;
-  padding-top: 0.25em;
-  padding-bottom: 0.2em;
+  padding-top: $size-margin-large;
+  padding-bottom: $size-margin-small;
 }
 
 h4 {

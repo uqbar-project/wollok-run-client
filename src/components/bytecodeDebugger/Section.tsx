@@ -1,18 +1,19 @@
-import React, { ReactNode, memo } from 'react'
+import React, { ReactNode, memo, HTMLAttributes } from 'react'
 import $ from './Section.module.scss'
+import classNames from 'classnames'
 
 export type SectionProps = {
   title: string
   titleDecoration?: ReactNode
   children: ReactNode
-  containerClassName?: string
-}
+  contentClassName?: string
+} & HTMLAttributes<HTMLDivElement>
 
-const Section = ({ title, titleDecoration, children, containerClassName }: SectionProps) => {
+const Section = ({ title, titleDecoration, children, contentClassName, className, ...props }: SectionProps) => {
   return (
-    <div className={$.container}>
+    <div className={classNames($.container, className)} {...props}>
       <h2>{title}{titleDecoration}</h2>
-      <div className={containerClassName}>{children}</div>
+      <div className={contentClassName}>{children}</div>
     </div>
   )
 }

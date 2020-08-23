@@ -3,6 +3,6 @@
 .content {
   & > *:not(:last-child) {
     border-bottom: 1px solid $color-background-secondary;
-    padding-bottom: 0.25rem;
+    padding-bottom: $size-margin-small;
   }
 }

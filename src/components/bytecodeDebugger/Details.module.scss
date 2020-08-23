@@ -11,7 +11,7 @@
 }
 
 .actions {
-  margin-bottom: 0.5rem;
+  margin: $size-margin-large 0;
 
   display: flex;
 
@@ -20,13 +20,25 @@
     padding: 0.5em;
 
     border: none;
-    background-color: $color-background-action;
   }
 }
 
+.action {
+  background-color: $color-background-action;
+}
+
+.actionDanger {
+  margin-left: 3rem;
+  background-color: $color-background-danger;
+}
+
 .history {
+  padding-bottom: $size-margin-large;
+
   display: flex;
   flex-direction: column;
+
+  border-bottom: 1px solid $color-background-secondary;
 
   small {
     align-self: flex-end;
@@ -45,14 +57,14 @@
     width: 50%;
 
     &:not(:last-child) {
-      margin-right: 0.25rem;
+      margin-right: $size-margin-large;
     }
 
     & > div {
       height: 50%;
 
       &:not(:last-child) {
-        margin-bottom: 0.25rem;
+        margin-bottom: $size-margin-large;
       }
     }
   }
@@ -60,7 +72,7 @@
 
 .instructions {
   & > *:not(:last-child) {
-    margin-bottom: 0.25rem;
+    margin-bottom: $size-margin-small;
   }
 }
 

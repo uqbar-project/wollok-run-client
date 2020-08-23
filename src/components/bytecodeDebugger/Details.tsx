@@ -14,7 +14,7 @@ export type DetailsProp = { }
 
 const Details = ({ }: DetailsProp) => {
   
-  const { evaluation, setCurrentEvaluationIndex, currentEvaluationIndex, evaluationHistory, stepEvaluation, selectedFrame } = useContext(EvaluationContext)
+  const { evaluation, setCurrentEvaluationIndex, currentEvaluationIndex, evaluationHistory, stepEvaluation, selectedFrame, garbageCollect } = useContext(EvaluationContext)
 
   const operandStack = selectedFrame?.operandStack?.map<Stackable>(operand => ({ label: <Id id={operand}/> })) ?? []
 
@@ -22,7 +22,8 @@ const Details = ({ }: DetailsProp) => {
     <div className={$.container}>
 
       <div className={$.actions}>
-        <button onClick={stepEvaluation}>Step</button>
+        <button className={$.action} onClick={stepEvaluation}>Step</button>
+        <button className={$.actionDanger} onClick={garbageCollect}>GC</button>
       </div>
 
       <div className={$.history}>
@@ -31,7 +32,7 @@ const Details = ({ }: DetailsProp) => {
       </div>
 
       <div className={$.details}>
-        <Section title='Instructions' containerClassName={$.instructions}>
+        <Section title='Instructions' contentClassName={$.instructions}>
           {selectedFrame?.instructions?.map((instruction, index) => (
             <ScrollTarget key={index} scrollIntoView={selectedFrame.nextInstruction === index}>
               <Instruction

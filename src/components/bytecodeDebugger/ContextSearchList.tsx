@@ -37,7 +37,7 @@ const ContextSearchList = ({ }: ContextSearchListProps) => {
     <Section
       title={`Contexts (${content.length}/${elements.length})`}
       titleDecoration={<SearchBar search={contextSearch} setSearch={setContextSearch}/>}
-      containerClassName={$.content}
+      contentClassName={$.content}
     >
       {content}
     </Section>

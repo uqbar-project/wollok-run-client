@@ -65,6 +65,7 @@ interface EvaluationState {
   selectedFrame?: Frame
   setSelectedFrame: Dispatch<Frame>
   stepEvaluation(): void
+  garbageCollect(): void
 }
 
 export const EvaluationContext = createContext<EvaluationState>(undefined as any)
@@ -77,7 +78,7 @@ type EvaluationContextProviderProps = {
 export const EvaluationContextProvider = ({ children }: EvaluationContextProviderProps ) => {
   
   const environment = buildEnvironment([])
-  const { buildEvaluation, step } = interpret(environment, wre as Natives)
+  const { buildEvaluation, step, garbageCollect } = interpret(environment, wre as Natives)
 
 
   const [currentEvaluationIndex, setCurrentEvaluationIndex] = useState(0)
@@ -98,12 +99,21 @@ export const EvaluationContextProvider = ({ children }: EvaluationContextProvide
     setSelectedFrame(evaluationHistory[index].currentFrame())
   }
 
+  const garbageCollectEvaluation = () => {
+    const next = currentEvaluation.copy()
+    garbageCollect(next)
+    setEvaluationHistory([...evaluationHistory.slice(0, currentEvaluationIndex + 1), next])
+    setCurrentEvaluationIndex(currentEvaluationIndex + 1)
+    setSelectedFrame(next.currentFrame())
+  }
+
   return (
     <EvaluationContext.Provider value={{
       evaluation: currentEvaluation,
       currentEvaluationIndex, setCurrentEvaluationIndex: updateCurrentEvaluationIndex,
       evaluationHistory,
       stepEvaluation,
+      garbageCollect: garbageCollectEvaluation,
       selectedFrame, setSelectedFrame,
     }}>
       {children}

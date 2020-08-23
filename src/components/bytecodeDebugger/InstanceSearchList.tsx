@@ -22,7 +22,7 @@ const InstanceSearchList = ({ }: InstanceSearchListProps) => {
     <Section
       title={`Instances (${content.length}/${elements.length})`}
       titleDecoration={<SearchBar search={instanceSearch} setSearch={setInstanceSearch}/>}
-      containerClassName={$.content}
+      contentClassName={$.content}
     >
       {content}
     </Section>

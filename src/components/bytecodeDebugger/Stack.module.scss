@@ -9,7 +9,7 @@
   background-color: $color-background-secondary;
 
   & > div:not(:first-child) {
-    margin-bottom: 0.25rem;
+    margin-bottom: $size-margin-small;
   }
 }
 

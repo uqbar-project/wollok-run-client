@@ -4,6 +4,7 @@ import Stack, { Stackable } from './Stack'
 import Instruction from './Instruction'
 import { EvaluationContext } from './BytecodeDebuggerContexts'
 import Section from './Section'
+import $ from './FrameStack.module.scss'
 
 export type FrameStackProps = { }
 
@@ -23,7 +24,7 @@ const FrameStack = ({}: FrameStackProps) => {
   })
 
   return (
-    <Section title='Frame Stack'>
+    <Section title='Frame Stack' className={$.container}>
       <Stack elements={frameStack}/>
     </Section>
   )
