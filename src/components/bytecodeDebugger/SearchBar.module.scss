@@ -1,0 +1,30 @@
+@import "../../theme";
+
+.container {
+  margin-left: 0.5em;
+  width: 1%;
+
+  display: flex;
+  align-items: center;
+  flex: 1 1;
+
+  svg {
+    position: absolute;
+    max-width: 0.8em;
+    margin-left: 0.2em;
+  }
+
+  input {
+    font-size: 0.85em;
+    padding: 0 1.4em;
+
+    flex: 1 1;
+    min-width: 0;
+
+    border: 1px solid $color-font-title;
+    border-radius: 1em;
+    background-color: transparent;
+    font-style: italic;
+    font-weight: normal;
+  }
+}
