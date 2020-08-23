@@ -6,6 +6,7 @@ import Stack, { Stackable } from './Stack'
 import { EvaluationContext } from './BytecodeDebuggerContexts'
 import Id from './Id'
 import Instruction from './Instruction'
+import Section from './Section'
 
 
 export type DetailsProp = { }
@@ -23,8 +24,7 @@ const Details = ({ }: DetailsProp) => {
       </div>
       <div className={$.details}>
         <div>
-          <h2>Instructions</h2>
-          <div className={$.instructions}>
+          <Section title='Instructions' containerClassName={$.instructions}>
             {frame?.instructions?.map((instruction, index) => (
               <ScrollTarget key={index} scrollIntoView={frame.nextInstruction === index}>
                 <Instruction
@@ -33,9 +33,11 @@ const Details = ({ }: DetailsProp) => {
                 />
               </ScrollTarget>
             ))}
-          </div>
+          </Section>
         </div>
-        <Stack title='Operand Stack' elements={operandStack}/>
+        <Section title='Operand Stack'>
+          <Stack elements={operandStack}/>
+        </Section>
       </div>
     </div>
   )

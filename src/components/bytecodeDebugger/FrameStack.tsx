@@ -3,6 +3,7 @@ import Id from './Id'
 import Stack, { Stackable } from './Stack'
 import Instruction from './Instruction'
 import { EvaluationContext } from './BytecodeDebuggerContexts'
+import Section from './Section'
 
 export type FrameStackProps = { }
 
@@ -21,7 +22,11 @@ const FrameStack = ({}: FrameStackProps) => {
     }
   })
 
-  return <Stack title='Frame Stack' elements={frameStack}/>
+  return (
+    <Section title='Frame Stack'>
+      <Stack elements={frameStack}/>
+    </Section>
+  )
 }
 
 export default memo(FrameStack)

@@ -1,7 +1,8 @@
 import React, { ReactNode, Dispatch } from 'react'
-import { FiSearch as SearchIcon } from 'react-icons/fi'
 import $ from './SearchList.module.scss'
 import { List } from 'wollok-ts'
+import Section from './Section'
+import SearchBar from './SearchBar'
 
 export type SearchListProps<T> = {
   title: string
@@ -18,13 +19,13 @@ const SearchList = <T extends unknown>({ title, elements, searchTerms, children,
     .map(element => children(element, search))
 
   return (
-    <div className={$.container}>
-      <h2>
-        {title}({content.length}/{elements.length})
-        <div><SearchIcon/><input value={search} onChange={({ target }) => setSearch(target.value)}/></div>
-      </h2>
-      <div>{content}</div>
-    </div>
+    <Section
+      title={`${title}(${content.length}/${elements.length})`}
+      titleDecoration={<SearchBar search={search} setSearch={setSearch}/>}
+      containerClassName={$.content}
+    >
+      {content}
+    </Section>
   )
 }
 

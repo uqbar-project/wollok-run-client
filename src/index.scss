@@ -45,12 +45,21 @@ h4 {
   color: $color-font-title;
 }
 
+button {
+  cursor: pointer;
+}
+
 ::-webkit-scrollbar {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 1rem;
   background: $color-background-nullary;
 }
+
+::-webkit-scrollbar-corner {
+  background: $color-background-nullary;
+}
+
 ::-webkit-scrollbar-thumb {
   border-radius: 1rem;
   background: $color-background-quaternary;

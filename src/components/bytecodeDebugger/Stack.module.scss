@@ -1,26 +1,15 @@
 @import "../../theme";
 
 .container {
-  height: 100%;
-
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
+  flex-grow: 1;
+  overflow-y: auto;
 
-  background-color: $color-background-primary;
+  background-color: $color-background-secondary;
 
-  & > div {
-    padding: 0.25rem;
-
-    display: flex;
-    flex-direction: column-reverse;
-    flex-grow: 1;
-    overflow-y: auto;
-
-    background-color: $color-background-secondary;
-
-    & > div:not(:first-child) {
-      margin-bottom: 0.25rem;
-    }
+  & > div:not(:first-child) {
+    margin-bottom: 0.25rem;
   }
 }
 

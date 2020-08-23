@@ -42,16 +42,7 @@
 }
 
 .instructions {
-  padding: 0.25rem;
-
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-
-  background-color: $color-background-secondary;
-  overflow-y: auto;
-
-  & > div:not(:last-child) {
+  & > *:not(:last-child) {
     margin-bottom: 0.25rem;
   }
 }
