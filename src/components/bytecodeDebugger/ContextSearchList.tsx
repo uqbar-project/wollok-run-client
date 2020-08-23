@@ -27,7 +27,7 @@ const ContextSearchList = ({ }: ContextSearchListProps) => {
       { (context, search) => (
         <Context
           context={context}
-          nameFilter={name => name.includes(search) || shortId(context.locals[name]).includes(search)}
+          nameFilter={name => shortId(context.id).includes(search) || name.includes(search) || shortId(context.locals[name]).includes(search)}
           key={context.id}
         />
       )}

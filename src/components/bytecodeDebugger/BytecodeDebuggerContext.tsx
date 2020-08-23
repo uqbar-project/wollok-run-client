@@ -2,6 +2,9 @@ import React, { createContext, useState, ReactNode, Dispatch } from 'react'
 import { Evaluation, buildEnvironment, interpret } from 'wollok-ts'
 import wre from 'wollok-ts/dist/wre/wre.natives'
 import { Natives, Frame } from 'wollok-ts/dist/interpreter'
+import { Model as LayoutModel, Actions as LayoutActions } from 'flexlayout-react'
+
+const { selectTab } = LayoutActions
 
 
 interface BytecodeDebuggerState {
@@ -13,15 +16,18 @@ interface BytecodeDebuggerState {
   setInstanceSearch: Dispatch<string>
   contextSearch: string
   setContextSearch: Dispatch<string>
+  selectContextsTab(): void
+  selectInstancesTab(): void
 }
 
 type BytecodeDebuggerContextProps = {
   children: ReactNode
+  layout: LayoutModel
 }
 
 export const BytecodeDebuggerContext = createContext<BytecodeDebuggerState>(undefined as any)
 
-const BytecodeDebuggerContextProvider = ({ children }: BytecodeDebuggerContextProps ) => {
+const BytecodeDebuggerContextProvider = ({ children, layout }: BytecodeDebuggerContextProps ) => {
   
   const environment = buildEnvironment([])
   const { buildEvaluation, step } = interpret(environment, wre as Natives)
@@ -39,6 +45,16 @@ const BytecodeDebuggerContextProvider = ({ children }: BytecodeDebuggerContextPr
     setSelectedFrame(next.currentFrame())
   }
 
+  const selectInstancesTab = () => {
+    const instanceTabId = layout.getBorderSet().getBorders()[1].getChildren()[0].getId()
+    layout.doAction(selectTab(instanceTabId))
+  }
+
+  const selectContextsTab = () => {
+    const contextTabId = layout.getBorderSet().getBorders()[1].getChildren()[1].getId()
+    layout.doAction(selectTab(contextTabId))
+  }
+
   return (
     <BytecodeDebuggerContext.Provider value={{
       evaluation,
@@ -46,6 +62,8 @@ const BytecodeDebuggerContextProvider = ({ children }: BytecodeDebuggerContextPr
       selectedFrame, setSelectedFrame,
       instanceSearch, setInstanceSearch,
       contextSearch, setContextSearch,
+      selectInstancesTab,
+      selectContextsTab,
     }}>
       {children}
     </BytecodeDebuggerContext.Provider>

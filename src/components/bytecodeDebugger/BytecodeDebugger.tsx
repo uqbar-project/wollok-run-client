@@ -13,14 +13,16 @@ import Context, { BytecodeDebuggerContext } from './BytecodeDebuggerContext'
 
 // TODO:
 // - Add context hierarchy to frame details
+// - Save evaluations to navigable story
+// - More Steps and GC buttons
+// - Collapse long strings with (...)
+// - Check performance
+// - Expand and collapse contexts
+// - Open a test somehow
+// - Add logs directly to tab (would be nice to have actually collapsable nested contexts)
 // - Extract simple Section component, with h2 and content
 // - Move FrameStack to separate file
 // - Remove the 2 specific SearchList subcomponents?
-// - Save evaluations to navigable story
-// - More Steps and GC buttons
-// - Open a test somehow
-// - Add logs directly to tab (would be nice to have actually collapsable nested contexts)
-// - Expand and collapse contexts
 
 
 const layoutConfiguration = {
@@ -36,7 +38,7 @@ const layoutConfiguration = {
       ],
     },
     {
-      type: 'border', location: 'right', size: 300, children: [
+      type: 'border', location: 'right', size: 400, children: [
         { type: 'tab', name: 'Contexts', component: 'Contexts' },
         { type: 'tab', name: 'Instances', component: 'Instances' },
       ],
@@ -107,7 +109,7 @@ const BytecodeDebugger = ({}: RouteComponentProps) => {
   const [layout] = useState(LayoutModel.fromJson(layoutConfiguration))
 
   return (
-    <Context>
+    <Context layout={layout}>
       <Layout model={layout} factory={componentForNode} classNameMapper={className}/>
     </Context>
   )

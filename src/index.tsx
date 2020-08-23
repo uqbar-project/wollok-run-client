@@ -10,8 +10,7 @@ import './index.scss'
 import * as serviceWorker from './serviceWorker'
 import BytecodeDebugger from './components/bytecodeDebugger/BytecodeDebugger'
 
-if (process.env.NODE_ENV !== 'production') whyDidYouRender(React)
-
+if (process.env.NODE_ENV !== 'production') whyDidYouRender(React, { trackHooks: true })
 
 const Routes = () => (
   <Router>
