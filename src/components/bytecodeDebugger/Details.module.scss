@@ -24,6 +24,15 @@
   }
 }
 
+.history {
+  display: flex;
+  flex-direction: column;
+
+  small {
+    align-self: flex-end;
+  }
+}
+
 .details {
   min-height: 0;
 
@@ -37,6 +46,14 @@
 
     &:not(:last-child) {
       margin-right: 0.25rem;
+    }
+
+    & > div {
+      height: 50%;
+
+      &:not(:last-child) {
+        margin-bottom: 0.25rem;
+      }
     }
   }
 }

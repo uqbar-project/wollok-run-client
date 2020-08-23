@@ -42,5 +42,3 @@ const Stack = ({ elements }: StackProps) => {
 }
 
 export default memo(Stack)
-
-Stack.whyDidYouRender = true

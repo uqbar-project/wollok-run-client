@@ -45,5 +45,3 @@ const ContextSearchList = ({ }: ContextSearchListProps) => {
 }
 
 export default memo(ContextSearchList)
-
-ContextSearchList.whyDidYouRender = true

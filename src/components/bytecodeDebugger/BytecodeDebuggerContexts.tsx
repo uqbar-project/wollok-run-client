@@ -1,5 +1,5 @@
 import React, { createContext, useState, ReactNode, Dispatch } from 'react'
-import { Evaluation, buildEnvironment, interpret } from 'wollok-ts'
+import { Evaluation, buildEnvironment, interpret, List } from 'wollok-ts'
 import wre from 'wollok-ts/dist/wre/wre.natives'
 import { Natives, Frame } from 'wollok-ts/dist/interpreter'
 import { Model as LayoutModel, Actions as LayoutActions } from 'flexlayout-react'
@@ -59,6 +59,9 @@ export const LayoutContextProvider = ({ children, layout }: LayoutContextProvide
 
 interface EvaluationState {
   evaluation: Evaluation
+  currentEvaluationIndex: number
+  setCurrentEvaluationIndex: Dispatch<number>
+  evaluationHistory: List<Evaluation>
   selectedFrame?: Frame
   setSelectedFrame: Dispatch<Frame>
   stepEvaluation(): void
@@ -77,19 +80,29 @@ export const EvaluationContextProvider = ({ children }: EvaluationContextProvide
   const { buildEvaluation, step } = interpret(environment, wre as Natives)
 
 
-  const [evaluation, setEvaluation] = useState(buildEvaluation())
-  const [selectedFrame, setSelectedFrame] = useState(evaluation.currentFrame())
-  
+  const [currentEvaluationIndex, setCurrentEvaluationIndex] = useState(0)
+  const [evaluationHistory, setEvaluationHistory] = useState([buildEvaluation()])
+  const currentEvaluation = evaluationHistory[currentEvaluationIndex]
+  const [selectedFrame, setSelectedFrame] = useState(currentEvaluation.currentFrame())
+
   const stepEvaluation = () => {
-    const next = evaluation.copy()
+    const next = currentEvaluation.copy()
     step(next)
-    setEvaluation(next)
+    setEvaluationHistory([...evaluationHistory.slice(0, currentEvaluationIndex + 1), next])
+    setCurrentEvaluationIndex(currentEvaluationIndex + 1)
     setSelectedFrame(next.currentFrame())
+  }
+
+  const updateCurrentEvaluationIndex = (index: number) => {
+    setCurrentEvaluationIndex(index)
+    setSelectedFrame(evaluationHistory[index].currentFrame())
   }
 
   return (
     <EvaluationContext.Provider value={{
-      evaluation,
+      evaluation: currentEvaluation,
+      currentEvaluationIndex, setCurrentEvaluationIndex: updateCurrentEvaluationIndex,
+      evaluationHistory,
       stepEvaluation,
       selectedFrame, setSelectedFrame,
     }}>

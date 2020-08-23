@@ -11,13 +11,10 @@ import { EvaluationContextProvider, LayoutContextProvider } from './BytecodeDebu
 import FrameStack from './FrameStack'
 
 // TODO:
-// - Add context hierarchy to frame details
-// - Save evaluations to navigable story
 // - More Steps and GC buttons
-// - Collapse long strings with (...)
-// - Check performance
-// - Expand and collapse contexts
 // - Open a test somehow
+// - Collapse long strings with (...)
+// - Expand and collapse contexts
 // - Add logs directly to tab (would be nice to have actually collapsable nested contexts)
 
 const layoutConfiguration = {

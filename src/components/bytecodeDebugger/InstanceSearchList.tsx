@@ -30,5 +30,3 @@ const InstanceSearchList = ({ }: InstanceSearchListProps) => {
 }
 
 export default memo(InstanceSearchList)
-
-InstanceSearchList.whyDidYouRender = true

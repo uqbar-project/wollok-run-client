@@ -1,43 +1,57 @@
 import React, { useContext, memo } from 'react'
 import $ from './Details.module.scss'
-import { ScrollTarget } from './Utils'
+import { ScrollTarget, contextHierarchy } from './Utils'
 import classNames from 'classnames'
 import Stack, { Stackable } from './Stack'
 import { EvaluationContext } from './BytecodeDebuggerContexts'
 import Id from './Id'
 import Instruction from './Instruction'
 import Section from './Section'
+import Context from './Context'
 
 
 export type DetailsProp = { }
 
 const Details = ({ }: DetailsProp) => {
   
-  const { stepEvaluation, selectedFrame: frame } = useContext(EvaluationContext)
+  const { evaluation, setCurrentEvaluationIndex, currentEvaluationIndex, evaluationHistory, stepEvaluation, selectedFrame } = useContext(EvaluationContext)
 
-  const operandStack = frame?.operandStack?.map<Stackable>(operand => ({ label: <Id id={operand}/> })) ?? []
+  const operandStack = selectedFrame?.operandStack?.map<Stackable>(operand => ({ label: <Id id={operand}/> })) ?? []
 
   return (
     <div className={$.container}>
+
       <div className={$.actions}>
         <button onClick={stepEvaluation}>Step</button>
       </div>
+
+      <div className={$.history}>
+        <input type='range' value={currentEvaluationIndex} min={0} max={evaluationHistory.length - 1} onChange={event => { setCurrentEvaluationIndex(Number(event.target.value)) }}/>
+        <small>step {currentEvaluationIndex}/{evaluationHistory.length - 1}</small>
+      </div>
+
       <div className={$.details}>
+        <Section title='Instructions' containerClassName={$.instructions}>
+          {selectedFrame?.instructions?.map((instruction, index) => (
+            <ScrollTarget key={index} scrollIntoView={selectedFrame.nextInstruction === index}>
+              <Instruction
+                instruction={instruction}
+                className={classNames($.instruction, { [$.highlighted]: selectedFrame.nextInstruction === index })}
+              />
+            </ScrollTarget>
+          ))}
+        </Section>
+
         <div>
-          <Section title='Instructions' containerClassName={$.instructions}>
-            {frame?.instructions?.map((instruction, index) => (
-              <ScrollTarget key={index} scrollIntoView={frame.nextInstruction === index}>
-                <Instruction
-                  instruction={instruction}
-                  className={classNames($.instruction, { [$.highlighted]: frame.nextInstruction === index })}
-                />
-              </ScrollTarget>
-            ))}
+          <Section title='Operand Stack'>
+            <Stack elements={operandStack}/>
+          </Section>
+          <Section title='Context Hierarchy'>
+            { contextHierarchy(evaluation, selectedFrame?.id).map(context =>
+              <Context key={context.id} context={context}/>
+            )}
           </Section>
         </div>
-        <Section title='Operand Stack'>
-          <Stack elements={operandStack}/>
-        </Section>
       </div>
     </div>
   )
