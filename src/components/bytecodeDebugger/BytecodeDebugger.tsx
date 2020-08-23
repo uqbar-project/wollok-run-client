@@ -11,7 +11,6 @@ import { EvaluationContextProvider, LayoutContextProvider } from './BytecodeDebu
 import FrameStack from './FrameStack'
 
 // TODO:
-// - More Steps and GC buttons
 // - Open a test somehow
 // - Collapse long strings with (...)
 // - Expand and collapse contexts

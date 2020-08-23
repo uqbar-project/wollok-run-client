@@ -25,10 +25,11 @@
 
 .action {
   background-color: $color-background-action;
+  margin-right: $size-margin-large;
 }
 
 .actionDanger {
-  margin-left: 3rem;
+  margin-left: $size-margin-large;
   background-color: $color-background-danger;
 }
 

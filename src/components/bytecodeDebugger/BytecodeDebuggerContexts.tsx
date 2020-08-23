@@ -65,6 +65,7 @@ interface EvaluationState {
   selectedFrame?: Frame
   setSelectedFrame: Dispatch<Frame>
   stepEvaluation(): void
+  stepThroughEvaluation(): void
   garbageCollect(): void
 }
 
@@ -94,6 +95,21 @@ export const EvaluationContextProvider = ({ children }: EvaluationContextProvide
     setSelectedFrame(next.currentFrame())
   }
 
+  const stepThroughEvaluation = () => {
+    const initialFrame = currentEvaluation.currentFrame()
+    let next = currentEvaluation
+    const skippedSteps: Evaluation[] = []
+    do {
+      next = next.copy()
+      step(next)
+      skippedSteps.push(next)
+    } while (next.currentFrame()?.id !== initialFrame?.id)
+
+    setEvaluationHistory([...evaluationHistory.slice(0, currentEvaluationIndex + 1), ...skippedSteps])
+    setCurrentEvaluationIndex(currentEvaluationIndex + skippedSteps.length)
+    setSelectedFrame(next.currentFrame())
+  }
+
   const updateCurrentEvaluationIndex = (index: number) => {
     setCurrentEvaluationIndex(index)
     setSelectedFrame(evaluationHistory[index].currentFrame())
@@ -112,7 +128,7 @@ export const EvaluationContextProvider = ({ children }: EvaluationContextProvide
       evaluation: currentEvaluation,
       currentEvaluationIndex, setCurrentEvaluationIndex: updateCurrentEvaluationIndex,
       evaluationHistory,
-      stepEvaluation,
+      stepEvaluation, stepThroughEvaluation,
       garbageCollect: garbageCollectEvaluation,
       selectedFrame, setSelectedFrame,
     }}>
