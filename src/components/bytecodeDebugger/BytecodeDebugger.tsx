@@ -1,15 +1,14 @@
-import React, { useState, useContext } from 'react'
+import React, { useState } from 'react'
 import { Layout, Model as LayoutModel, TabNode } from 'flexlayout-react'
 import { RouteComponentProps } from '@reach/router'
 import 'flexlayout-react/style/dark.css'
 import $ from './BytecodeDebugger.module.scss'
-import Stack, { Stackable } from './Stack'
-import { Instruction, Id } from './Utils'
 import Details from './Details'
 import classNames from 'classnames'
 import ContextSearchList from './ContextSearchList'
 import InstanceSearchList from './InstanceSearchList'
-import Context, { BytecodeDebuggerContext } from './BytecodeDebuggerContext'
+import { EvaluationContextProvider, LayoutContextProvider } from './BytecodeDebuggerContexts'
+import FrameStack from './FrameStack'
 
 // TODO:
 // - Add context hierarchy to frame details
@@ -21,7 +20,6 @@ import Context, { BytecodeDebuggerContext } from './BytecodeDebuggerContext'
 // - Open a test somehow
 // - Add logs directly to tab (would be nice to have actually collapsable nested contexts)
 // - Extract simple Section component, with h2 and content
-// - Move FrameStack to separate file
 // - Remove the 2 specific SearchList subcomponents?
 
 
@@ -87,31 +85,16 @@ const componentForNode = (node: TabNode) => {
   }
 }
 
-const FrameStack = () => {
-  const { evaluation, selectedFrame, setSelectedFrame } = useContext(BytecodeDebuggerContext)
-
-  const frameStack = evaluation.listFrames().map<Stackable>((frame, index, frames) => {
-    const previousFrame = frames[index - 1]
-    const triggeringInstruction = previousFrame?.instructions?.[previousFrame?.nextInstruction - 1]
-    return {
-      label: triggeringInstruction && <Instruction instruction={triggeringInstruction}/>,
-      subLabel: <Id id={frame.id}/>,
-      selected: selectedFrame === frame,
-      onClick: () => setSelectedFrame(frame),
-    }
-  })
-
-  return <Stack title='Frame Stack' elements={frameStack}/>
-}
-
 
 const BytecodeDebugger = ({}: RouteComponentProps) => {
   const [layout] = useState(LayoutModel.fromJson(layoutConfiguration))
 
   return (
-    <Context layout={layout}>
-      <Layout model={layout} factory={componentForNode} classNameMapper={className}/>
-    </Context>
+    <LayoutContextProvider layout={layout}>
+      <EvaluationContextProvider>
+        <Layout model={layout} factory={componentForNode} classNameMapper={className}/>
+      </EvaluationContextProvider>
+    </LayoutContextProvider>
   )
 }
 

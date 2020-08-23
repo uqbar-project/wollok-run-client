@@ -1,14 +1,15 @@
-import React, { useContext } from 'react'
+import React, { useContext, memo } from 'react'
 import SearchList from './SearchList'
 import { qualifiedId } from './Utils'
-import { BytecodeDebuggerContext } from './BytecodeDebuggerContext'
+import { EvaluationContext, LayoutContext } from './BytecodeDebuggerContexts'
 import Instance from './Instance'
 
 
 export type InstanceSearchListProps = { }
 
 const InstanceSearchList = ({ }: InstanceSearchListProps) => {
-  const { evaluation, instanceSearch, setInstanceSearch } = useContext(BytecodeDebuggerContext)
+  const { evaluation } = useContext(EvaluationContext)
+  const { instanceSearch, setInstanceSearch } = useContext(LayoutContext)
 
   return (
     <SearchList
@@ -23,4 +24,4 @@ const InstanceSearchList = ({ }: InstanceSearchListProps) => {
   )
 }
 
-export default InstanceSearchList
+export default memo(InstanceSearchList)

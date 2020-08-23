@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, memo } from 'react'
 import { List } from 'wollok-ts'
 import classNames from 'classnames'
 import $ from './Stack.module.scss'
@@ -12,12 +12,12 @@ export type Stackable = {
   onClick?: () => void
 }
 
-export type StackProps<T> = {
+export type StackProps = {
   title: string
-  elements: List<T>
+  elements: List<Stackable>
 }
 
-const Stack = <T extends Stackable>({ title, elements }: StackProps<T>) => {
+const Stack = ({ title, elements }: StackProps) => {
   return (
     <div className={$.container}>
       <h2>{title}</h2>
@@ -41,4 +41,6 @@ const Stack = <T extends Stackable>({ title, elements }: StackProps<T>) => {
   )
 }
 
-export default Stack
+export default memo(Stack)
+
+Stack.whyDidYouRender = true

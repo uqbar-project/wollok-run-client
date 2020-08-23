@@ -1,8 +1,8 @@
-import React, { useContext } from 'react'
+import React, { useContext, memo } from 'react'
 import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import { qualifiedId, contextHierarchy } from './Utils'
 import Context from './Context'
-import { BytecodeDebuggerContext } from './BytecodeDebuggerContext'
+import { EvaluationContext } from './BytecodeDebuggerContexts'
 import $ from './Instance.module.scss'
 
 
@@ -11,7 +11,7 @@ type InstanceProps = {
 }
 
 const Instance = ({ instance }: InstanceProps) => {
-  const { evaluation } = useContext(BytecodeDebuggerContext)
+  const { evaluation } = useContext(EvaluationContext)
   
   return (
     <div className={$.container}>
@@ -25,4 +25,4 @@ const Instance = ({ instance }: InstanceProps) => {
   )
 }
 
-export default Instance
+export default memo(Instance)

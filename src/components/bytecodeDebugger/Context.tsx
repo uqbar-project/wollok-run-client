@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { Context as ContextType } from 'wollok-ts/dist/interpreter'
-import { shortId, Id } from './Utils'
+import { shortId } from './Utils'
 import { Name } from 'wollok-ts'
 import $ from './Context.module.scss'
+import Id from './Id'
 
 const { keys } = Object
 
@@ -31,4 +32,4 @@ const Context = ({ context, nameFilter = () => true }: ContextProps) => {
   )
 }
 
-export default Context
+export default memo(Context)

@@ -29,3 +29,5 @@ const SearchList = <T extends unknown>({ title, elements, searchTerms, children,
 }
 
 export default SearchList
+
+SearchList.whyDidYouRender = true

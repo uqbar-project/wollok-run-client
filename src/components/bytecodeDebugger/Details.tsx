@@ -1,16 +1,18 @@
-import React, { useContext } from 'react'
+import React, { useContext, memo } from 'react'
 import $ from './Details.module.scss'
-import { Instruction, ScrollTarget, Id } from './Utils'
+import { ScrollTarget } from './Utils'
 import classNames from 'classnames'
 import Stack, { Stackable } from './Stack'
-import { BytecodeDebuggerContext } from './BytecodeDebuggerContext'
+import { EvaluationContext } from './BytecodeDebuggerContexts'
+import Id from './Id'
+import Instruction from './Instruction'
 
 
 export type DetailsProp = { }
 
 const Details = ({ }: DetailsProp) => {
   
-  const { stepEvaluation, selectedFrame: frame } = useContext(BytecodeDebuggerContext)
+  const { stepEvaluation, selectedFrame: frame } = useContext(EvaluationContext)
 
   const operandStack = frame?.operandStack?.map<Stackable>(operand => ({ label: <Id id={operand}/> })) ?? []
 
@@ -39,4 +41,4 @@ const Details = ({ }: DetailsProp) => {
   )
 }
 
-export default Details
+export default memo(Details)
