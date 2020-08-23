@@ -12,6 +12,7 @@ export type Stackable = {
   onClick?: () => void
 }
 
+
 export type StackProps = {
   elements: List<Stackable>
 }
@@ -22,15 +23,18 @@ const Stack = ({ elements }: StackProps) => {
       {elements.map((element, index) => (
         <ScrollTarget
           scrollIntoView={element.selected}
-          onClick={element.onClick}
-          className={classNames($.element, {
-            [$.highlighted]: element.selected,
-            [$.clickable]: !!element.onClick && !element.selected,
-          })}
           key={index}
         >
-          <div>{element.label}</div>
-          <div>{element.subLabel}</div>
+          <div
+            onClick={element.onClick}
+            className={classNames($.element, {
+              [$.highlighted]: element.selected,
+              [$.clickable]: !!element.onClick && !element.selected,
+            })}
+          >
+            <div>{element.label}</div>
+            <div>{element.subLabel}</div>
+          </div>
         </ScrollTarget>
       ))}
     </div>

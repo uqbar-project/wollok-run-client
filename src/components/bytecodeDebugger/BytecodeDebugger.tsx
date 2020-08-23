@@ -19,9 +19,6 @@ import FrameStack from './FrameStack'
 // - Expand and collapse contexts
 // - Open a test somehow
 // - Add logs directly to tab (would be nice to have actually collapsable nested contexts)
-// - Extract simple Section component, with h2 and content
-// - Remove the 2 specific SearchList subcomponents?
-
 
 const layoutConfiguration = {
   global: {

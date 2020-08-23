@@ -1,6 +1,6 @@
 import { List, Id as IdType } from 'wollok-ts'
 import { RuntimeObject, Evaluation, Context } from 'wollok-ts/dist/interpreter'
-import React, { useRef, useEffect, HTMLAttributes } from 'react'
+import React, { useRef, useEffect, HTMLAttributes, memo } from 'react'
 
 
 export const shortId = (id: IdType) => `#${id.slice(id.lastIndexOf('-') + 1)}`
@@ -18,7 +18,8 @@ export type ScrollTargetProps = HTMLAttributes<HTMLDivElement> & {
   scrollIntoView?: boolean
 }
 
-export const ScrollTarget = ({ scrollIntoView, ...props }: ScrollTargetProps) => {
+// eslint-disable-next-line react/display-name
+export const ScrollTarget = memo(({ scrollIntoView, ...props }: ScrollTargetProps) => {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -26,6 +27,6 @@ export const ScrollTarget = ({ scrollIntoView, ...props }: ScrollTargetProps) =>
   }, [scrollIntoView, ref])
 
   return <div {...props} ref={ref}/>
-}
+})
 
 ScrollTarget.whyDidYouRender = true
