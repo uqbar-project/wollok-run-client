@@ -46,13 +46,13 @@ const BytecodeDebuggerContextProvider = ({ children, layout }: BytecodeDebuggerC
   }
 
   const selectInstancesTab = () => {
-    const instanceTabId = layout.getBorderSet().getBorders()[1].getChildren()[0].getId()
-    layout.doAction(selectTab(instanceTabId))
+    const instanceTab = layout.getBorderSet().getBorders()[1].getChildren()[0]
+    if(!instanceTab.isVisible()) layout.doAction(selectTab(instanceTab.getId()))
   }
 
   const selectContextsTab = () => {
-    const contextTabId = layout.getBorderSet().getBorders()[1].getChildren()[1].getId()
-    layout.doAction(selectTab(contextTabId))
+    const contextTab = layout.getBorderSet().getBorders()[1].getChildren()[1]
+    if(!contextTab.isVisible()) layout.doAction(selectTab(contextTab.getId()))
   }
 
   return (
