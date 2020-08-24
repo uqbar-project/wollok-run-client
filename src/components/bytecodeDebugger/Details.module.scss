@@ -16,9 +16,15 @@
   display: flex;
 
   button {
-    border-radius: 0.2rem;
-    padding: 0.5em;
+    font-size: 1.25rem;
+    min-width: 1.75rem;
+    min-height: 1.75rem;
 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 0.2rem;
     border: none;
   }
 }
@@ -29,7 +35,7 @@
 }
 
 .actionDanger {
-  margin-left: $size-margin-large;
+  margin-left: auto;
   background-color: $color-background-danger;
 }
 

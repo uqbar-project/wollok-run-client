@@ -9,9 +9,11 @@ import ContextSearchList from './ContextSearchList'
 import InstanceSearchList from './InstanceSearchList'
 import { EvaluationContextProvider, LayoutContextProvider } from './BytecodeDebuggerContexts'
 import FrameStack from './FrameStack'
+import LoadScreen from './LoadScreen'
+import { DebugTarget } from './LoadScreen'
 
 // TODO:
-// - Open a test somehow
+// - Show inner value
 // - Collapse long strings with (...)
 // - Expand and collapse contexts
 // - Add logs directly to tab (would be nice to have actually collapsable nested contexts)
@@ -78,13 +80,17 @@ const componentForNode = (node: TabNode) => {
   }
 }
 
-
 const BytecodeDebugger = ({}: RouteComponentProps) => {
   const [layout] = useState(LayoutModel.fromJson(layoutConfiguration))
+  const [debugTarget, setDebugTarget] = useState<DebugTarget>()
+
+  if(!debugTarget) return (
+    <LoadScreen setDebugTarget={setDebugTarget}/>
+  )
 
   return (
     <LayoutContextProvider layout={layout}>
-      <EvaluationContextProvider>
+      <EvaluationContextProvider {...debugTarget}>
         <Layout model={layout} factory={componentForNode} classNameMapper={className}/>
       </EvaluationContextProvider>
     </LayoutContextProvider>

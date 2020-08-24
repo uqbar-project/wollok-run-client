@@ -1,0 +1,24 @@
+@import "../../theme";
+
+.container {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  background-color: $color-background-primary;
+  overflow: auto;
+
+  li {
+    display: flex;
+    align-items: center;
+
+    svg {
+      font-size: 1.75em;
+      margin: $size-margin-large;
+
+      fill: $color-background-action;
+    }
+  }
+}

@@ -3,6 +3,19 @@ import { RuntimeObject, Evaluation, Context } from 'wollok-ts/dist/interpreter'
 import React, { useRef, useEffect, HTMLAttributes, memo } from 'react'
 
 
+declare global {
+  interface File {
+    webkitRelativePath: string
+  }
+}
+
+declare module 'react' {
+  interface InputHTMLAttributes<T extends HTMLInputElement> {
+    webkitdirectory?: string
+  } 
+}
+
+
 export const shortId = (id: IdType) => `#${id.slice(id.lastIndexOf('-') + 1)}`
 
 export const qualifiedId = (instance: RuntimeObject) => `${instance.moduleFQN}${shortId(instance.id)}`

@@ -1,7 +1,7 @@
 import React, { createContext, useState, ReactNode, Dispatch } from 'react'
-import { Evaluation, buildEnvironment, interpret, List } from 'wollok-ts'
+import { Evaluation, interpret, List, Environment, Id as IdType } from 'wollok-ts'
 import wre from 'wollok-ts/dist/wre/wre.natives'
-import { Natives, Frame } from 'wollok-ts/dist/interpreter'
+import { Natives, Frame, compile, ROOT_CONTEXT_ID } from 'wollok-ts/dist/interpreter'
 import { Model as LayoutModel, Actions as LayoutActions } from 'flexlayout-react'
 
 const { selectTab } = LayoutActions
@@ -74,36 +74,68 @@ export const EvaluationContext = createContext<EvaluationState>(undefined as any
 
 type EvaluationContextProviderProps = {
   children: ReactNode
+  environment: Environment
+  testId: IdType
 }
 
-export const EvaluationContextProvider = ({ children }: EvaluationContextProviderProps ) => {
+export const EvaluationContextProvider = ({ environment, testId, children }: EvaluationContextProviderProps ) => {
   
-  const environment = buildEnvironment([])
-  const { buildEvaluation, step, garbageCollect } = interpret(environment, wre as Natives)
-
+  const { buildEvaluation, step, stepAll, garbageCollect } = interpret(environment, wre as Natives)
 
   const [currentEvaluationIndex, setCurrentEvaluationIndex] = useState(0)
-  const [evaluationHistory, setEvaluationHistory] = useState([buildEvaluation()])
+  const [evaluationHistory, setEvaluationHistory] = useState(() => {
+    const evaluation = buildEvaluation()
+    
+    stepAll(evaluation)
+    evaluation.popFrame()
+    
+    const test = environment.getNodeById<'Test'>(testId)
+    const describe = test.parent()
+    let parentContext = ROOT_CONTEXT_ID
+    if (describe.is('Describe')) {
+      const describeInstanceId = evaluation.createInstance(describe.fullyQualifiedName())
+  
+      evaluation.pushFrame(compile(evaluation.environment)(
+        ...describe.variables(),
+        ...describe.fixtures().flatMap(fixture => fixture.body.sentences),
+      ), describeInstanceId)
+      stepAll(evaluation)
+      parentContext = evaluation.currentFrame()!.context
+      evaluation.popFrame()
+    }
+
+    const instructions = compile(environment)(...test.body.sentences)
+    evaluation.pushFrame(instructions, evaluation.createContext(parentContext))
+
+    return [evaluation]
+  })
   const currentEvaluation = evaluationHistory[currentEvaluationIndex]
   const [selectedFrame, setSelectedFrame] = useState(currentEvaluation.currentFrame())
 
   const stepEvaluation = () => {
     const next = currentEvaluation.copy()
-    step(next)
+    
+    try { step(next) }
+    catch (error) { alert(error) }
+
     setEvaluationHistory([...evaluationHistory.slice(0, currentEvaluationIndex + 1), next])
     setCurrentEvaluationIndex(currentEvaluationIndex + 1)
     setSelectedFrame(next.currentFrame())
   }
 
   const stepThroughEvaluation = () => {
-    const initialFrame = currentEvaluation.currentFrame()
-    let next = currentEvaluation
     const skippedSteps: Evaluation[] = []
+    const startingDepth = currentEvaluation.listFrames().indexOf(selectedFrame!) + 1
+    let next = currentEvaluation
     do {
       next = next.copy()
-      step(next)
       skippedSteps.push(next)
-    } while (next.currentFrame()?.id !== initialFrame?.id)
+      try { step(next) }
+      catch (error) {
+        alert(error)
+        break
+      }
+    } while (next.stackDepth() > startingDepth)
 
     setEvaluationHistory([...evaluationHistory.slice(0, currentEvaluationIndex + 1), ...skippedSteps])
     setCurrentEvaluationIndex(currentEvaluationIndex + skippedSteps.length)
