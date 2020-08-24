@@ -1,6 +1,6 @@
 import React, { memo } from 'react'
 import { Context as ContextType } from 'wollok-ts/dist/interpreter'
-import { shortId } from './Utils'
+import { shortId, CollapsibleName } from './Utils'
 import { Name } from 'wollok-ts'
 import $ from './Context.module.scss'
 import Id from './Id'
@@ -21,7 +21,7 @@ const Context = ({ context, nameFilter = () => true }: ContextProps) => {
           keys(context.locals).filter(nameFilter).map(name => {
             return (
               <div key={name}>
-                <div>{name}:</div>
+                <div><CollapsibleName name={name}/>:</div>
                 <Id id={context.locals[name]}/>
               </div>
             )

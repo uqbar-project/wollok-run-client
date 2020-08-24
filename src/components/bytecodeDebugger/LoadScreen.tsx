@@ -15,6 +15,9 @@ const LoadScreen = ({ setDebugTarget }: LoadScreenProps) => {
 
   const [environment, setEnvironment] = useState<Environment|undefined>(undefined)
 
+  const tests = environment?.descendants()?.filter(is('Test'))
+
+
   const onFilesLoad = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = await Promise.all([...event.target.files!]
       .filter(file => file.name.match(/\.(?:wlk|wtest|wpgm)$/))
@@ -32,14 +35,20 @@ const LoadScreen = ({ setDebugTarget }: LoadScreenProps) => {
 
   const onTestSelected = (testId: IdType) => () => environment && setDebugTarget({ environment, testId })
 
+
   return (
     <div className={$.container}>
       <input type='file' webkitdirectory='' multiple onChange={onFilesLoad}/>
-      <ul>
-        {environment?.descendants()?.filter(is('Test'))?.map(test => (
-          <li key={test.id}><RunIcon onClick={onTestSelected(test.id)}/>{test.name}</li>
-        ))}
-      </ul>
+      {tests && (
+        <div>
+          {tests.length} tests found:
+          <ul>
+            {tests?.map(test => (
+              <li key={test.id}><RunIcon onClick={onTestSelected(test.id)}/>{test.name}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

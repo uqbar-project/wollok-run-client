@@ -3,7 +3,7 @@ import React, { useContext, memo } from 'react'
 import $ from './Id.module.scss'
 import { EvaluationContext, LayoutContext } from './BytecodeDebuggerContexts'
 import { Id as IdType } from 'wollok-ts'
-import { qualifiedId, shortId } from './Utils'
+import { qualifiedId, shortId, CollapsibleName } from './Utils'
 
 export type IdProps = { id: IdType }
 
@@ -19,7 +19,7 @@ const Id = ({ id }: IdProps) => {
 
   return (
     <div className={$.container} onClick={onClick}>
-      {instance ? qualifiedId(instance) : shortId(id)}
+      {instance ? <CollapsibleName name={qualifiedId(instance)}/> : shortId(id)}
     </div>
   )
 }

@@ -23,6 +23,11 @@
   justify-content: center;
 
   background-color: $color-background-tertiary;
+
+  & > div {
+    display: flex;
+    max-width: 100%;
+  }
 }
 
 .highlighted {

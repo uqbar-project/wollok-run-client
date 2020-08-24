@@ -1,0 +1,13 @@
+.collapsible {
+  display: flex;
+  overflow: hidden;
+
+  & > span:first-child {
+    min-width: 1em;
+
+    display: block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+}

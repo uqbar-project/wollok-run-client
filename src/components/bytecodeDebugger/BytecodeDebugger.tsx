@@ -13,8 +13,6 @@ import LoadScreen from './LoadScreen'
 import { DebugTarget } from './LoadScreen'
 
 // TODO:
-// - Show inner value
-// - Collapse long strings with (...)
 // - Expand and collapse contexts
 // - Add logs directly to tab (would be nice to have actually collapsable nested contexts)
 

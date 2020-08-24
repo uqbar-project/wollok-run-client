@@ -1,3 +1,5 @@
+@import "../../theme";
+
 .locals {
   margin-left: 0.75em;
 
@@ -9,11 +11,14 @@
     justify-content: space-between;
 
     & > :first-child {
-      width: 50%;
+      width: calc(50% - 0.25rem);
+      display: flex;
+      white-space: nowrap;
     }
 
     & > :last-child {
       width: 50%;
+      display: flex;
     }
   }
 }

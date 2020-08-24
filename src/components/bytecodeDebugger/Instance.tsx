@@ -15,7 +15,7 @@ const Instance = ({ instance }: InstanceProps) => {
   
   return (
     <div className={$.container}>
-      <h3>{qualifiedId(instance)}</h3>
+      <h3>{qualifiedId(instance)}{instance.innerValue !== undefined ? `[${instance.innerValue}]` : ''}</h3>
       <div>
         { contextHierarchy(evaluation, instance.id).map(context =>
           <Context key={context.id} context={context}/>
