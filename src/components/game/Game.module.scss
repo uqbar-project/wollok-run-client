@@ -1,4 +1,4 @@
-@import "../_theme.scss";
+@import "../../_theme.scss";
 
 .container {
   display: flex;
@@ -22,11 +22,17 @@
   .description {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    width: 40%;
     height: 100%;
     margin-left: 1vw;
-    padding-left: 1vw;
+    padding-left: 4vw;
     border-left: 2px solid $color-primary;
+    h1{
+      font-size: 3em;
+    }
+    h2{
+      margin: 2vw 2vw 1vw 0;
+    }
   }
 }
 
