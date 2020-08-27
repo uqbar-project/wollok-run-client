@@ -1,13 +1,13 @@
 @import "../../_theme.scss";
 
-* {
-  color: $color-font-main;
-}
-
 .panel {
   font: $font-main;
   color: $color-font-main;
   background-color: $color-background-secondary;
+
+  * {
+    color: $color-font-main;
+  }
 }
 
 .border,

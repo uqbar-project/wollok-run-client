@@ -40,7 +40,7 @@ const layoutConfiguration = {
       {
         type: 'tabset', weight: 25, selected: 0, children: [
           { type: 'tab', component: 'FrameStack' },
-        ], 
+        ],
       },
       {
         type: 'tabset', weight: 75, selected: 0, children: [

@@ -1,9 +1,11 @@
 import p5 from 'p5'
+import p5Types from 'p5'
 import React from 'react'
 import Sketch from 'react-p5'
 // import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id, interpret, WRENatives } from 'wollok-ts'
 import { RuntimeObject } from 'wollok-ts/dist/interpreter'
+import { GameProject } from './Game'
 
 type Cell = {
   img: string
@@ -71,9 +73,11 @@ const currentVisualStates = (evaluation: Evaluation) => {
   const visuals = wVisuals.innerValue
   return visuals.map((id: Id) => {
     const currentFrame = evaluation.currentFrame()!
-
-    sendMessage('position', id)(evaluation)
-    const position = evaluation.instance(currentFrame.operandStack.pop()!)
+    let position = evaluation.instance(id).get('position')
+    if (!position) {
+      sendMessage('position', id)(evaluation)
+      position = evaluation.instance(currentFrame.operandStack.pop()!)
+    }
     const wx: RuntimeObject = evaluation.instance(position.get('x')!.id)
     wx.assertIsNumber()
     const x = wx.innerValue
@@ -97,20 +101,30 @@ const currentVisualStates = (evaluation: Evaluation) => {
 }
 
 interface SketchProps {
-  game: {
-    imagePaths: string[]
-    cwd: string
-  }
+  game: GameProject
   evaluation: Evaluation
 }
 
-const SketchComponent = ({ game: { imagePaths, cwd }, evaluation }: SketchProps) => {
+const SketchComponent = ({ game, evaluation }: SketchProps) => {
   const imgs: { [id: string]: p5.Image } = {}
   let board: Board
 
-  function loadImages(sketch: p5) {
-    imagePaths.forEach((path: string) => {
-      imgs[path] = sketch.loadImage(`${cwd}/assets/${path}`)
+
+  const draw = (sketch: p5Types) => {
+    if (!evaluation) return
+    flushEvents(evaluation, currentTime(sketch))
+    updateBoard()
+    drawBoard(sketch)
+  }
+
+  const setup = (sketch: p5Types, canvasParentRef: any) => {
+    sketch.createCanvas(500, 500).parent(canvasParentRef)
+    loadImages(sketch)
+  }
+
+  function loadImages(sketch: p5Types) {
+    game.imagePaths.forEach((path: string) => {
+      imgs[path.split('/').pop()!] = sketch.loadImage(game.assetSource + path)
     })
   }
 
@@ -139,19 +153,6 @@ const SketchComponent = ({ game: { imagePaths, cwd }, evaluation }: SketchProps)
   }
 
   function currentTime(sketch: p5) { return sketch.millis() }
-
-
-  function draw(sketch: p5) {
-    if (!evaluation) return
-    flushEvents(evaluation, currentTime(sketch))
-    updateBoard()
-    drawBoard(sketch)
-  }
-
-  function setup(sketch: p5, canvasParentRef: any) {
-    sketch.createCanvas(500, 500).parent(canvasParentRef)
-    loadImages(sketch)
-  }
 
   function keyPressed(sketch: p5) {
     const left = evaluation.createInstance('wollok.lang.String', 'keydown')
