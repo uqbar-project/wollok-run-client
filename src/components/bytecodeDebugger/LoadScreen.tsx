@@ -22,7 +22,7 @@ const LoadScreen = ({ setDebugTarget }: LoadScreenProps) => {
     const files = await Promise.all([...event.target.files!]
       .filter(file => file.name.match(/\.(?:wlk|wtest|wpgm)$/))
       .map(file => new Promise<{ name: string, content: string }>((resolve) => {
-        const reader = new FileReader()  
+        const reader = new FileReader()
         reader.onload = () => resolve({
           name: file.webkitRelativePath,
           content: reader.result as string,

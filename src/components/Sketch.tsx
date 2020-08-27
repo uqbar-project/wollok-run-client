@@ -2,11 +2,8 @@ import p5 from 'p5'
 import React from 'react'
 import Sketch from 'react-p5'
 // import 'p5/lib/addons/p5.sound'
-import { Evaluation, Id, interpret } from 'wollok-ts/dist'
-import { Natives, RuntimeObject } from 'wollok-ts/dist/interpreter'
-import wre from 'wollok-ts/dist/wre/wre.natives'
-
-const natives = wre as Natives
+import { Evaluation, Id, interpret, WRENatives } from 'wollok-ts'
+import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 
 type Cell = {
   img: string
@@ -34,7 +31,7 @@ const emptyBoard = (evaluation: Evaluation): Board => {
 }
 
 const flushEvents = (evaluation: Evaluation, ms: number): void => {
-  const { sendMessage } = interpret(evaluation.environment, natives)
+  const { sendMessage } = interpret(evaluation.environment, WRENatives)
   const time = evaluation.createInstance('wollok.lang.Number', ms)
   sendMessage('flushEvents', io(evaluation), time)(evaluation)
 }
@@ -67,7 +64,7 @@ function wKeyCode(key: string, keyCode: number) {
 // }
 
 const currentVisualStates = (evaluation: Evaluation) => {
-  const { sendMessage } = interpret(evaluation.environment, natives)
+  const { sendMessage } = interpret(evaluation.environment, WRENatives)
 
   const wVisuals: RuntimeObject = evaluation.instance(gameInstance(evaluation).get('visuals')!.id)
   wVisuals.assertIsCollection()
@@ -160,7 +157,7 @@ const SketchComponent = ({ game: { imagePaths, cwd }, evaluation }: SketchProps)
     const left = evaluation.createInstance('wollok.lang.String', 'keydown')
     const right = evaluation.createInstance('wollok.lang.String', wKeyCode(sketch.key, sketch.keyCode))
     const id = evaluation.createInstance('wollok.lang.List', [left, right])
-    const { sendMessage } = interpret(evaluation.environment, natives)
+    const { sendMessage } = interpret(evaluation.environment, WRENatives)
     sendMessage('queueEvent', io(evaluation), id)(evaluation)
     return false
   }

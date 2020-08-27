@@ -2,12 +2,10 @@ import React, { KeyboardEvent, memo, useState } from 'react'
 import Slider from 'react-input-slider'
 import SimpleCodeEditor from 'react-simple-code-editor'
 import Splitter from 'react-splitter-layout'
-import { build, Environment, Evaluation, fill, interpret, link, List, parse, Sentence } from 'wollok-ts/dist'
-import { Natives, RuntimeObject, VOID_ID } from 'wollok-ts/dist/interpreter'
-import wre from 'wollok-ts/dist/wre/wre.natives'
+import { WRENatives, build, Environment, Evaluation, fill, interpret, link, List, parse, Sentence } from 'wollok-ts'
+import { RuntimeObject, VOID_ID } from 'wollok-ts/dist/interpreter'
 import $ from './Repl.module.scss'
 
-const natives = wre as Natives
 
 const CodeEditor = memo(SimpleCodeEditor)
 
@@ -66,7 +64,7 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
       const newOutputs = environmentsPerLine.map(environment => {
         if (!environment) return undefined
 
-        const { buildEvaluation, stepAll, sendMessage } = interpret(environment, natives)
+        const { buildEvaluation, stepAll, sendMessage } = interpret(environment, WRENatives)
         const evaluation = buildEvaluation()
         stepAll(evaluation)
 

@@ -1,14 +1,10 @@
 import { RouteComponentProps } from '@reach/router'
 import React, { memo, useEffect, useState } from 'react'
-import { buildEnvironment, Evaluation, interpret } from 'wollok-ts/dist'
-import { Natives } from 'wollok-ts/dist/interpreter'
-import wre from 'wollok-ts/dist/wre/wre.natives'
+import { buildEnvironment, Evaluation, interpret, WRENatives } from 'wollok-ts'
 import $ from './Game.module.scss'
 import Sketch from './Sketch'
 import { gameInstance } from './Sketch'
 import Spinner from './Spinner'
-
-const natives = wre as Natives
 
 const fetchFile = async (path: string) => {
   const source = await fetch(`${game.cwd}/${path}`)
@@ -77,7 +73,7 @@ const Game = (_: GameProps) => {
   useEffect(() => {
     Promise.all(game.sources.map(fetchFile)).then(files => {
       const environment = buildEnvironment(files)
-      const { buildEvaluation, runProgram } = interpret(environment, natives)
+      const { buildEvaluation, runProgram } = interpret(environment, WRENatives)
       const cleanEval = buildEvaluation()
       runProgram(game.main, cleanEval)
       setEvaluation(cleanEval)

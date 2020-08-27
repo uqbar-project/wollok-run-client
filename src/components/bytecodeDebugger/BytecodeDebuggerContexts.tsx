@@ -1,7 +1,6 @@
 import React, { createContext, useState, ReactNode, Dispatch } from 'react'
-import { Evaluation, interpret, List, Environment, Id as IdType } from 'wollok-ts'
-import wre from 'wollok-ts/dist/wre/wre.natives'
-import { Natives, Frame, compile, ROOT_CONTEXT_ID } from 'wollok-ts/dist/interpreter'
+import { Evaluation, interpret, List, Environment, Id as IdType, WRENatives } from 'wollok-ts'
+import { Frame, compile, ROOT_CONTEXT_ID } from 'wollok-ts/dist/interpreter'
 import { Model as LayoutModel, Actions as LayoutActions } from 'flexlayout-react'
 
 const { selectTab } = LayoutActions
@@ -27,10 +26,10 @@ type LayoutContextProviderProps = {
 }
 
 export const LayoutContextProvider = ({ children, layout }: LayoutContextProviderProps ) => {
-  
+
   const [instanceSearch, updateInstanceSearch] = useState('')
   const [contextSearch, updateContextSearch] = useState('')
-  
+
   const setInstanceSearch = (search: string) => {
     updateInstanceSearch(search)
     const instanceTab = layout.getBorderSet().getBorders()[1].getChildren()[1]
@@ -79,22 +78,22 @@ type EvaluationContextProviderProps = {
 }
 
 export const EvaluationContextProvider = ({ environment, testId, children }: EvaluationContextProviderProps ) => {
-  
-  const { buildEvaluation, step, stepAll, garbageCollect } = interpret(environment, wre as Natives)
+
+  const { buildEvaluation, step, stepAll, garbageCollect } = interpret(environment, WRENatives)
 
   const [currentEvaluationIndex, setCurrentEvaluationIndex] = useState(0)
   const [evaluationHistory, setEvaluationHistory] = useState(() => {
     const evaluation = buildEvaluation()
-    
+
     stepAll(evaluation)
     evaluation.popFrame()
-    
+
     const test = environment.getNodeById<'Test'>(testId)
     const describe = test.parent()
     let parentContext = ROOT_CONTEXT_ID
     if (describe.is('Describe')) {
       const describeInstanceId = evaluation.createInstance(describe.fullyQualifiedName())
-  
+
       evaluation.pushFrame(compile(evaluation.environment)(
         ...describe.variables(),
         ...describe.fixtures().flatMap(fixture => fixture.body.sentences),
@@ -114,7 +113,7 @@ export const EvaluationContextProvider = ({ environment, testId, children }: Eva
 
   const stepEvaluation = () => {
     const next = currentEvaluation.copy()
-    
+
     try { step(next) }
     catch (error) { alert(error) }
 

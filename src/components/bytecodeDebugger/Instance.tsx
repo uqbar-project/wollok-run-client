@@ -12,7 +12,7 @@ type InstanceProps = {
 
 const Instance = ({ instance }: InstanceProps) => {
   const { evaluation } = useContext(EvaluationContext)
-  
+
   return (
     <div className={$.container}>
       <h3>{qualifiedId(instance)}{instance.innerValue !== undefined ? `[${instance.innerValue}]` : ''}</h3>
