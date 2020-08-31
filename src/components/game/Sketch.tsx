@@ -13,20 +13,22 @@ const natives = wre as Natives
 type Cell = { img: string, message?: any }
 type Board = Cell[][][]
 
-const CELL_SIZE = 50
-
 const io = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.io.io').id
 
 export const gameInstance = (evaluation: Evaluation) => {
   return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
 }
 
+function gameAttributeInstance(evaluation: Evaluation, field: string): RuntimeObject {
+  const gameInst: RuntimeObject = gameInstance(evaluation)
+  return evaluation.instance(gameInst.get(field)!.id)
+}
+
 const emptyBoard = (evaluation: Evaluation): Board => {
-  const gameInst = gameInstance(evaluation)
-  const width = evaluation.instance(gameInst.get('width')!.id).innerValue
-  const height = evaluation.instance(gameInst.get('height')!.id).innerValue
-  const ground = evaluation.instance(gameInst.get('ground')!.id) &&
-    `${evaluation.instance(gameInst.get('ground')!.id).innerValue}`
+  const width = gameAttributeInstance(evaluation, 'width').innerValue
+  const height = gameAttributeInstance(evaluation, 'height').innerValue
+  const ground = gameAttributeInstance(evaluation, 'ground') &&
+    `${gameAttributeInstance(evaluation, 'ground').innerValue}`
   return Array.from(Array(height), () =>
     Array.from(Array(width), () => ground ? [{ img: ground }] : [])
   )
@@ -68,7 +70,7 @@ function wKeyCode(key: string, keyCode: number) {
 const currentVisualStates = (evaluation: Evaluation) => {
   const { sendMessage } = interpret(evaluation.environment, natives)
 
-  const wVisuals: RuntimeObject = evaluation.instance(gameInstance(evaluation).get('visuals')!.id)
+  const wVisuals: RuntimeObject = gameAttributeInstance(evaluation, 'visuals')
   wVisuals.assertIsCollection()
   const visuals = wVisuals.innerValue
   return visuals.map((id: Id) => {
@@ -117,8 +119,27 @@ export default ({ game, evaluation }: SketchProps) => {
     drawBoard(sketch)
   }
 
+  const canvasResolution = () => {
+    const widthInst: RuntimeObject = gameAttributeInstance(evaluation, 'width')
+    const heightInst: RuntimeObject = gameAttributeInstance(evaluation, 'height')
+    const cellSizeInst: RuntimeObject = gameAttributeInstance(evaluation, 'cellSize')
+    widthInst.assertIsNumber()
+    heightInst.assertIsNumber()
+    cellSizeInst.assertIsNumber()
+
+    const pixelWidth = widthInst.innerValue * cellSizeInst.innerValue
+    const pixelHeight = heightInst.innerValue * cellSizeInst.innerValue
+
+    return {
+      x: pixelWidth,
+      y: pixelHeight,
+    }
+  }
+
   const setup = (sketch: p5Types, canvasParentRef: any) => {
-    sketch.createCanvas(500, 500).parent(canvasParentRef)
+    const resolution = canvasResolution()
+
+    sketch.createCanvas(resolution.x, resolution.y).parent(canvasParentRef)
     loadImages(sketch)
   }
 
@@ -138,10 +159,14 @@ export default ({ game, evaluation }: SketchProps) => {
   }
 
   function drawBoard(sketch: p5) { // TODO: Draw by layer, not cell
+    const cellSizeInst: RuntimeObject = gameAttributeInstance(evaluation, 'cellSize')
+    cellSizeInst.assertIsNumber()
+    const cellSize = cellSizeInst.innerValue
+
     board.forEach((row, _y) => {
-      const y = sketch.height - _y * CELL_SIZE
+      const y = sketch.height - _y * cellSize
       row.forEach((cell, _x) => {
-        const x = _x * CELL_SIZE
+        const x = _x * cellSize
         cell.forEach(({ img, message }) => {
           const imageObject = imgs[img]
           const yPosition = y - imageObject.height
