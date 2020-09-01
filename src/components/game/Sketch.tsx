@@ -19,16 +19,16 @@ export const gameInstance = (evaluation: Evaluation) => {
   return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
 }
 
-function gameAttributeInstance(evaluation: Evaluation, field: string): RuntimeObject {
+function gameInstanceField(evaluation: Evaluation, field: string): RuntimeObject {
   const gameInst: RuntimeObject = gameInstance(evaluation)
   return evaluation.instance(gameInst.get(field)!.id)
 }
 
 const emptyBoard = (evaluation: Evaluation): Board => {
-  const width = gameAttributeInstance(evaluation, 'width').innerValue
-  const height = gameAttributeInstance(evaluation, 'height').innerValue
-  const ground = gameAttributeInstance(evaluation, 'ground') &&
-    `${gameAttributeInstance(evaluation, 'ground').innerValue}`
+  const width = gameInstanceField(evaluation, 'width').innerValue
+  const height = gameInstanceField(evaluation, 'height').innerValue
+  const ground = gameInstanceField(evaluation, 'ground') &&
+    `${gameInstanceField(evaluation, 'ground').innerValue}`
   return Array.from(Array(height), () =>
     Array.from(Array(width), () => ground ? [{ img: ground }] : [])
   )
@@ -70,7 +70,7 @@ function wKeyCode(key: string, keyCode: number) {
 const currentVisualStates = (evaluation: Evaluation) => {
   const { sendMessage } = interpret(evaluation.environment, natives)
 
-  const wVisuals: RuntimeObject = gameAttributeInstance(evaluation, 'visuals')
+  const wVisuals: RuntimeObject = gameInstanceField(evaluation, 'visuals')
   wVisuals.assertIsCollection()
   const visuals = wVisuals.innerValue
   return visuals.map((id: Id) => {
@@ -120,9 +120,9 @@ export default ({ game, evaluation }: SketchProps) => {
   }
 
   const canvasResolution = () => {
-    const widthInst: RuntimeObject = gameAttributeInstance(evaluation, 'width')
-    const heightInst: RuntimeObject = gameAttributeInstance(evaluation, 'height')
-    const cellSizeInst: RuntimeObject = gameAttributeInstance(evaluation, 'cellSize')
+    const widthInst: RuntimeObject = gameInstanceField(evaluation, 'width')
+    const heightInst: RuntimeObject = gameInstanceField(evaluation, 'height')
+    const cellSizeInst: RuntimeObject = gameInstanceField(evaluation, 'cellSize')
     widthInst.assertIsNumber()
     heightInst.assertIsNumber()
     cellSizeInst.assertIsNumber()
@@ -159,7 +159,7 @@ export default ({ game, evaluation }: SketchProps) => {
   }
 
   function drawBoard(sketch: p5) { // TODO: Draw by layer, not cell
-    const cellSizeInst: RuntimeObject = gameAttributeInstance(evaluation, 'cellSize')
+    const cellSizeInst: RuntimeObject = gameInstanceField(evaluation, 'cellSize')
     cellSizeInst.assertIsNumber()
     const cellSize = cellSizeInst.innerValue
 
