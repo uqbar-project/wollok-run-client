@@ -154,12 +154,20 @@ export default ({ game, evaluation }: SketchProps) => {
 
   function currentTime(sketch: p5) { return sketch.millis() }
 
-  function keyPressed(sketch: p5) {
-    const left = evaluation.createInstance('wollok.lang.String', 'keydown')
-    const right = evaluation.createInstance('wollok.lang.String', wKeyCode(sketch.key, sketch.keyCode))
-    const id = evaluation.createInstance('wollok.lang.List', [left, right])
+  function queueEvent(eventId: string) {
     const { sendMessage } = interpret(evaluation.environment, natives)
-    sendMessage('queueEvent', io(evaluation), id)(evaluation)
+    sendMessage('queueEvent', io(evaluation), eventId)(evaluation)
+  }
+
+  function keyPressed(sketch: p5) {
+    const left = evaluation.createInstance('wollok.lang.String', 'keypress')
+    const keyPressedCode = evaluation.createInstance('wollok.lang.String', wKeyCode(sketch.key, sketch.keyCode))
+    const anyKeyCode = evaluation.createInstance('wollok.lang.String', 'ANY')
+    const keyPressedId = evaluation.createInstance('wollok.lang.List', [left, keyPressedCode])
+    const anyKeyPressedId = evaluation.createInstance('wollok.lang.List', [left, anyKeyCode])
+
+    queueEvent(keyPressedId)
+    queueEvent(anyKeyPressedId)
     return false
   }
 
