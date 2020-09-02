@@ -8,14 +8,15 @@ import Game from './components/game/Game'
 import Worksheet from './components/worksheet/Worksheet'
 import './index.scss'
 import * as serviceWorker from './serviceWorker'
+import BytecodeDebugger from './components/bytecodeDebugger/BytecodeDebugger'
 
-if (process.env.NODE_ENV !== 'production') whyDidYouRender(React)
-
+if (process.env.NODE_ENV !== 'production') whyDidYouRender(React, { trackHooks: true })
 
 const Routes = () => (
   <Router>
     <Worksheet path='/worksheet' />
     <Game path='/game' />
+    <BytecodeDebugger path='/debugger' />
     <Redirect from='/' to='/worksheet' default noThrow />
   </Router>
 )

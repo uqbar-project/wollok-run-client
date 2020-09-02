@@ -3,21 +3,21 @@ import p5Types from 'p5'
 import React from 'react'
 import Sketch from 'react-p5'
 // import 'p5/lib/addons/p5.sound'
-import { Evaluation, Id, interpret } from 'wollok-ts/dist'
-import { Natives, RuntimeObject } from 'wollok-ts/dist/interpreter'
-import wre from 'wollok-ts/dist/wre/wre.natives'
+import { Evaluation, Id, interpret, WRENatives } from 'wollok-ts'
+import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import { GameProject } from './Game'
 
-const natives = wre as Natives
-
-type Cell = { img: string, message?: any }
+type Cell = {
+  img: string
+  message?: any
+}
 type Board = Cell[][][]
 
 const CELL_SIZE = 50
 
 const io = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.io.io').id
 
-export const gameInstance = (evaluation: Evaluation) => {
+export const gameInstance = (evaluation: Evaluation): RuntimeObject => {
   return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
 }
 
@@ -33,7 +33,7 @@ const emptyBoard = (evaluation: Evaluation): Board => {
 }
 
 const flushEvents = (evaluation: Evaluation, ms: number): void => {
-  const { sendMessage } = interpret(evaluation.environment, natives)
+  const { sendMessage } = interpret(evaluation.environment, WRENatives)
   const time = evaluation.createInstance('wollok.lang.Number', ms)
   sendMessage('flushEvents', io(evaluation), time)(evaluation)
 }
@@ -66,7 +66,7 @@ function wKeyCode(key: string, keyCode: number) {
 // }
 
 const currentVisualStates = (evaluation: Evaluation) => {
-  const { sendMessage } = interpret(evaluation.environment, natives)
+  const { sendMessage } = interpret(evaluation.environment, WRENatives)
 
   const wVisuals: RuntimeObject = evaluation.instance(gameInstance(evaluation).get('visuals')!.id)
   wVisuals.assertIsCollection()
@@ -105,7 +105,7 @@ interface SketchProps {
   evaluation: Evaluation
 }
 
-export default ({ game, evaluation }: SketchProps) => {
+const SketchComponent = ({ game, evaluation }: SketchProps) => {
   const imgs: { [id: string]: p5.Image } = {}
   let board: Board
 
@@ -155,7 +155,7 @@ export default ({ game, evaluation }: SketchProps) => {
   function currentTime(sketch: p5) { return sketch.millis() }
 
   function queueGameEvent(eventId: string) {
-    const { sendMessage } = interpret(evaluation.environment, natives)
+    const { sendMessage } = interpret(evaluation.environment, WRENatives)
     sendMessage('queueEvent', io(evaluation), eventId)(evaluation)
   }
 
@@ -173,3 +173,5 @@ export default ({ game, evaluation }: SketchProps) => {
 
   return <Sketch setup={setup as any} draw={draw as any} keyPressed={keyPressed as any} />
 }
+
+export default SketchComponent

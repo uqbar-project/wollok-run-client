@@ -1,2 +1,30 @@
+$base-font-size: 12px;
+
+$size-margin-small: 0.25rem;
+$size-margin-large: $size-margin-small * 2;
+
+$font-main: 1rem monospace;
+$font-title-1: bold 1.5rem monospace;
+$font-title-2: bold 1.2rem monospace;
+$font-title-3: bold 1.1rem monospace;
+$font-title-4: bold 1rem monospace;
+$font-button: bold 1rem monospace;
+
+$color-font-main: #ffffff;
+$color-font-title: #ffffff;
+$color-font-link: #af56ff;
+
+$color-background-nullary: #000000;
+$color-background-primary: #1c1a1c;
+$color-background-secondary: #2b2a2b;
+$color-background-tertiary: #3a393a;
+$color-background-quaternary: #6b6a6b;
+$color-background-pentary: #939293;
+$color-background-highlight: #314796;
+$color-background-action: #5dc75c;
+$color-background-danger: #d63c3c;
+
+// DEPRECATED
+
 $color-highlight: #f1f8ff;
 $color-primary: #ac4142;

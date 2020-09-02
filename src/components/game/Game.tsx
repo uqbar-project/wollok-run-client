@@ -12,7 +12,7 @@ import GameSelector from './GameSelector'
 import Sketch, { gameInstance } from './Sketch'
 
 const natives = wre as Natives
-const SRC_DIR = `src`
+const SRC_DIR = 'src'
 const WOLLOK_FILE_EXTENSION = 'wlk'
 const WOLLOK_PROGRAM_EXTENSION = 'wpgm'
 const EXPECTED_WOLLOK_EXTENSIONS = [WOLLOK_FILE_EXTENSION, WOLLOK_PROGRAM_EXTENSION]
@@ -115,16 +115,16 @@ function buildGameProject(repoUri: string): GameProject {
 }
 
 function getAllFilePathsFrom(parentDirectory: string, validSuffixes?: string[]): string[] {
- const browserFS = BrowserFS.BFSRequire('fs')
- const allFiles = browserFS
-  .readdirSync(parentDirectory)
-  .map((directoryEntry: string) => {
+  const browserFS = BrowserFS.BFSRequire('fs')
+  const allFiles = browserFS
+    .readdirSync(parentDirectory)
+    .map((directoryEntry: string) => {
       const fullPath = `${parentDirectory}/${directoryEntry}`
       return browserFS.statSync(fullPath).isDirectory() ?
         getAllFilePathsFrom(fullPath, validSuffixes) : fullPath
     })
-  .flat()
- return validSuffixes ?
+    .flat()
+  return validSuffixes ?
     allFiles.filter((file: string) => validSuffixes!.some(suffix => file.endsWith(`.${suffix}`))) :
     allFiles
 }

@@ -23,12 +23,12 @@ const COMMENTS = [
 
 const highlight = (text: string) => [...KEYWORDS, ...VALUES, ...COMMENTS].reduce((current, { regex, style }) =>
   current.replace(regex, `<span class='${style}'>$1</span>`)
-  , text)
+, text)
 
 
 export type EditorProps = {
-  code: string,
-  onCodeChange: (code: string) => void,
+  code: string
+  onCodeChange: (code: string) => void
 }
 
 const Editor = ({ code, onCodeChange }: EditorProps) => {

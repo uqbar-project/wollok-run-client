@@ -1,0 +1,20 @@
+@import "../../_theme.scss";
+
+.panel {
+  font: $font-main;
+  color: $color-font-main;
+  background-color: $color-background-secondary;
+
+  * {
+    color: $color-font-main;
+  }
+}
+
+.border,
+.splitter {
+  background-color: $color-background-primary;
+}
+
+.borderTab {
+  font: $font-main;
+}

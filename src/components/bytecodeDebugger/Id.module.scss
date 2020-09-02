@@ -1,0 +1,13 @@
+@import "../../theme";
+
+.container,
+.container * {
+  max-width: 100%;
+
+  display: flex;
+
+  color: $color-font-link;
+  font-style: italic;
+  cursor: pointer;
+  white-space: nowrap;
+}
