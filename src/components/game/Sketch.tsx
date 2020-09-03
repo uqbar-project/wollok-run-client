@@ -24,13 +24,38 @@ function gameInstanceField(evaluation: Evaluation, field: string): RuntimeObject
   return evaluation.instance(gameInst.get(field)!.id)
 }
 
+function numberGameFieldValue(evaluation: Evaluation, field: string): number {
+  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)
+  fieldInst.assertIsNumber()
+  return fieldInst.innerValue
+}
+
+function stringGameFieldValue(evaluation: Evaluation, field: string): string {
+  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)
+  fieldInst.assertIsString()
+  return fieldInst.innerValue
+}
+
+function width(evaluation: Evaluation): number {
+  return numberGameFieldValue(evaluation, 'width')
+}
+
+function height(evaluation: Evaluation): number {
+  return numberGameFieldValue(evaluation, 'height')
+}
+
+function cellSize(evaluation: Evaluation): number {
+  return numberGameFieldValue(evaluation, 'cellSize')
+}
+
+function ground(evaluation: Evaluation): string {
+  return stringGameFieldValue(evaluation, 'ground')
+}
+
 const emptyBoard = (evaluation: Evaluation): Board => {
-  const width = gameInstanceField(evaluation, 'width').innerValue
-  const height = gameInstanceField(evaluation, 'height').innerValue
-  const ground = gameInstanceField(evaluation, 'ground') &&
-    `${gameInstanceField(evaluation, 'ground').innerValue}`
-  return Array.from(Array(height), () =>
-    Array.from(Array(width), () => ground ? [{ img: ground }] : [])
+  const groundPath = ground(evaluation)
+  return Array.from(Array(height(evaluation)), () =>
+    Array.from(Array(width(evaluation)), () => groundPath ? [{ img: groundPath }] : [])
   )
 }
 
@@ -120,15 +145,10 @@ export default ({ game, evaluation }: SketchProps) => {
   }
 
   const canvasResolution = () => {
-    const widthInst: RuntimeObject = gameInstanceField(evaluation, 'width')
-    const heightInst: RuntimeObject = gameInstanceField(evaluation, 'height')
-    const cellSizeInst: RuntimeObject = gameInstanceField(evaluation, 'cellSize')
-    widthInst.assertIsNumber()
-    heightInst.assertIsNumber()
-    cellSizeInst.assertIsNumber()
+    const cellPixelSize = cellSize(evaluation)
 
-    const pixelWidth = widthInst.innerValue * cellSizeInst.innerValue
-    const pixelHeight = heightInst.innerValue * cellSizeInst.innerValue
+    const pixelWidth = width(evaluation) * cellPixelSize
+    const pixelHeight = height(evaluation) * cellPixelSize
 
     return {
       x: pixelWidth,
@@ -159,14 +179,12 @@ export default ({ game, evaluation }: SketchProps) => {
   }
 
   function drawBoard(sketch: p5) { // TODO: Draw by layer, not cell
-    const cellSizeInst: RuntimeObject = gameInstanceField(evaluation, 'cellSize')
-    cellSizeInst.assertIsNumber()
-    const cellSize = cellSizeInst.innerValue
+    const cellPixelSize = cellSize(evaluation)
 
     board.forEach((row, _y) => {
-      const y = sketch.height - _y * cellSize
+      const y = sketch.height - _y * cellPixelSize
       row.forEach((cell, _x) => {
-        const x = _x * cellSize
+        const x = _x * cellPixelSize
         cell.forEach(({ img, message }) => {
           const imageObject = imgs[img]
           const yPosition = y - imageObject.height
