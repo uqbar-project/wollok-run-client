@@ -164,6 +164,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   function loadImages(sketch: p5Types) {
+    imgs['ground.png'] = sketch.loadImage('https://raw.githubusercontent.com/uqbar-project/wollok/dev/org.uqbar.project.wollok.game/assets/ground.png')
     game.imagePaths.forEach((path: string) => {
       imgs[path.split('/').pop()!] = sketch.loadImage(game.assetSource + path)
     })
