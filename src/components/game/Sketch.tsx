@@ -80,7 +80,7 @@ function wKeyCode(key: string, keyCode: number) {
   if (keyCode === 191) return 'Slash'
   if (keyCode === 32) return 'Space'
   if (keyCode === 16) return 'Shift'
-  return undefined
+  return ''
 }
 
 // interface VisualState {
