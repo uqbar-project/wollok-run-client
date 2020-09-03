@@ -21,8 +21,8 @@ const Context = ({ context, nameFilter = () => true }: ContextProps) => {
           keys(context.locals).filter(nameFilter).map(name => {
             return (
               <div key={name}>
-                <div><CollapsibleName name={name}/>:</div>
-                <Id id={context.locals[name]}/>
+                <div><CollapsibleName name={name} />:</div>
+                <Id id={context.locals.get(name)!} />
               </div>
             )
           })

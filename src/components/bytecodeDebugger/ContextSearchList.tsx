@@ -11,7 +11,7 @@ import $ from './ContextSearchList.module.scss'
 const { keys } = Object
 
 
-export type ContextSearchListProps = { }
+export type ContextSearchListProps = {}
 
 const ContextSearchList = ({ }: ContextSearchListProps) => {
   const { evaluation } = useContext(EvaluationContext)
@@ -20,7 +20,7 @@ const ContextSearchList = ({ }: ContextSearchListProps) => {
   const elements = evaluation.listContexts().map(id => evaluation.context(id))
   const searchTerms = (context: ContextType) => [
     shortId(context.id),
-    ...keys(context.locals).flatMap(name => [name, shortId(context.locals[name])]),
+    ...keys(context.locals).flatMap(name => [name, shortId(context.locals.get(name)!)]),
   ]
 
   const content = elements
@@ -28,7 +28,7 @@ const ContextSearchList = ({ }: ContextSearchListProps) => {
     .map(context => (
       <Context
         context={context}
-        nameFilter={name => shortId(context.id).includes(contextSearch) || name.includes(contextSearch) || shortId(context.locals[name]).includes(contextSearch)}
+        nameFilter={name => shortId(context.id).includes(contextSearch) || name.includes(contextSearch) || shortId(context.locals.get(name)!).includes(contextSearch)}
         key={context.id}
       />
     ))
@@ -36,7 +36,7 @@ const ContextSearchList = ({ }: ContextSearchListProps) => {
   return (
     <Section
       title={`Contexts (${content.length}/${elements.length})`}
-      titleDecoration={<SearchBar search={contextSearch} setSearch={setContextSearch}/>}
+      titleDecoration={<SearchBar search={contextSearch} setSearch={setContextSearch} />}
       contentClassName={$.content}
     >
       {content}
