@@ -95,8 +95,8 @@ const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
       return [
         { data: { id, ...decoration(obj) } },
         ...keys(fields).flatMap(name => [
-          { data: { id: `${id}_${fields[name]}`, label: name, source: id, target: fields[name] } },
-          ...elementFromObject(evaluation!.instance(fields[name]), [...alreadyVisited, id]),
+          { data: { id: `${id}_${fields.get(name)}`, label: name, source: id, target: fields.get(name) } },
+          ...elementFromObject(evaluation!.instance(fields.get(name)!), [...alreadyVisited, id]),
         ]),
       ]
     }
