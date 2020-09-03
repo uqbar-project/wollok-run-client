@@ -13,22 +13,49 @@ type Cell = {
 }
 type Board = Cell[][][]
 
-const CELL_SIZE = 50
-
 const io = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.io.io').id
 
 export const gameInstance = (evaluation: Evaluation): RuntimeObject => {
   return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
 }
 
+function gameInstanceField(evaluation: Evaluation, field: string): RuntimeObject {
+  const gameInst: RuntimeObject = gameInstance(evaluation)
+  return evaluation.instance(gameInst.get(field)!.id)
+}
+
+function numberGameFieldValue(evaluation: Evaluation, field: string): number {
+  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)
+  fieldInst.assertIsNumber()
+  return fieldInst.innerValue
+}
+
+function stringGameFieldValue(evaluation: Evaluation, field: string): string {
+  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)
+  fieldInst.assertIsString()
+  return fieldInst.innerValue
+}
+
+function width(evaluation: Evaluation): number {
+  return numberGameFieldValue(evaluation, 'width')
+}
+
+function height(evaluation: Evaluation): number {
+  return numberGameFieldValue(evaluation, 'height')
+}
+
+function cellSize(evaluation: Evaluation): number {
+  return numberGameFieldValue(evaluation, 'cellSize')
+}
+
+function ground(evaluation: Evaluation): string {
+  return stringGameFieldValue(evaluation, 'ground')
+}
+
 const emptyBoard = (evaluation: Evaluation): Board => {
-  const gameInst = gameInstance(evaluation)
-  const width = evaluation.instance(gameInst.get('width')!.id).innerValue
-  const height = evaluation.instance(gameInst.get('height')!.id).innerValue
-  const ground = evaluation.instance(gameInst.get('ground')!.id) &&
-    `${evaluation.instance(gameInst.get('ground')!.id).innerValue}`
-  return Array.from(Array(height), () =>
-    Array.from(Array(width), () => ground ? [{ img: ground }] : [])
+  const groundPath = ground(evaluation)
+  return Array.from(Array(height(evaluation)), () =>
+    Array.from(Array(width(evaluation)), () => groundPath ? [{ img: groundPath }] : [])
   )
 }
 
@@ -68,7 +95,7 @@ function wKeyCode(key: string, keyCode: number) {
 const currentVisualStates = (evaluation: Evaluation) => {
   const { sendMessage } = interpret(evaluation.environment, WRENatives)
 
-  const wVisuals: RuntimeObject = evaluation.instance(gameInstance(evaluation).get('visuals')!.id)
+  const wVisuals: RuntimeObject = gameInstanceField(evaluation, 'visuals')
   wVisuals.assertIsCollection()
   const visuals = wVisuals.innerValue
   return visuals.map((id: Id) => {
@@ -117,8 +144,22 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     drawBoard(sketch)
   }
 
+  const canvasResolution = () => {
+    const cellPixelSize = cellSize(evaluation)
+
+    const pixelWidth = width(evaluation) * cellPixelSize
+    const pixelHeight = height(evaluation) * cellPixelSize
+
+    return {
+      x: pixelWidth,
+      y: pixelHeight,
+    }
+  }
+
   const setup = (sketch: p5Types, canvasParentRef: any) => {
-    sketch.createCanvas(500, 500).parent(canvasParentRef)
+    const resolution = canvasResolution()
+
+    sketch.createCanvas(resolution.x, resolution.y).parent(canvasParentRef)
     loadImages(sketch)
   }
 
@@ -138,10 +179,12 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   function drawBoard(sketch: p5) { // TODO: Draw by layer, not cell
+    const cellPixelSize = cellSize(evaluation)
+
     board.forEach((row, _y) => {
-      const y = sketch.height - _y * CELL_SIZE
+      const y = sketch.height - _y * cellPixelSize
       row.forEach((cell, _x) => {
-        const x = _x * CELL_SIZE
+        const x = _x * cellPixelSize
         cell.forEach(({ img, message }) => {
           const imageObject = imgs[img]
           const yPosition = y - imageObject.height
