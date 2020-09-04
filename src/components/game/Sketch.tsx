@@ -52,11 +52,26 @@ function ground(evaluation: Evaluation): string {
   return stringGameFieldValue(evaluation, 'ground')
 }
 
+function boardGround(evaluation: Evaluation): string | undefined {
+  try {
+    return stringGameFieldValue(evaluation, 'boardGround')
+  }
+  catch (error) {
+    return undefined
+  }
+
+}
+
 const emptyBoard = (evaluation: Evaluation): Board => {
   const groundPath = ground(evaluation)
-  return Array.from(Array(height(evaluation)), () =>
-    Array.from(Array(width(evaluation)), () => groundPath ? [{ img: groundPath }] : [])
+  const boardgroundPath = boardGround(evaluation)
+  const matrix = Array.from(Array(height(evaluation)), () =>
+    Array.from(Array(width(evaluation)), () => !boardgroundPath ? [{ img: groundPath }] : [])
   )
+  if (boardgroundPath) {
+    matrix[0][0].push({ img: boardgroundPath })
+  }
+  return matrix
 }
 
 const flushEvents = (evaluation: Evaluation, ms: number): void => {
@@ -156,12 +171,20 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     }
   }
 
+  function resizeBoardground(): void {
+    const boardGroundPath = boardGround(evaluation)
+    boardGroundPath && imgs[boardGroundPath].resize(canvasResolution().x, canvasResolution().y)
+  }
+
   const setup = (sketch: p5Types, canvasParentRef: any) => {
     const resolution = canvasResolution()
 
     sketch.createCanvas(resolution.x, resolution.y).parent(canvasParentRef)
     loadImages(sketch)
+    resizeBoardground()
   }
+
+
 
   function loadImages(sketch: p5Types) {
     imgs['ground.png'] = sketch.loadImage('https://raw.githubusercontent.com/uqbar-project/wollok/dev/org.uqbar.project.wollok.game/assets/ground.png')
