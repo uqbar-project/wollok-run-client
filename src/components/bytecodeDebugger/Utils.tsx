@@ -12,7 +12,7 @@ declare global {
 declare module 'react' {
   interface InputHTMLAttributes<T extends HTMLInputElement> {
     webkitdirectory?: string
-  } 
+  }
 }
 
 
