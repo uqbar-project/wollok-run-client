@@ -172,7 +172,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     if (JSON.stringify(next) !== current) board = next
   }
 
-  function drawBoard(sketch: p5) { // TODO: Draw by layer, not cell
+  function drawBoard(sketch: p5) {
     const cellPixelSize = cellSize(evaluation)
 
     boardToLayers(board).forEach(layer => {
