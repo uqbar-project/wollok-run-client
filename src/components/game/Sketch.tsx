@@ -65,9 +65,6 @@ const emptyBoard = (evaluation: Evaluation): Board => {
   const matrix = Array.from(Array(height(evaluation)), () =>
     Array.from(Array(width(evaluation)), () => !boardgroundPath ? [{ img: groundPath }] : [])
   )
-  if (boardgroundPath) {
-    matrix[0][0].push({ img: boardgroundPath })
-  }
   return matrix
 }
 
@@ -168,26 +165,23 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     }
   }
 
-  function resizeBoardground(): void {
-    const boardGroundPath = boardGround(evaluation)
-    boardGroundPath && imgs[boardGroundPath].resize(canvasResolution().x, canvasResolution().y)
-  }
-
   const setup = (sketch: p5Types, canvasParentRef: any) => {
     const resolution = canvasResolution()
 
     sketch.createCanvas(resolution.x, resolution.y).parent(canvasParentRef)
     loadImages(sketch)
-    resizeBoardground()
   }
 
-
-
   function loadImages(sketch: p5Types) {
-    imgs['ground.png'] = sketch.loadImage('https://raw.githubusercontent.com/uqbar-project/wollok/dev/org.uqbar.project.wollok.game/assets/ground.png')
-    game.imagePaths.forEach((path: string) => {
-      imgs[path.split('/').pop()!] = sketch.loadImage(game.assetSource + path)
+    game.defaultPaths.forEach(([defaultPath, url]: string[]) => { imgs[defaultPath] = sketch.loadImage(url) })
+
+    game.imagePaths.forEach((gamePath: string) => {
+      imgs[gamePath.split('/').pop()!] = sketch.loadImage(game.assetSource + gamePath)
     })
+  }
+
+  function imageFromPath(path: string): p5.Image {
+    return imgs[path] ?? imgs['wko.png']
   }
 
   function updateBoard() {
@@ -199,15 +193,23 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     if (JSON.stringify(next) !== current) board = next
   }
 
+  function drawBoardGround(sketch: p5) {
+    const boardGroundPath = boardGround(evaluation)
+
+    boardGroundPath && sketch.image(imageFromPath(boardGroundPath), 0, 0, sketch.width, sketch.height)
+  }
+
   function drawBoard(sketch: p5) { // TODO: Draw by layer, not cell
     const cellPixelSize = cellSize(evaluation)
+
+    drawBoardGround(sketch)
 
     board.forEach((row, _y) => {
       const y = sketch.height - _y * cellPixelSize
       row.forEach((cell, _x) => {
         const x = _x * cellPixelSize
         cell.forEach(({ img, message }) => {
-          const imageObject = imgs[img]
+          const imageObject: p5.Image = imageFromPath(img)
           const yPosition = y - imageObject.height
           sketch.image(imageObject, x, yPosition)
           if (message && message.time > currentTime(sketch)) sketch.text(message.text, x, yPosition)
