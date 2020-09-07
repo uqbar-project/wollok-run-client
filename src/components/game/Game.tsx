@@ -18,6 +18,7 @@ const WOLLOK_PROGRAM_EXTENSION = 'wpgm'
 const EXPECTED_WOLLOK_EXTENSIONS = [WOLLOK_FILE_EXTENSION, WOLLOK_PROGRAM_EXTENSION]
 const VALID_MEDIA_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
 const GAME_DIR = 'game'
+const DEFAULT_GAME_ASSETS_DIR = 'https://raw.githubusercontent.com/uqbar-project/wollok/dev/org.uqbar.project.wollok.game/assets/'
 
 const fetchFile = (path: string) => {
   return {
@@ -30,6 +31,7 @@ export interface GameProject {
   main: string
   sources: string[]
   description: string
+  defaultPaths: string[][]
   imagePaths: string[]
   assetSource: string
 }
@@ -97,6 +99,15 @@ async function cloneRepository(repoUri: string) {
   return buildGameProject(repoUri)
 }
 
+const defaultImgs = [
+  ['ground.png', DEFAULT_GAME_ASSETS_DIR + 'ground.png'],
+  ['wko.png', DEFAULT_GAME_ASSETS_DIR + 'wko.png'],
+  ['speech.png', DEFAULT_GAME_ASSETS_DIR + 'speech.png'],
+  ['speech2.png', DEFAULT_GAME_ASSETS_DIR + 'speech2.png'],
+  ['speech3.png', DEFAULT_GAME_ASSETS_DIR + 'speech3.png'],
+  ['speech4.png', DEFAULT_GAME_ASSETS_DIR + 'speech4.png']
+]
+
 function buildGameProject(repoUri: string): GameProject {
   const files = BrowserFS.BFSRequire('fs').readdirSync(`${GAME_DIR}/${SRC_DIR}`)
   const wpgmGame = files.find((file: string) => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
@@ -104,6 +115,7 @@ function buildGameProject(repoUri: string): GameProject {
   const main = `game.${wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '')}`
   const sources = getAllFilePathsFrom(GAME_DIR, EXPECTED_WOLLOK_EXTENSIONS)
   const imagePaths = getAllFilePathsFrom(GAME_DIR, VALID_MEDIA_EXTENSIONS).map(path => path.substr(GAME_DIR.length + 1))
+  const defaultPaths = defaultImgs
   const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/`
   let description
   try {
@@ -111,7 +123,7 @@ function buildGameProject(repoUri: string): GameProject {
   } catch {
     description = '## No description found'
   }
-  return { main, sources, imagePaths, assetSource, description }
+  return { main, sources, description, defaultPaths, imagePaths, assetSource }
 }
 
 function getAllFilePathsFrom(parentDirectory: string, validSuffixes?: string[]): string[] {
