@@ -19,19 +19,19 @@ export const gameInstance = (evaluation: Evaluation): RuntimeObject => {
   return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
 }
 
-function gameInstanceField(evaluation: Evaluation, field: string): RuntimeObject {
-  const gameInst: RuntimeObject = gameInstance(evaluation)
-  return evaluation.instance(gameInst.get(field)!.id)
+function gameInstanceField(evaluation: Evaluation, field: string): RuntimeObject | undefined {
+  const gameField: RuntimeObject | undefined = gameInstance(evaluation).get(field)
+  return gameField && evaluation.instance(gameField.id)
 }
 
 function numberGameFieldValue(evaluation: Evaluation, field: string): number {
-  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)
+  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)!
   fieldInst.assertIsNumber()
   return fieldInst.innerValue
 }
 
 function stringGameFieldValue(evaluation: Evaluation, field: string): string {
-  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)
+  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)!
   fieldInst.assertIsString()
   return fieldInst.innerValue
 }
@@ -53,13 +53,10 @@ function ground(evaluation: Evaluation): string {
 }
 
 function boardGround(evaluation: Evaluation): string | undefined {
-  try {
+  if (gameInstanceField(evaluation, 'boardGround'))
     return stringGameFieldValue(evaluation, 'boardGround')
-  }
-  catch (error) {
+  else
     return undefined
-  }
-
 }
 
 const emptyBoard = (evaluation: Evaluation): Board => {
@@ -80,7 +77,7 @@ const flushEvents = (evaluation: Evaluation, ms: number): void => {
   sendMessage('flushEvents', io(evaluation), time)(evaluation)
 }
 
-function wKeyCode(key: string, keyCode: number) {
+function wKeyCode(key: string, keyCode: number): string {
   if (keyCode >= 48 && keyCode <= 57) return `Digit${key}`
   if (keyCode >= 65 && keyCode <= 90) return `Key${key.toUpperCase()}`
   if (keyCode === 18) return 'AltLeft'
@@ -95,7 +92,7 @@ function wKeyCode(key: string, keyCode: number) {
   if (keyCode === 191) return 'Slash'
   if (keyCode === 32) return 'Space'
   if (keyCode === 16) return 'Shift'
-  return ''
+  return '' //If an unknown key is pressed, a string should be returned
 }
 
 // interface VisualState {
@@ -110,7 +107,7 @@ function wKeyCode(key: string, keyCode: number) {
 const currentVisualStates = (evaluation: Evaluation) => {
   const { sendMessage } = interpret(evaluation.environment, WRENatives)
 
-  const wVisuals: RuntimeObject = gameInstanceField(evaluation, 'visuals')
+  const wVisuals: RuntimeObject = gameInstanceField(evaluation, 'visuals')!
   wVisuals.assertIsCollection()
   const visuals = wVisuals.innerValue
   return visuals.map((id: Id) => {
