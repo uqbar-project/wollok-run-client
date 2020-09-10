@@ -6,12 +6,7 @@ import Sketch from 'react-p5'
 import { Evaluation, Id, interpret, WRENatives } from 'wollok-ts'
 import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import { GameProject } from './Game'
-
-type Cell = {
-  img: string
-  message?: any
-}
-type Board = Cell[][][]
+import { Board, boardToLayers } from './utils'
 
 const io = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.io.io').id
 
@@ -138,7 +133,6 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
 
 
   const draw = (sketch: p5Types) => {
-    if (!evaluation) return
     flushEvents(evaluation, currentTime(sketch))
     updateBoard()
     drawBoard(sketch)
@@ -178,14 +172,17 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     if (JSON.stringify(next) !== current) board = next
   }
 
-  function drawBoard(sketch: p5) { // TODO: Draw by layer, not cell
+  function drawBoard(sketch: p5) {
     const cellPixelSize = cellSize(evaluation)
 
-    board.forEach((row, _y) => {
-      const y = sketch.height - _y * cellPixelSize
-      row.forEach((cell, _x) => {
-        const x = _x * cellPixelSize
-        cell.forEach(({ img, message }) => {
+    boardToLayers(board).forEach(layer => {
+      layer.forEach((row, _y) => {
+        if (!row) return
+        const y = sketch.height - _y * cellPixelSize
+        row.forEach((actor, _x) => {
+          if (!actor) return
+          const { img, message } = actor
+          const x = _x * cellPixelSize
           const imageObject = imgs[img]
           const yPosition = y - imageObject.height
           sketch.image(imageObject, x, yPosition)
