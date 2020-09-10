@@ -15,7 +15,7 @@ import Context from './Context'
 export type DetailsProp = { }
 
 const Details = ({ }: DetailsProp) => {
-  
+
   const { evaluation, stepThroughEvaluation, setCurrentEvaluationIndex, currentEvaluationIndex, evaluationHistory, stepEvaluation, selectedFrame, garbageCollect } = useContext(EvaluationContext)
 
   const operandStack = selectedFrame?.operandStack?.map<Stackable>(operand => ({ label: <Id id={operand}/> })) ?? []

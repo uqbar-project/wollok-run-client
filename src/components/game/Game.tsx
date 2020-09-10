@@ -105,7 +105,7 @@ const defaultImgs = [
   ['speech.png', DEFAULT_GAME_ASSETS_DIR + 'speech.png'],
   ['speech2.png', DEFAULT_GAME_ASSETS_DIR + 'speech2.png'],
   ['speech3.png', DEFAULT_GAME_ASSETS_DIR + 'speech3.png'],
-  ['speech4.png', DEFAULT_GAME_ASSETS_DIR + 'speech4.png']
+  ['speech4.png', DEFAULT_GAME_ASSETS_DIR + 'speech4.png'],
 ]
 
 function buildGameProject(repoUri: string): GameProject {
