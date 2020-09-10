@@ -104,7 +104,8 @@ const currentVisualStates = (evaluation: Evaluation) => {
   const visuals = wVisuals.innerValue
   return visuals.map((id: Id) => {
     const currentFrame = evaluation.currentFrame()!
-    let position = evaluation.instance(id).get('position')
+    const visual = evaluation.instance(id)
+    let position = visual.get('position')
     if (!position) {
       sendMessage('position', id)(evaluation)
       position = evaluation.instance(currentFrame.operandStack.pop()!)
@@ -116,10 +117,15 @@ const currentVisualStates = (evaluation: Evaluation) => {
     wy.assertIsNumber()
     const y = wy.innerValue
 
-    sendMessage('image', id)(evaluation)
-    const wImage: RuntimeObject = evaluation.instance(currentFrame.operandStack.pop()!)
-    wImage.assertIsString()
-    const image = wImage.innerValue
+    let image
+    if (visual.module().lookupMethod('image', 0)) {
+      sendMessage('image', id)(evaluation)
+      const wImage: RuntimeObject = evaluation.instance(currentFrame.operandStack.pop()!)
+      wImage.assertIsString()
+      image = wImage.innerValue
+    } else {
+      image = 'wko.png'
+    }
     const actor = evaluation.instance(id)
     const wMessage: RuntimeObject | undefined = actor.get('message')
     const wMessageTime: RuntimeObject | undefined = actor.get('messageTime')
