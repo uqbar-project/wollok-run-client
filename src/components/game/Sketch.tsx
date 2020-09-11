@@ -169,10 +169,8 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   function loadImages(sketch: p5Types) {
-    game.defaultPaths.forEach(([defaultPath, url]: string[]) => { imgs[defaultPath] = sketch.loadImage(url) })
-
     game.imagePaths.forEach((gamePath: string) => {
-      imgs[gamePath.split('/').pop()!] = sketch.loadImage(game.assetSource + gamePath)
+      imgs[gamePath.split('/').pop()!] = sketch.loadImage(gamePath)
     })
   }
 

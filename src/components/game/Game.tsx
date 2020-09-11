@@ -31,9 +31,7 @@ export interface GameProject {
   main: string
   sources: string[]
   description: string
-  defaultPaths: string[][]
   imagePaths: string[]
-  assetSource: string
 }
 
 
@@ -100,12 +98,12 @@ async function cloneRepository(repoUri: string) {
 }
 
 const defaultImgs = [
-  ['ground.png', DEFAULT_GAME_ASSETS_DIR + 'ground.png'],
-  ['wko.png', DEFAULT_GAME_ASSETS_DIR + 'wko.png'],
-  ['speech.png', DEFAULT_GAME_ASSETS_DIR + 'speech.png'],
-  ['speech2.png', DEFAULT_GAME_ASSETS_DIR + 'speech2.png'],
-  ['speech3.png', DEFAULT_GAME_ASSETS_DIR + 'speech3.png'],
-  ['speech4.png', DEFAULT_GAME_ASSETS_DIR + 'speech4.png'],
+  DEFAULT_GAME_ASSETS_DIR + 'ground.png',
+  DEFAULT_GAME_ASSETS_DIR + 'wko.png',
+  DEFAULT_GAME_ASSETS_DIR + 'speech.png',
+  DEFAULT_GAME_ASSETS_DIR + 'speech2.png',
+  DEFAULT_GAME_ASSETS_DIR + 'speech3.png',
+  DEFAULT_GAME_ASSETS_DIR + 'speech4.png',
 ]
 
 function buildGameProject(repoUri: string): GameProject {
@@ -114,16 +112,23 @@ function buildGameProject(repoUri: string): GameProject {
   if (!wpgmGame) throw new Error('Program not found')
   const main = `game.${wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '')}`
   const sources = getAllFilePathsFrom(GAME_DIR, EXPECTED_WOLLOK_EXTENSIONS)
-  const imagePaths = getAllFilePathsFrom(GAME_DIR, VALID_MEDIA_EXTENSIONS).map(path => path.substr(GAME_DIR.length + 1))
-  const defaultPaths = defaultImgs
   const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/`
+  const gameAssetsPaths = getAllFilePathsFrom(GAME_DIR, VALID_MEDIA_EXTENSIONS).map(path => assetSource + path.substr(GAME_DIR.length + 1))
+  const imagePaths = gameAssetsPaths.concat(defaultImagesNeededFor(gameAssetsPaths))
+
   let description
   try {
     description = BrowserFS.BFSRequire('fs').readFileSync(`${GAME_DIR}/README.md`).toString()
   } catch {
     description = '## No description found'
   }
-  return { main, sources, description, defaultPaths, imagePaths, assetSource }
+  return { main, sources, description, imagePaths }
+}
+
+function defaultImagesNeededFor(imagePaths: string[]): string[] {
+  const imageNameInPath = (path: string) => { return path.split('/').pop()! }
+  const knownImageNames = imagePaths.map(path => imageNameInPath(path))
+  return defaultImgs.filter(defaultImg => !knownImageNames.includes(imageNameInPath(defaultImg)))
 }
 
 function getAllFilePathsFrom(parentDirectory: string, validSuffixes?: string[]): string[] {
