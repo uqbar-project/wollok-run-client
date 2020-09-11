@@ -48,19 +48,15 @@ function ground(evaluation: Evaluation): string {
 }
 
 function boardGround(evaluation: Evaluation): string | undefined {
-  if (gameInstanceField(evaluation, 'boardGround'))
-    return stringGameFieldValue(evaluation, 'boardGround')
-  else
-    return undefined
+  return gameInstanceField(evaluation, 'boardGround') && stringGameFieldValue(evaluation, 'boardGround')
 }
 
 const emptyBoard = (evaluation: Evaluation): Board => {
   const groundPath = ground(evaluation)
   const boardgroundPath = boardGround(evaluation)
-  const matrix = Array.from(Array(height(evaluation)), () =>
+  return Array.from(Array(height(evaluation)), () =>
     Array.from(Array(width(evaluation)), () => !boardgroundPath ? [{ img: groundPath }] : [])
   )
-  return matrix
 }
 
 const flushEvents = (evaluation: Evaluation, ms: number): void => {
