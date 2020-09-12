@@ -18,6 +18,7 @@ const WOLLOK_PROGRAM_EXTENSION = 'wpgm'
 const EXPECTED_WOLLOK_EXTENSIONS = [WOLLOK_FILE_EXTENSION, WOLLOK_PROGRAM_EXTENSION]
 const VALID_MEDIA_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
 const GAME_DIR = 'game'
+const DEFAULT_GAME_ASSETS_DIR = 'https://raw.githubusercontent.com/uqbar-project/wollok/dev/org.uqbar.project.wollok.game/assets/'
 
 const fetchFile = (path: string) => {
   return {
@@ -31,7 +32,6 @@ export interface GameProject {
   sources: string[]
   description: string
   imagePaths: string[]
-  assetSource: string
 }
 
 
@@ -54,7 +54,7 @@ const Game = (props: GameProps) => {
       const files = project.sources.map(fetchFile)
       const environment = buildEnvironment(files)
       const programWollokFile = environment.getNodeByFQN<'Package'>(`${project.main}`)
-      const mainWollokProgramName = programWollokFile.members[0].name
+      const mainWollokProgramName = programWollokFile.members.find(entity => entity.is('Program'))?.name
       const { buildEvaluation, runProgram } = interpret(environment, natives)
       const cleanEval = buildEvaluation()
       runProgram(`${project.main}.${mainWollokProgramName}`, cleanEval)
@@ -97,21 +97,38 @@ async function cloneRepository(repoUri: string) {
   return buildGameProject(repoUri)
 }
 
+const defaultImgs = [
+  DEFAULT_GAME_ASSETS_DIR + 'ground.png',
+  DEFAULT_GAME_ASSETS_DIR + 'wko.png',
+  DEFAULT_GAME_ASSETS_DIR + 'speech.png',
+  DEFAULT_GAME_ASSETS_DIR + 'speech2.png',
+  DEFAULT_GAME_ASSETS_DIR + 'speech3.png',
+  DEFAULT_GAME_ASSETS_DIR + 'speech4.png',
+]
+
 function buildGameProject(repoUri: string): GameProject {
   const files = BrowserFS.BFSRequire('fs').readdirSync(`${GAME_DIR}/${SRC_DIR}`)
   const wpgmGame = files.find((file: string) => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
   if (!wpgmGame) throw new Error('Program not found')
   const main = `game.${wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '')}`
   const sources = getAllFilePathsFrom(GAME_DIR, EXPECTED_WOLLOK_EXTENSIONS)
-  const imagePaths = getAllFilePathsFrom(GAME_DIR, VALID_MEDIA_EXTENSIONS).map(path => path.substr(GAME_DIR.length + 1))
   const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/`
+  const gameAssetsPaths = getAllFilePathsFrom(GAME_DIR, VALID_MEDIA_EXTENSIONS).map(path => assetSource + path.substr(GAME_DIR.length + 1))
+  const imagePaths = gameAssetsPaths.concat(defaultImagesNeededFor(gameAssetsPaths))
+
   let description
   try {
     description = BrowserFS.BFSRequire('fs').readFileSync(`${GAME_DIR}/README.md`).toString()
   } catch {
     description = '## No description found'
   }
-  return { main, sources, imagePaths, assetSource, description }
+  return { main, sources, description, imagePaths }
+}
+
+function defaultImagesNeededFor(imagePaths: string[]): string[] {
+  const imageNameInPath = (path: string) => { return path.split('/').pop()! }
+  const knownImageNames = imagePaths.map(path => imageNameInPath(path))
+  return defaultImgs.filter(defaultImg => !knownImageNames.includes(imageNameInPath(defaultImg)))
 }
 
 function getAllFilePathsFrom(parentDirectory: string, validSuffixes?: string[]): string[] {

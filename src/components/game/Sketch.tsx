@@ -14,19 +14,19 @@ export const gameInstance = (evaluation: Evaluation): RuntimeObject => {
   return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
 }
 
-function gameInstanceField(evaluation: Evaluation, field: string): RuntimeObject {
-  const gameInst: RuntimeObject = gameInstance(evaluation)
-  return evaluation.instance(gameInst.get(field)!.id)
+function gameInstanceField(evaluation: Evaluation, field: string): RuntimeObject | undefined {
+  const gameField: RuntimeObject | undefined = gameInstance(evaluation).get(field)
+  return gameField && evaluation.instance(gameField.id)
 }
 
 function numberGameFieldValue(evaluation: Evaluation, field: string): number {
-  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)
+  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)!
   fieldInst.assertIsNumber()
   return fieldInst.innerValue
 }
 
 function stringGameFieldValue(evaluation: Evaluation, field: string): string {
-  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)
+  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)!
   fieldInst.assertIsString()
   return fieldInst.innerValue
 }
@@ -47,10 +47,15 @@ function ground(evaluation: Evaluation): string {
   return stringGameFieldValue(evaluation, 'ground')
 }
 
+function boardGround(evaluation: Evaluation): string | undefined {
+  return gameInstanceField(evaluation, 'boardGround') && stringGameFieldValue(evaluation, 'boardGround')
+}
+
 const emptyBoard = (evaluation: Evaluation): Board => {
   const groundPath = ground(evaluation)
+  const boardgroundPath = boardGround(evaluation)
   return Array.from(Array(height(evaluation)), () =>
-    Array.from(Array(width(evaluation)), () => groundPath ? [{ img: groundPath }] : [])
+    Array.from(Array(width(evaluation)), () => !boardgroundPath ? [{ img: groundPath }] : [])
   )
 }
 
@@ -60,7 +65,7 @@ const flushEvents = (evaluation: Evaluation, ms: number): void => {
   sendMessage('flushEvents', io(evaluation), time)(evaluation)
 }
 
-function wKeyCode(key: string, keyCode: number) {
+function wKeyCode(key: string, keyCode: number): string {
   if (keyCode >= 48 && keyCode <= 57) return `Digit${key}`
   if (keyCode >= 65 && keyCode <= 90) return `Key${key.toUpperCase()}`
   if (keyCode === 18) return 'AltLeft'
@@ -75,7 +80,7 @@ function wKeyCode(key: string, keyCode: number) {
   if (keyCode === 191) return 'Slash'
   if (keyCode === 32) return 'Space'
   if (keyCode === 16) return 'Shift'
-  return undefined
+  return '' //If an unknown key is pressed, a string should be returned
 }
 
 // interface VisualState {
@@ -90,12 +95,13 @@ function wKeyCode(key: string, keyCode: number) {
 const currentVisualStates = (evaluation: Evaluation) => {
   const { sendMessage } = interpret(evaluation.environment, WRENatives)
 
-  const wVisuals: RuntimeObject = gameInstanceField(evaluation, 'visuals')
+  const wVisuals: RuntimeObject = gameInstanceField(evaluation, 'visuals')!
   wVisuals.assertIsCollection()
   const visuals = wVisuals.innerValue
   return visuals.map((id: Id) => {
     const currentFrame = evaluation.currentFrame()!
-    let position = evaluation.instance(id).get('position')
+    const visual = evaluation.instance(id)
+    let position = visual.get('position')
     if (!position) {
       sendMessage('position', id)(evaluation)
       position = evaluation.instance(currentFrame.operandStack.pop()!)
@@ -107,10 +113,15 @@ const currentVisualStates = (evaluation: Evaluation) => {
     wy.assertIsNumber()
     const y = wy.innerValue
 
-    sendMessage('image', id)(evaluation)
-    const wImage: RuntimeObject = evaluation.instance(currentFrame.operandStack.pop()!)
-    wImage.assertIsString()
-    const image = wImage.innerValue
+    let image
+    if (visual.module().lookupMethod('image', 0)) {
+      sendMessage('image', id)(evaluation)
+      const wImage: RuntimeObject = evaluation.instance(currentFrame.operandStack.pop()!)
+      wImage.assertIsString()
+      image = wImage.innerValue
+    } else {
+      image = 'wko.png'
+    }
     const actor = evaluation.instance(id)
     const wMessage: RuntimeObject | undefined = actor.get('message')
     const wMessageTime: RuntimeObject | undefined = actor.get('messageTime')
@@ -158,9 +169,13 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   function loadImages(sketch: p5Types) {
-    game.imagePaths.forEach((path: string) => {
-      imgs[path.split('/').pop()!] = sketch.loadImage(game.assetSource + path)
+    game.imagePaths.forEach((gamePath: string) => {
+      imgs[gamePath.split('/').pop()!] = sketch.loadImage(gamePath)
     })
+  }
+
+  function imageFromPath(path: string): p5.Image {
+    return imgs[path] ?? imgs['wko.png']
   }
 
   function updateBoard() {
@@ -172,9 +187,15 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     if (JSON.stringify(next) !== current) board = next
   }
 
+  function drawBoardGround(sketch: p5) {
+    const boardGroundPath = boardGround(evaluation)
+
+    boardGroundPath && sketch.image(imageFromPath(boardGroundPath), 0, 0, sketch.width, sketch.height)
+  }
+
   function drawBoard(sketch: p5) {
     const cellPixelSize = cellSize(evaluation)
-
+    drawBoardGround(sketch)
     boardToLayers(board).forEach(layer => {
       layer.forEach((row, _y) => {
         if (!row) return
@@ -183,7 +204,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
           if (!actor) return
           const { img, message } = actor
           const x = _x * cellPixelSize
-          const imageObject = imgs[img]
+          const imageObject: p5.Image = imageFromPath(img)
           const yPosition = y - imageObject.height
           sketch.image(imageObject, x, yPosition)
           if (message && message.time > currentTime(sketch)) sketch.text(message.text, x, yPosition)

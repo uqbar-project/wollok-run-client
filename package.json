@@ -42,7 +42,7 @@
     "typescript": "^3.7.5",
     "use-interval": "^1.2.1",
     "uuid": "^3.4.0",
-    "wollok-ts": "^2.1.0"
+    "wollok-ts": "github:uqbar-project/wollok-ts#master"
   },
   "scripts": {
     "start": "react-scripts start",
