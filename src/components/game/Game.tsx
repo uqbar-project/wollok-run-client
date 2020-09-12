@@ -54,7 +54,7 @@ const Game = (props: GameProps) => {
       const files = project.sources.map(fetchFile)
       const environment = buildEnvironment(files)
       const programWollokFile = environment.getNodeByFQN<'Package'>(`${project.main}`)
-      const mainWollokProgramName = programWollokFile.members[0].name
+      const mainWollokProgramName = programWollokFile.members.find(entity => entity.is('Program'))?.name
       const { buildEvaluation, runProgram } = interpret(environment, natives)
       const cleanEval = buildEvaluation()
       runProgram(`${project.main}.${mainWollokProgramName}`, cleanEval)
