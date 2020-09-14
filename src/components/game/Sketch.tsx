@@ -144,6 +144,31 @@ const currentVisualStates = (evaluation: Evaluation) => {
 
 }
 
+const currentSoundStates = (evaluation: Evaluation) => {
+  return sounds(evaluation).map((id: Id) => {
+    const sound = evaluation.instance(id)
+    const wFile: RuntimeObject = evaluation.instance(sound.get('file')!.id)
+    wFile.assertIsString()
+    const file = wFile.innerValue
+
+    const wStatus: RuntimeObject = evaluation.instance(sound.get('status')!.id)
+    wFile.assertIsString()
+    const status = wStatus.innerValue
+
+    const wVolume: RuntimeObject = evaluation.instance(sound.get('volume')!.id)
+    wFile.assertIsNumber()
+    const volume = wVolume.innerValue
+
+    const wLoop: RuntimeObject = evaluation.instance(sound.get('loop')!.id)
+    wFile.assertIsBoolean()
+    const loop = wLoop.innerValue
+
+    return { file, status, volume, loop }
+  })
+
+}
+
+
 interface SketchProps {
   game: GameProject
   evaluation: Evaluation
