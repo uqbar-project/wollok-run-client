@@ -182,7 +182,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     const current = JSON.stringify(board)
     const next = emptyBoard(evaluation)
     for (const { position: { x, y }, image, message } of currentVisualStates(evaluation)) {
-      next[y][x].push({ img: `${image}`, message })
+      next[y] && next[y][x] && next[y][x].push({ img: `${image}`, message })
     }
     if (JSON.stringify(next) !== current) board = next
   }
