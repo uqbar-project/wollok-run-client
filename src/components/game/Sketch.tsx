@@ -31,6 +31,12 @@ function stringGameFieldValue(evaluation: Evaluation, field: string): string {
   return fieldInst.innerValue
 }
 
+function stringListGameFieldValue(evaluation: Evaluation, field: string): string[] {
+  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)!
+  fieldInst.assertIsCollection()
+  return fieldInst.innerValue
+}
+
 function width(evaluation: Evaluation): number {
   return numberGameFieldValue(evaluation, 'width')
 }
@@ -49,6 +55,14 @@ function ground(evaluation: Evaluation): string {
 
 function boardGround(evaluation: Evaluation): string | undefined {
   return gameInstanceField(evaluation, 'boardGround') && stringGameFieldValue(evaluation, 'boardGround')
+}
+
+function visuals(evaluation: Evaluation): string[] {
+  return stringListGameFieldValue(evaluation, 'visuals')
+}
+
+function sounds(evaluation: Evaluation): string[] {
+  return stringListGameFieldValue(evaluation, 'sounds')
 }
 
 const emptyBoard = (evaluation: Evaluation): Board => {
@@ -95,10 +109,7 @@ function wKeyCode(key: string, keyCode: number): string {
 const currentVisualStates = (evaluation: Evaluation) => {
   const { sendMessage } = interpret(evaluation.environment, WRENatives)
 
-  const wVisuals: RuntimeObject = gameInstanceField(evaluation, 'visuals')!
-  wVisuals.assertIsCollection()
-  const visuals = wVisuals.innerValue
-  return visuals.map((id: Id) => {
+  return visuals(evaluation).map((id: Id) => {
     const currentFrame = evaluation.currentFrame()!
     const visual = evaluation.instance(id)
     let position = visual.get('position')
