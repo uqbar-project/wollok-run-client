@@ -2,9 +2,9 @@ import p5 from 'p5'
 import p5Types from 'p5'
 import React from 'react'
 import Sketch from 'react-p5'
-// import 'p5/lib/addons/p5.sound'
+import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id, interpret, WRENatives } from 'wollok-ts'
-import { RuntimeObject } from 'wollok-ts/dist/interpreter'
+import { RuntimeObject, TRUE_ID } from 'wollok-ts/dist/interpreter'
 import { GameProject } from './Game'
 import { Board, boardToLayers } from './utils'
 
@@ -143,14 +143,13 @@ const currentVisualStates = (evaluation: Evaluation) => {
   })
 
 }
-type wBoolean = string
 
 interface SoundState {
   id: string,
   file: string,
   status: string,
   volume: number,
-  loop: wBoolean
+  loop: boolean
 }
 
 const currentSoundStates = (evaluation: Evaluation): SoundState[] => {
@@ -170,7 +169,7 @@ const currentSoundStates = (evaluation: Evaluation): SoundState[] => {
 
     const wLoop: RuntimeObject = evaluation.instance(sound.get('loop')!.id)
     wLoop.assertIsBoolean()
-    const loop = wLoop.innerValue
+    const loop = wLoop.innerValue === TRUE_ID
 
     return { id, file, status, volume, loop }
   })
@@ -245,7 +244,9 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   function playSounds(sketch: p5) {
-
+    currentSoundStates(evaluation).forEach((soundState: SoundState) => {
+      const sound = new p5.SoundFile(soundState.file) //TODO: Usar el cerebro para hacer esto bien
+    })
   }
 
   function drawBoard(sketch: p5) {
