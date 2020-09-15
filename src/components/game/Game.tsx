@@ -115,7 +115,7 @@ function buildGameProject(repoUri: string): GameProject {
   const sources = getAllFilePathsFrom(GAME_DIR, EXPECTED_WOLLOK_EXTENSIONS)
   const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/`
   const gameAssetsPaths = getAllFilePathsFrom(GAME_DIR, VALID_MEDIA_EXTENSIONS).map(path => assetSource + path.substr(GAME_DIR.length + 1))
-  const assetFolderName = gameAssetsPaths[0].substring(assetSource.length).split('/')[0]
+  const assetFolderName = gameAssetsPaths[0]?.substring(assetSource.length).split('/')[0]
   const assetsDir = assetSource + assetFolderName + '/'
   const imagePaths = gameAssetsPaths.concat(defaultImagesNeededFor(gameAssetsPaths))
 
