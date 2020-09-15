@@ -16,7 +16,8 @@ const SRC_DIR = 'src'
 const WOLLOK_FILE_EXTENSION = 'wlk'
 const WOLLOK_PROGRAM_EXTENSION = 'wpgm'
 const EXPECTED_WOLLOK_EXTENSIONS = [WOLLOK_FILE_EXTENSION, WOLLOK_PROGRAM_EXTENSION]
-const VALID_MEDIA_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
+const VALID_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
+const VALID_SOUND_EXTENSIONS = ['mp3', 'ogg', 'wav']
 const GAME_DIR = 'game'
 const DEFAULT_GAME_ASSETS_DIR = 'https://raw.githubusercontent.com/uqbar-project/wollok/dev/org.uqbar.project.wollok.game/assets/'
 
@@ -32,6 +33,7 @@ export interface GameProject {
   sources: string[]
   description: string
   imagePaths: string[]
+  soundPaths: string[]
 }
 
 
@@ -111,10 +113,11 @@ function buildGameProject(repoUri: string): GameProject {
   const wpgmGame = files.find((file: string) => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
   if (!wpgmGame) throw new Error('Program not found')
   const main = `game.${wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '')}`
-  const sources = getAllFilePathsFrom(GAME_DIR, EXPECTED_WOLLOK_EXTENSIONS)
   const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/`
-  const gameAssetsPaths = getAllFilePathsFrom(GAME_DIR, VALID_MEDIA_EXTENSIONS).map(path => assetSource + path.substr(GAME_DIR.length + 1))
+  const sources = getAllFilePathsFrom(GAME_DIR, EXPECTED_WOLLOK_EXTENSIONS)
+  const gameAssetsPaths = getAllMediaPathsWithExtension(assetSource, VALID_IMAGE_EXTENSIONS)
   const imagePaths = gameAssetsPaths.concat(defaultImagesNeededFor(gameAssetsPaths))
+  const soundPaths = getAllMediaPathsWithExtension(assetSource, VALID_SOUND_EXTENSIONS)
 
   let description
   try {
@@ -122,7 +125,11 @@ function buildGameProject(repoUri: string): GameProject {
   } catch {
     description = '## No description found'
   }
-  return { main, sources, description, imagePaths }
+  return { main, sources, description, imagePaths, soundPaths }
+}
+
+function getAllMediaPathsWithExtension(assetSource: string, mediaExtension: string[]): string[] {
+  return getAllFilePathsFrom(GAME_DIR, mediaExtension).map(path => assetSource + path.substr(GAME_DIR.length + 1))
 }
 
 function defaultImagesNeededFor(imagePaths: string[]): string[] {
