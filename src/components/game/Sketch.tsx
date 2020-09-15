@@ -143,27 +143,36 @@ const currentVisualStates = (evaluation: Evaluation) => {
   })
 
 }
+type wBoolean = string
 
-const currentSoundStates = (evaluation: Evaluation) => {
+interface SoundState {
+  id: string,
+  file: string,
+  status: string,
+  volume: number,
+  loop: wBoolean
+}
+
+const currentSoundStates = (evaluation: Evaluation): SoundState[] => {
   return sounds(evaluation).map((id: Id) => {
-    const sound = evaluation.instance(id)
+    const sound: RuntimeObject = evaluation.instance(id)
     const wFile: RuntimeObject = evaluation.instance(sound.get('file')!.id)
     wFile.assertIsString()
     const file = wFile.innerValue
 
     const wStatus: RuntimeObject = evaluation.instance(sound.get('status')!.id)
-    wFile.assertIsString()
+    wStatus.assertIsString()
     const status = wStatus.innerValue
 
     const wVolume: RuntimeObject = evaluation.instance(sound.get('volume')!.id)
-    wFile.assertIsNumber()
+    wVolume.assertIsNumber()
     const volume = wVolume.innerValue
 
     const wLoop: RuntimeObject = evaluation.instance(sound.get('loop')!.id)
-    wFile.assertIsBoolean()
+    wLoop.assertIsBoolean()
     const loop = wLoop.innerValue
 
-    return { file, status, volume, loop }
+    return { id, file, status, volume, loop }
   })
 
 }
@@ -182,6 +191,8 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   const draw = (sketch: p5Types) => {
     flushEvents(evaluation, currentTime(sketch))
     updateBoard()
+    updateSounds()
+    playSounds(sketch)
     drawBoard(sketch)
   }
 
@@ -214,6 +225,10 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     return imgs[path] ?? imgs['wko.png']
   }
 
+  function updateSounds() {
+
+  }
+
   function updateBoard() {
     const current = JSON.stringify(board)
     const next = emptyBoard(evaluation)
@@ -227,6 +242,10 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     const boardGroundPath = boardGround(evaluation)
 
     boardGroundPath && sketch.image(imageFromPath(boardGroundPath), 0, 0, sketch.width, sketch.height)
+  }
+
+  function playSounds(sketch: p5) {
+
   }
 
   function drawBoard(sketch: p5) {
