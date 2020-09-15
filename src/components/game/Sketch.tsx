@@ -175,8 +175,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   function imageFromPath(path: string): p5.Image {
-    const posibleImagen = game.assetsDir + path
-    return imgs[posibleImagen] ?? imgs[DEFAULT_GAME_ASSETS_DIR + path] ?? imgs[DEFAULT_GAME_ASSETS_DIR + 'wko.png']
+    return imgs[game.assetsDir + path] ?? imgs[DEFAULT_GAME_ASSETS_DIR + path] ?? imgs[DEFAULT_GAME_ASSETS_DIR + 'wko.png']
   }
 
   function updateBoard() {
