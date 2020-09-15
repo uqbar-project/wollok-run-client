@@ -5,7 +5,7 @@ import Sketch from 'react-p5'
 // import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id, interpret, WRENatives } from 'wollok-ts'
 import { RuntimeObject } from 'wollok-ts/dist/interpreter'
-import { GameProject } from './Game'
+import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './Game'
 import { Board, boardToLayers } from './utils'
 
 const io = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.io.io').id
@@ -170,12 +170,13 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
 
   function loadImages(sketch: p5Types) {
     game.imagePaths.forEach((gamePath: string) => {
-      imgs[gamePath.split('/').pop()!] = sketch.loadImage(gamePath)
+      imgs[gamePath] = sketch.loadImage(gamePath)
     })
   }
 
   function imageFromPath(path: string): p5.Image {
-    return imgs[path] ?? imgs['wko.png']
+    const posibleImagen = game.assetsDir + path
+    return imgs[posibleImagen] ?? imgs[DEFAULT_GAME_ASSETS_DIR + path] ?? imgs[DEFAULT_GAME_ASSETS_DIR + 'wko.png']
   }
 
   function updateBoard() {
