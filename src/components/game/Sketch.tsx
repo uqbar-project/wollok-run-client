@@ -62,7 +62,7 @@ function visuals(evaluation: Evaluation): string[] {
 }
 
 function sounds(evaluation: Evaluation): string[] {
-  return stringListGameFieldValue(evaluation, 'sounds')
+  return gameInstanceField(evaluation, 'sounds') ? stringListGameFieldValue(evaluation, 'sounds') : []
 }
 
 const emptyBoard = (evaluation: Evaluation): Board => {
@@ -145,7 +145,7 @@ const currentVisualStates = (evaluation: Evaluation) => {
 }
 
 interface SoundState {
-  id: string,
+  id: Id,
   file: string,
   status: string,
   volume: number,
@@ -168,7 +168,7 @@ const currentSoundStates = (evaluation: Evaluation): SoundState[] => {
     const volume = wVolume.innerValue
 
     const wLoop: RuntimeObject = evaluation.instance(sound.get('loop')!.id)
-    wLoop.assertIsBoolean()
+    //wLoop.assertIsBoolean()
     const loop = wLoop.innerValue === TRUE_ID
 
     return { id, file, status, volume, loop }
@@ -243,9 +243,14 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     boardGroundPath && sketch.image(imageFromPath(boardGroundPath), 0, 0, sketch.width, sketch.height)
   }
 
+  const playedSounds: string[] = []
+
   function playSounds(sketch: p5) {
     currentSoundStates(evaluation).forEach((soundState: SoundState) => {
-      const sound = new p5.SoundFile(soundState.file) //TODO: Usar el cerebro para hacer esto bien
+      if (soundState.status === "played" && !playedSounds.includes(soundState.id)) {
+        const sound = new p5.SoundFile(game.assetsDir + soundState.file, () => { sound.play() })
+        playedSounds.push(soundState.id)
+      }
     })
   }
 
