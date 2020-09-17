@@ -18,7 +18,7 @@ const WOLLOK_PROGRAM_EXTENSION = 'wpgm'
 const EXPECTED_WOLLOK_EXTENSIONS = [WOLLOK_FILE_EXTENSION, WOLLOK_PROGRAM_EXTENSION]
 const VALID_MEDIA_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
 const GAME_DIR = 'game'
-const DEFAULT_GAME_ASSETS_DIR = 'https://raw.githubusercontent.com/uqbar-project/wollok/dev/org.uqbar.project.wollok.game/assets/'
+export const DEFAULT_GAME_ASSETS_DIR = 'https://raw.githubusercontent.com/uqbar-project/wollok/dev/org.uqbar.project.wollok.game/assets/'
 
 const fetchFile = (path: string) => {
   return {
@@ -32,6 +32,7 @@ export interface GameProject {
   sources: string[]
   description: string
   imagePaths: string[]
+  assetsDir: string
 }
 
 
@@ -114,6 +115,8 @@ function buildGameProject(repoUri: string): GameProject {
   const sources = getAllFilePathsFrom(GAME_DIR, EXPECTED_WOLLOK_EXTENSIONS)
   const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/`
   const gameAssetsPaths = getAllFilePathsFrom(GAME_DIR, VALID_MEDIA_EXTENSIONS).map(path => assetSource + path.substr(GAME_DIR.length + 1))
+  const assetFolderName = gameAssetsPaths[0]?.substring(assetSource.length).split('/')[0]
+  const assetsDir = assetSource + assetFolderName + '/'
   const imagePaths = gameAssetsPaths.concat(defaultImagesNeededFor(gameAssetsPaths))
 
   let description
@@ -122,7 +125,7 @@ function buildGameProject(repoUri: string): GameProject {
   } catch {
     description = '## No description found'
   }
-  return { main, sources, description, imagePaths }
+  return { main, sources, description, imagePaths, assetsDir }
 }
 
 function defaultImagesNeededFor(imagePaths: string[]): string[] {
