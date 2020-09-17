@@ -191,7 +191,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     flushEvents(evaluation, currentTime(sketch))
     updateBoard()
     updateSounds()
-    playSounds(sketch)
+    playSounds()
     drawBoard(sketch)
   }
 
@@ -245,7 +245,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
 
   const playedSounds: string[] = []
 
-  function playSounds(sketch: p5) {
+  function playSounds() {
     currentSoundStates(evaluation).forEach((soundState: SoundState) => {
       if (soundState.status === "played" && !playedSounds.includes(soundState.id)) {
         const sound = new p5.SoundFile(game.assetsDir + soundState.file, () => { sound.play() })
