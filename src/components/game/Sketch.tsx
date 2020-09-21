@@ -93,13 +93,31 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     boardGroundPath && sketch.image(imageFromPath(boardGroundPath), 0, 0, sketch.width, sketch.height)
   }
 
-  const playedSounds: string[] = []
+  const playingSounds: { [id: string]: p5.SoundFile } = {}
 
   function playSounds() {
     currentSoundStates(evaluation).forEach((soundState: SoundState) => {
-      if (soundState.status === "played" && !playedSounds.includes(soundState.id)) {
-        const sound = new p5.SoundFile(game.assetsDir + soundState.file, () => { sound.play() })
-        playedSounds.push(soundState.id)
+      if (soundState.status === "played") {
+        if (!playingSounds[soundState.id]) {
+          const sound = new p5.SoundFile(game.assetsDir + soundState.file, () => {
+            sound.setLoop(soundState.loop)
+            sound.play()
+          })
+          playingSounds[soundState.id] = sound
+        }
+        else {
+          playingSounds[soundState.id].play()
+        }
+
+      }
+      else if (soundState.status === "paused") {
+        const soundToPause: p5.SoundFile = playingSounds[soundState.id]
+        soundToPause.pause()
+      }
+
+      else if (soundState.status === "stopped") {
+        const soundToPause: p5.SoundFile = playingSounds[soundState.id]
+        soundToPause.stop()
       }
     })
   }
