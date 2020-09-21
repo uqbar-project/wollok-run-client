@@ -9,7 +9,8 @@ import wre from 'wollok-ts/dist/wre/wre.natives'
 import Spinner from '../Spinner'
 import $ from './Game.module.scss'
 import GameSelector from './GameSelector'
-import Sketch, { gameInstance } from './Sketch'
+import Sketch from './Sketch'
+import { gameInstance } from './GameStates'
 
 const natives = wre as Natives
 const SRC_DIR = 'src'

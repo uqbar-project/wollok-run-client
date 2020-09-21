@@ -6,7 +6,7 @@ import { Id } from 'wollok-ts'
 
 export const io = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.io.io').id
 
-const gameInstance = (evaluation: Evaluation): RuntimeObject => {
+export const gameInstance = (evaluation: Evaluation): RuntimeObject => {
   return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
 }
 
