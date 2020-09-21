@@ -102,8 +102,8 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
           const sound = new p5.SoundFile(game.assetsDir + soundState.file, () => {
             sound.setLoop(soundState.loop)
             sound.play()
+            playingSounds[soundState.id] = sound
           })
-          playingSounds[soundState.id] = sound
         }
         else {
           playingSounds[soundState.id].play()
