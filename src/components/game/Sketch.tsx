@@ -108,10 +108,10 @@ const currentVisualStates = (evaluation: Evaluation) => {
     }
     const wx: RuntimeObject = evaluation.instance(position.get('x')!.id)
     wx.assertIsNumber()
-    const x = wx.innerValue
+    const x = Math.trunc(wx.innerValue)
     const wy: RuntimeObject = evaluation.instance(position.get('y')!.id)
     wy.assertIsNumber()
-    const y = wy.innerValue
+    const y = Math.trunc(wy.innerValue)
 
     let image
     if (visual.module().lookupMethod('image', 0)) {
