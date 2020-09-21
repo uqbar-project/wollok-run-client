@@ -147,7 +147,7 @@ export const currentSoundStates = (evaluation: Evaluation): SoundState[] => {
 
     const wLoop: RuntimeObject = evaluation.instance(sound.get('loop')!.id)
     //wLoop.assertIsBoolean()
-    const loop = wLoop.innerValue === TRUE_ID
+    const loop = wLoop.id === TRUE_ID
 
     return { id, file, status, volume, loop }
   })
