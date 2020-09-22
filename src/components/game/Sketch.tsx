@@ -93,35 +93,42 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     boardGroundPath && sketch.image(imageFromPath(boardGroundPath), 0, 0, sketch.width, sketch.height)
   }
 
-  const loadedSounds: { [id: string]: p5.SoundFile } = {}
+  const loadedSounds: { [id: string]: { lastStatus: string, soundFile: p5.SoundFile, } } = {}
 
   function playSounds() {
     currentSoundStates(evaluation).forEach((soundState: SoundState) => {
       if (loadedSounds[soundState.id]) {
-        const playingSound: p5.SoundFile = loadedSounds[soundState.id]
+        const loadedSound = loadedSounds[soundState.id]
+        loadedSound.soundFile.setLoop(soundState.loop)
 
-        playingSound.setLoop(soundState.loop)
-
-        switch (soundState.status) {
-          case "played": {
-            playingSound.play()
-            break
-          }
-          case "paused": {
-            playingSound.pause()
-            break
-          }
-          case "stopped": {
-            playingSound.stop()
+        if (loadedSound.lastStatus !== soundState.status && loadedSound.soundFile.isLoaded()) {
+          switch (soundState.status) {
+            case "played": {
+              loadedSound.soundFile.play()
+              break
+            }
+            case "paused": {
+              loadedSound.soundFile.pause()
+              break
+            }
+            case "stopped": {
+              loadedSound.soundFile.stop()
+            }
           }
         }
+
+        loadedSound.lastStatus = soundState.status
+
       }
       else {
         const sound = new p5.SoundFile(game.assetsDir + soundState.file, () => {
-          sound.setLoop(soundState.loop)
-          if (soundState.status === "played") sound.play()
-          loadedSounds[soundState.id] = sound
+          if (soundState.status === "played") sound.play() //Si esta played, esto se podria reproducir incluso si inmediatamente despues se le pone pause
         })
+        sound.setLoop(soundState.loop)
+        loadedSounds[soundState.id] = {
+          lastStatus: soundState.status,
+          soundFile: sound,
+        }
       }
 
     })
