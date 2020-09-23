@@ -3,10 +3,10 @@ import p5Types from 'p5'
 import React from 'react'
 import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
-import { Evaluation, interpret, WRENatives } from 'wollok-ts'
+import { Evaluation, interpret, WRENatives, Id } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './Game'
 import { Board, boardToLayers } from './utils'
-import { flushEvents, emptyBoard, currentVisualStates, boardGround, cellSize, width, height, currentSoundStates, SoundState, io } from './GameStates'
+import { flushEvents, emptyBoard, currentVisualStates, boardGround, cellSize, width, height, currentSoundStates, SoundState, io } from './GameStates';
 
 
 function wKeyCode(key: string, keyCode: number): string {
@@ -40,7 +40,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   const draw = (sketch: p5Types) => {
     flushEvents(evaluation, currentTime(sketch))
     updateBoard()
-    updateSounds()
+    removeUnusedLoadedSounds()
     playSounds()
     drawBoard(sketch)
   }
@@ -74,10 +74,6 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     return imgs[game.assetsDir + path] ?? imgs[DEFAULT_GAME_ASSETS_DIR + path] ?? imgs[DEFAULT_GAME_ASSETS_DIR + 'wko.png']
   }
 
-  function updateSounds() {
-
-  }
-
   function updateBoard() {
     const current = JSON.stringify(board)
     const next = emptyBoard(evaluation)
@@ -93,19 +89,20 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     boardGroundPath && sketch.image(imageFromPath(boardGroundPath), 0, 0, sketch.width, sketch.height)
   }
 
-  const loadedSounds: { [id: string]: { lastStatus: string, soundFile: p5.SoundFile, started: boolean } } = {}
+  const loadedSounds: Map<Id, { lastStatus: string, soundFile: p5.SoundFile, started: boolean }> = new Map()
 
   function playSounds() {
     currentSoundStates(evaluation).forEach((soundState: SoundState) => {
-      if (!loadedSounds[soundState.id]) {
-        loadedSounds[soundState.id] = {
-          lastStatus: soundState.status,
-          soundFile: new p5.SoundFile(game.assetsDir + soundState.file),
-          started: false,
-        }
+      if (!loadedSounds.has(soundState.id)) {
+        loadedSounds.set(soundState.id,
+          {
+            lastStatus: soundState.status,
+            soundFile: new p5.SoundFile(game.assetsDir + soundState.file),
+            started: false,
+          })
       }
 
-      const loadedSound = loadedSounds[soundState.id]
+      const loadedSound = loadedSounds.get(soundState.id)!
       loadedSound.soundFile.setLoop(soundState.loop)
       loadedSound.soundFile.setVolume(soundState.volume)
 
@@ -129,8 +126,15 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
 
       loadedSound.lastStatus = soundState.status
 
+    })
+  }
 
-
+  function removeUnusedLoadedSounds() {
+    const soundIdsBeingUsed: Id[] = currentSoundStates(evaluation).map((soundState: SoundState) => soundState.id)
+    const unusedSoundIds: Id[] = [...loadedSounds.keys()].filter((id: Id) => !soundIdsBeingUsed.includes(id))
+    unusedSoundIds.forEach((unusedId: Id) => {
+      loadedSounds.get(unusedId)?.soundFile.stop()
+      loadedSounds.delete(unusedId)
     })
   }
 
