@@ -1,0 +1,10 @@
+import wollok.game.*
+
+object out{
+  method position() = game.at(-1,-1)
+}
+
+program notGame{
+  game.addVisual(out)
+  game.start()
+}
