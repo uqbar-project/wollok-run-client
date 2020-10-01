@@ -75,6 +75,15 @@ export const flushEvents = (evaluation: Evaluation, ms: number): void => {
   sendMessage('flushEvents', io(evaluation), time)(evaluation)
 }
 
+export const nextBoard = (evaluation: Evaluation): Board => {
+  const next = emptyBoard(evaluation)
+  for (const { position: { x, y }, image, message } of currentVisualStates(evaluation)) {
+    next[y] && next[y][x] && next[y][x].push({ img: `${image}`, message })
+  }
+  return next
+}
+
+
 // interface VisualState {
 //   position: {
 //     x: any,

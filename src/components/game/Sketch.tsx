@@ -6,8 +6,7 @@ import 'p5/lib/addons/p5.sound'
 import { Evaluation, interpret, WRENatives, Id } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './Game'
 import { Board, boardToLayers } from './utils'
-import { flushEvents, emptyBoard, currentVisualStates, boardGround, cellSize, width, height, currentSoundStates, SoundState, io } from './GameStates';
-
+import { flushEvents, boardGround, cellSize, width, height, currentSoundStates, SoundState, io, nextBoard } from './GameStates';
 
 function wKeyCode(key: string, keyCode: number): string {
   if (keyCode >= 48 && keyCode <= 57) return `Digit${key}`
@@ -76,10 +75,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
 
   function updateBoard() {
     const current = JSON.stringify(board)
-    const next = emptyBoard(evaluation)
-    for (const { position: { x, y }, image, message } of currentVisualStates(evaluation)) {
-      next[y] && next[y][x] && next[y][x].push({ img: `${image}`, message })
-    }
+    const next = nextBoard(evaluation)
     if (JSON.stringify(next) !== current) board = next
   }
 
