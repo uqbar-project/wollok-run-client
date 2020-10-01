@@ -1,6 +1,9 @@
 import fs from 'fs'
 import { boardToLayers } from '../components/game/utils'
-import { buildEnvironment } from 'wollok-ts'
+import { buildEnvironment, interpret } from 'wollok-ts/dist'
+import wre from 'wollok-ts/dist/wre/wre.natives'
+import { nextBoard } from '../components/game/Sketch'
+
 
 describe('game', () => {
   const ground1 = { img: 'ground1' }
@@ -32,16 +35,19 @@ describe('game', () => {
   })
 
   test('out test', () => {
-    const environment = buildEnvironment([readFile('games/gameTest.wpgm')])
-    // console.log(environment)
-    const programWollokFile = environment.getNodeByFQN<'Package'>('games.gameTest')
-    const { name } = programWollokFile.members.find(entity => entity.is('Program'))!
-    expect(name).toEqual('mockGame')
+    const environment = buildEnvironment(readFiles('games/gameTest.wpgm'))
+    const { buildEvaluation, runProgram } = interpret(environment, wre)
+    const evaluation = buildEvaluation()
+    runProgram('games.gameTest.mockGame', evaluation)
+    const [[visuals]] = nextBoard(evaluation)
+    expect(visuals).toContainEqual({ img: 'in.png' })
+    expect(visuals).not.toContainEqual({ img: 'out.png' })
   })
 
 })
 
-const readFile = (file: string) => ({
+
+const readFiles = (...files: string[]) => files.map(file => ({
   name: file,
   content: fs.readFileSync(`src/test/${file}`, 'utf8'),
-})
+}))

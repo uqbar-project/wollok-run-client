@@ -1,10 +1,19 @@
 import wollok.game.*
 
-object out{
+object in {
+  method image() = "in.png"
+  method position() = game.at(0,0)
+}
+
+object out {
+  method image() = "out.png"
   method position() = game.at(-1,-1)
 }
 
 program mockGame {
+  game.width(1)
+  game.height(1)
+  game.addVisual(in)
   game.addVisual(out)
   game.start()
 }
