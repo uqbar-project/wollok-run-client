@@ -59,6 +59,14 @@ const emptyBoard = (evaluation: Evaluation): Board => {
   )
 }
 
+export const nextBoard = (evaluation: Evaluation): Board => {
+  const next = emptyBoard(evaluation)
+  for (const { position: { x, y }, image, message } of currentVisualStates(evaluation)) {
+    next[y] && next[y][x] && next[y][x].push({ img: `${image}`, message })
+  }
+  return next
+}
+
 const flushEvents = (evaluation: Evaluation, ms: number): void => {
   const { sendMessage } = interpret(evaluation.environment, WRENatives)
   const time = evaluation.createInstance('wollok.lang.Number', ms)
@@ -108,10 +116,10 @@ const currentVisualStates = (evaluation: Evaluation) => {
     }
     const wx: RuntimeObject = evaluation.instance(position.get('x')!.id)
     wx.assertIsNumber()
-    const x = wx.innerValue
+    const x = Math.trunc(wx.innerValue)
     const wy: RuntimeObject = evaluation.instance(position.get('y')!.id)
     wy.assertIsNumber()
-    const y = wy.innerValue
+    const y = Math.trunc(wy.innerValue)
 
     let image
     if (visual.module().lookupMethod('image', 0)) {
@@ -180,10 +188,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
 
   function updateBoard() {
     const current = JSON.stringify(board)
-    const next = emptyBoard(evaluation)
-    for (const { position: { x, y }, image, message } of currentVisualStates(evaluation)) {
-      next[y][x].push({ img: `${image}`, message })
-    }
+    const next = nextBoard(evaluation)
     if (JSON.stringify(next) !== current) board = next
   }
 
