@@ -34,7 +34,6 @@ export interface GameProject {
   sources: string[]
   description: string
   imagePaths: string[]
-  soundPaths: string[]
   assetsDir: string
 }
 
@@ -121,7 +120,6 @@ function buildGameProject(repoUri: string): GameProject {
   const assetFolderName = gameAssetsPaths[0]?.substring(assetSource.length).split('/')[0]
   const assetsDir = assetSource + assetFolderName + '/'
   const imagePaths = gameAssetsPaths.concat(defaultImagesNeededFor(gameAssetsPaths))
-  const soundPaths = getAllMediaPathsWithExtension(assetSource, VALID_SOUND_EXTENSIONS)
 
   let description
   try {
@@ -130,7 +128,7 @@ function buildGameProject(repoUri: string): GameProject {
     description = '## No description found'
   }
 
-  return { main, sources, description, imagePaths, soundPaths, assetsDir }
+  return { main, sources, description, imagePaths, assetsDir }
 }
 
 function getAllMediaPathsWithExtension(assetSource: string, mediaExtension: string[]): string[] {
