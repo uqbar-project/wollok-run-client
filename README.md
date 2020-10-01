@@ -10,10 +10,16 @@ Actualmente cuenta con las siguientes implementaciones:
 
 ### ¿Cómo levantar la app?
 
+Primero hay que bajar las dependencias con el comando:
+```
+npm install
+```
+
 La app está desarrollada sobre [ReactJS](https://reactjs.org/) y , como buen proyecto `npm`, para levantarla hay que ejecutar el comando
 ```
 npm start
 ```
+
 
 > ¡Atención! Para usar Wollok Game y poder clonarse proyectos desde github es necesario levantar además un proxy por _CORS_. 
 > Para eso, ejecutar desde otra consola
