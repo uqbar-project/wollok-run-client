@@ -42,7 +42,7 @@
     "typescript": "^3.7.5",
     "use-interval": "^1.2.1",
     "uuid": "^3.4.0",
-    "wollok-ts": "github:uqbar-project/wollok-ts#master"
+    "wollok-ts": "github:uqbar-project/wollok-ts#game"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -72,6 +72,7 @@
     "@typescript-eslint/parser": "^3.9.1",
     "eslint": "^6.6.0",
     "eslint-plugin-react": "^7.20.6",
+    "fs": "0.0.1-security",
     "typescript-plugin-css-modules": "^2.4.0"
   }
 }
