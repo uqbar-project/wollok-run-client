@@ -4,7 +4,7 @@ object out{
   method position() = game.at(-1,-1)
 }
 
-program notGame{
+program mockGame {
   game.addVisual(out)
   game.start()
 }

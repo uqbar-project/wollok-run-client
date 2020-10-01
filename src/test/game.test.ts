@@ -1,8 +1,6 @@
+import fs from 'fs'
 import { boardToLayers } from '../components/game/utils'
 import { buildEnvironment } from 'wollok-ts'
-import { buildInterpreter } from '../../../wollok-ts/test/assertions';
-import FS from 'browserfs/dist/node/core/FS';
-import BrowserFS from 'browserfs';
 
 describe('game', () => {
   const ground1 = { img: 'ground1' }
@@ -29,18 +27,21 @@ describe('game', () => {
       [
         undefined,
         [undefined, pepita3, undefined],
-      ]
+      ],
     ])
   })
 
   test('out test', () => {
-    const interpreter = buildInterpreter("**/*.wpgm", "./src/test")
-    const evaluation = interpreter.buildEvaluation()
-    const environment = evaluation.environment
-    console.log(environment)
-    const programWollokFile = environment.getNodeByFQN<'Package'>(`games.gameTest`)
-    const mainWollokProgramName = programWollokFile.members.find(entity => entity.is('Program'))?.name
-    console.log(mainWollokProgramName)
+    const environment = buildEnvironment([readFile('games/gameTest.wpgm')])
+    // console.log(environment)
+    const programWollokFile = environment.getNodeByFQN<'Package'>('games.gameTest')
+    const { name } = programWollokFile.members.find(entity => entity.is('Program'))!
+    expect(name).toEqual('mockGame')
   })
 
+})
+
+const readFile = (file: string) => ({
+  name: file,
+  content: fs.readFileSync(`src/test/${file}`, 'utf8'),
 })
