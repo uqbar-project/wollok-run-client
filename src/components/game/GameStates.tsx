@@ -1,4 +1,3 @@
-import 'p5/lib/addons/p5.sound'
 import { Evaluation, interpret, WRENatives } from 'wollok-ts'
 import { Board } from './utils'
 import { RuntimeObject, TRUE_ID } from 'wollok-ts/dist/interpreter'
