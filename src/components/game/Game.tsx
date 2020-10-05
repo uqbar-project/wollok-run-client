@@ -10,8 +10,7 @@ import Spinner from '../Spinner'
 import $ from './Game.module.scss'
 import GameSelector from './GameSelector'
 import Sketch, { gameInstance } from './Sketch'
-import { PropertiesFile } from 'java-properties'
-import PropertiesReader from 'properties-reader';
+import parse, { Attributes } from 'xml-parser'
 
 const natives = wre as Natives
 const WOLLOK_FILE_EXTENSION = 'wlk'
@@ -20,7 +19,7 @@ const EXPECTED_WOLLOK_EXTENSIONS = [WOLLOK_FILE_EXTENSION, WOLLOK_PROGRAM_EXTENS
 const VALID_MEDIA_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
 const GAME_DIR = 'game'
 export const DEFAULT_GAME_ASSETS_DIR = 'https://raw.githubusercontent.com/uqbar-project/wollok/dev/org.uqbar.project.wollok.game/assets/'
-const BUILD_PROPERTIES_FILE = "build.properties"
+const CLASS_PATH_FILE = '.classpath'
 
 const fetchFile = (path: string) => {
   return {
@@ -132,17 +131,19 @@ function buildGameProject(repoUri: string): GameProject {
 }
 
 function getSourceFoldersNames(): string[] {
-  const propertiesContent = BrowserFS.BFSRequire('fs').readFileSync(getBuildPropertiesPath(), "utf-8")
-  const properties = PropertiesReader('').read(propertiesContent)
-  return properties.getRaw("source..")!.split(",")
-}
-function getGameRootPath(): string {
-  return getBuildPropertiesPath().split(`/${BUILD_PROPERTIES_FILE}`)[0]
+  const classPathContent: string = BrowserFS.BFSRequire('fs').readFileSync(getClassPathPath(), "utf-8")
+  const document: parse.Document = parse(classPathContent)
+  const documentAttributes: Attributes[] = document.root.children.map(child => child.attributes)
+  return documentAttributes.filter((attribute: Attributes) => attribute.kind === 'src').map((attribute: Attributes) => attribute.path)
 }
 
-function getBuildPropertiesPath(): string {
-  const allFiles = getAllFilePathsFrom(GAME_DIR, ["properties"])
-  return allFiles.find((filePath: string) => filePath.endsWith(`/${BUILD_PROPERTIES_FILE}`))!
+function getGameRootPath(): string {
+  return getClassPathPath().split(`/${CLASS_PATH_FILE}`)[0]
+}
+
+function getClassPathPath(): string {
+  const allFiles = getAllFilePathsFrom(GAME_DIR, ["classpath"])
+  return allFiles.find((filePath: string) => filePath.endsWith(`/${CLASS_PATH_FILE}`))!
 }
 
 function defaultImagesNeededFor(imagePaths: string[]): string[] {
