@@ -10,15 +10,17 @@ import Spinner from '../Spinner'
 import $ from './Game.module.scss'
 import GameSelector from './GameSelector'
 import Sketch, { gameInstance } from './Sketch'
+import { PropertiesFile } from 'java-properties'
+import PropertiesReader from 'properties-reader';
 
 const natives = wre as Natives
-const SRC_DIR = 'src'
 const WOLLOK_FILE_EXTENSION = 'wlk'
 const WOLLOK_PROGRAM_EXTENSION = 'wpgm'
 const EXPECTED_WOLLOK_EXTENSIONS = [WOLLOK_FILE_EXTENSION, WOLLOK_PROGRAM_EXTENSION]
 const VALID_MEDIA_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
 const GAME_DIR = 'game'
 export const DEFAULT_GAME_ASSETS_DIR = 'https://raw.githubusercontent.com/uqbar-project/wollok/dev/org.uqbar.project.wollok.game/assets/'
+const BUILD_PROPERTIES_FILE = "build.properties"
 
 const fetchFile = (path: string) => {
   return {
@@ -108,30 +110,49 @@ const defaultImgs = [
 ]
 
 function buildGameProject(repoUri: string): GameProject {
-  const files = BrowserFS.BFSRequire('fs').readdirSync(`${GAME_DIR}/${SRC_DIR}`)
-  const wpgmGame = files.find((file: string) => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
+  const gameRootPath = getGameRootPath()
+  const allFiles = getAllFilePathsFrom(gameRootPath)
+  const wpgmGame = allFiles.find((file: string) => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
   if (!wpgmGame) throw new Error('Program not found')
   const main = `game.${wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '')}`
-  const sources = getAllFilePathsFrom(GAME_DIR, EXPECTED_WOLLOK_EXTENSIONS)
+  const sources = filesWithValidSuffixes(allFiles, EXPECTED_WOLLOK_EXTENSIONS)
   const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/`
-  const gameAssetsPaths = getAllFilePathsFrom(GAME_DIR, VALID_MEDIA_EXTENSIONS).map(path => assetSource + path.substr(GAME_DIR.length + 1))
+  const gameAssetsPaths = filesWithValidSuffixes(allFiles, VALID_MEDIA_EXTENSIONS).map(path => assetSource + path.substr(gameRootPath.length + 1))
   const assetFolderName = gameAssetsPaths[0]?.substring(assetSource.length).split('/')[0]
   const assetsDir = assetSource + assetFolderName + '/'
   const imagePaths = gameAssetsPaths.concat(defaultImagesNeededFor(gameAssetsPaths))
 
   let description
   try {
-    description = BrowserFS.BFSRequire('fs').readFileSync(`${GAME_DIR}/README.md`).toString()
+    description = BrowserFS.BFSRequire('fs').readFileSync(`${gameRootPath}/README.md`).toString()
   } catch {
     description = '## No description found'
   }
   return { main, sources, description, imagePaths, assetsDir }
 }
 
+function getSourceFoldersNames(): string[] {
+  const propertiesContent = BrowserFS.BFSRequire('fs').readFileSync(getBuildPropertiesPath(), "utf-8")
+  const properties = PropertiesReader('').read(propertiesContent)
+  return properties.getRaw("source..")!.split(",")
+}
+function getGameRootPath(): string {
+  return getBuildPropertiesPath().split(`/${BUILD_PROPERTIES_FILE}`)[0]
+}
+
+function getBuildPropertiesPath(): string {
+  const allFiles = getAllFilePathsFrom(GAME_DIR, ["properties"])
+  return allFiles.find((filePath: string) => filePath.endsWith(`/${BUILD_PROPERTIES_FILE}`))!
+}
+
 function defaultImagesNeededFor(imagePaths: string[]): string[] {
   const imageNameInPath = (path: string) => { return path.split('/').pop()! }
   const knownImageNames = imagePaths.map(path => imageNameInPath(path))
   return defaultImgs.filter(defaultImg => !knownImageNames.includes(imageNameInPath(defaultImg)))
+}
+
+function filesWithValidSuffixes(files: string[], validSuffixes: string[]): string[] {
+  return files.filter((file: string) => validSuffixes.some(suffix => file.endsWith(`.${suffix}`)))
 }
 
 function getAllFilePathsFrom(parentDirectory: string, validSuffixes?: string[]): string[] {
@@ -144,7 +165,5 @@ function getAllFilePathsFrom(parentDirectory: string, validSuffixes?: string[]):
         getAllFilePathsFrom(fullPath, validSuffixes) : fullPath
     })
     .flat()
-  return validSuffixes ?
-    allFiles.filter((file: string) => validSuffixes!.some(suffix => file.endsWith(`.${suffix}`))) :
-    allFiles
+  return validSuffixes ? filesWithValidSuffixes(allFiles, validSuffixes) : allFiles
 }

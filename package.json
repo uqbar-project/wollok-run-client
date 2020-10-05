@@ -17,6 +17,7 @@
     "@types/react-splitter-layout": "^3.0.0",
     "@types/react-tabs": "^2.3.2",
     "@types/uuid": "^3.4.9",
+    "@types/properties-reader": "^0.0.2",
     "@use-it/event-listener": "^0.1.5",
     "@welldone-software/why-did-you-render": "^3.6.0",
     "classnames": "^2.2.6",
@@ -42,7 +43,9 @@
     "typescript": "^3.7.5",
     "use-interval": "^1.2.1",
     "uuid": "^3.4.0",
-    "wollok-ts": "github:uqbar-project/wollok-ts#game"
+    "wollok-ts": "github:uqbar-project/wollok-ts#game",
+    "properties-reader": "^2.1.1",
+    "java-properties": "^1.0.2"
   },
   "scripts": {
     "start": "react-scripts start",
