@@ -110,7 +110,7 @@ const defaultImgs = [
 
 function buildGameProject(repoUri: string): GameProject {
   const gameRootPath = getGameRootPath()
-  const allFiles = getAllFilePathsFrom(gameRootPath)
+  const allFiles: string[] = getSourceFoldersNames().flatMap((source: string) => getAllFilePathsFrom(`${gameRootPath}/${source}`))
   const wpgmGame = allFiles.find((file: string) => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
   if (!wpgmGame) throw new Error('Program not found')
   const main = `game.${wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '')}`
