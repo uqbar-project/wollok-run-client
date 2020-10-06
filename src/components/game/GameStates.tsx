@@ -2,6 +2,7 @@ import { Evaluation, interpret, WRENatives } from 'wollok-ts'
 import { Board } from './utils'
 import { RuntimeObject, TRUE_ID } from 'wollok-ts/dist/interpreter'
 import { Id } from 'wollok-ts'
+import { Runtime } from 'inspector'
 
 export const io = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.io.io').id
 
@@ -26,7 +27,7 @@ function stringGameFieldValue(evaluation: Evaluation, field: string): string {
   return fieldInst.innerValue
 }
 
-function stringListGameFieldValue(evaluation: Evaluation, field: string): string[] {
+function listGameFieldValue(evaluation: Evaluation, field: string): Id[] {
   const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)!
   fieldInst.assertIsCollection()
   return fieldInst.innerValue
@@ -52,12 +53,12 @@ export function boardGround(evaluation: Evaluation): string | undefined {
   return gameInstanceField(evaluation, 'boardGround') && stringGameFieldValue(evaluation, 'boardGround')
 }
 
-function visuals(evaluation: Evaluation): string[] {
-  return stringListGameFieldValue(evaluation, 'visuals')
+function visuals(evaluation: Evaluation): Id[] {
+  return listGameFieldValue(evaluation, 'visuals')
 }
 
-function sounds(evaluation: Evaluation): string[] {
-  return gameInstanceField(evaluation, 'sounds') ? stringListGameFieldValue(evaluation, 'sounds') : []
+function sounds(evaluation: Evaluation): Id[] {
+  return gameInstanceField(evaluation, 'sounds') ? listGameFieldValue(evaluation, 'sounds') : []
 }
 
 export const emptyBoard = (evaluation: Evaluation): Board => {
@@ -83,49 +84,74 @@ export const nextBoard = (evaluation: Evaluation): Board => {
 }
 
 
-// interface VisualState {
-//   position: {
-//     x: any,
-//     y: any
-//   },
-//   image: any,
-//   message?: any
-// }
 
-export const currentVisualStates = (evaluation: Evaluation) => {
-  const { sendMessage } = interpret(evaluation.environment, WRENatives)
+const getVisualPosition = (visual: RuntimeObject) => (evaluation: Evaluation): { x: number, y: number, } => {
+  let position = visual.get('position')
+  if (!position) {
+    const { sendMessage } = interpret(evaluation.environment, WRENatives)
+    sendMessage('position', visual.id)(evaluation)
+    position = evaluation.instance(evaluation.currentFrame()!.operandStack.pop()!)
+  }
+  const wx: RuntimeObject = evaluation.instance(position.get('x')!.id)
+  wx.assertIsNumber()
+  const x: number = wx.innerValue
+  const wy: RuntimeObject = evaluation.instance(position.get('y')!.id)
+  wy.assertIsNumber()
+  const y: number = wy.innerValue
 
+  return { x, y }
+}
+
+const getVisualImage = (visual: RuntimeObject) => (evaluation: Evaluation): string => {
+  if (visual.module().lookupMethod('image', 0)) {
+    const { sendMessage } = interpret(evaluation.environment, WRENatives)
+    sendMessage('image', visual.id)(evaluation)
+    const wImage: RuntimeObject = evaluation.instance(evaluation.currentFrame()!.operandStack.pop()!)
+    wImage.assertIsString()
+    return wImage.innerValue
+  } else {
+    return 'wko.png'
+  }
+
+}
+interface VisualMessage {
+  text: string,
+  time: number,
+}
+
+const getVisualMessage = (visual: RuntimeObject): VisualMessage | undefined => {
+  if (visual.get('message')) {
+    const wMessage: RuntimeObject = visual.get('message')!
+    wMessage.assertIsString()
+    const message: string = wMessage.innerValue
+    const wMessageTime: RuntimeObject = visual.get('messageTime')!
+    wMessageTime.assertIsNumber()
+    const messageTime: number = wMessageTime.innerValue
+
+    return { text: message, time: messageTime, }
+  }
+  else {
+    return undefined
+  }
+}
+
+interface VisualState {
+  position: {
+    x: number,
+    y: number
+  },
+  image: string,
+  message?: VisualMessage
+}
+
+export const currentVisualStates = (evaluation: Evaluation): VisualState[] => {
   return visuals(evaluation).map((id: Id) => {
-    const currentFrame = evaluation.currentFrame()!
     const visual = evaluation.instance(id)
-    let position = visual.get('position')
-    if (!position) {
-      sendMessage('position', id)(evaluation)
-      position = evaluation.instance(currentFrame.operandStack.pop()!)
-    }
-    const wx: RuntimeObject = evaluation.instance(position.get('x')!.id)
-    wx.assertIsNumber()
-    const x = wx.innerValue
-    const wy: RuntimeObject = evaluation.instance(position.get('y')!.id)
-    wy.assertIsNumber()
-    const y = wy.innerValue
+    const position = getVisualPosition(visual)(evaluation)
+    const image = getVisualImage(visual)(evaluation)
+    const message = getVisualMessage(visual)
 
-    let image
-    if (visual.module().lookupMethod('image', 0)) {
-      sendMessage('image', id)(evaluation)
-      const wImage: RuntimeObject = evaluation.instance(currentFrame.operandStack.pop()!)
-      wImage.assertIsString()
-      image = wImage.innerValue
-    } else {
-      image = 'wko.png'
-    }
-    const actor = evaluation.instance(id)
-    const wMessage: RuntimeObject | undefined = actor.get('message')
-    const wMessageTime: RuntimeObject | undefined = actor.get('messageTime')
-    // wMessage?.assertIsString()
-    const text = wMessage ? wMessage.innerValue : undefined
-    const message = text ? { text, time: wMessageTime ? wMessageTime.innerValue : undefined } : undefined
-    return { position: { x, y }, image, message }
+    return { position, image, message }
   })
 
 }
