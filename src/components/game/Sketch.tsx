@@ -85,7 +85,17 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     boardGroundPath && sketch.image(imageFromPath(boardGroundPath), 0, 0, sketch.width, sketch.height)
   }
 
-  const loadedSounds: Map<Id, { lastSoundState: SoundState, soundFile: p5.SoundFile, started: boolean }> = new Map()
+  interface GameSound {
+    lastSoundState: SoundState,
+    soundFile: p5.SoundFile,
+    started: boolean,
+  }
+
+  const loadedSounds: Map<Id, GameSound> = new Map()
+
+  function soundCanBePlayed(loadedSound: GameSound, currentSoundState: SoundState): boolean {
+    return (loadedSound.lastSoundState.status !== currentSoundState.status || !loadedSound.started) && loadedSound.soundFile.isLoaded()
+  }
 
   function playSounds() {
     currentSoundStates(evaluation).forEach((soundState: SoundState) => {
@@ -98,11 +108,11 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
           })
       }
 
-      const loadedSound = loadedSounds.get(soundState.id)!
+      const loadedSound: GameSound = loadedSounds.get(soundState.id)!
       loadedSound.soundFile.setLoop(soundState.loop)
       loadedSound.soundFile.setVolume(soundState.volume)
 
-      if ((loadedSound.lastSoundState.status !== soundState.status && loadedSound.soundFile.isLoaded()) || (!loadedSound.started && loadedSound.soundFile.isLoaded())) {
+      if (soundCanBePlayed(loadedSound, soundState)) {
         loadedSound.started = true
 
         switch (soundState.status) {
