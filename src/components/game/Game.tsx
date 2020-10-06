@@ -33,7 +33,7 @@ export interface GameProject {
   sources: string[]
   description: string
   imagePaths: string[]
-  assetsDir: string
+  sourceFolders: string[]
 }
 
 
@@ -110,15 +110,14 @@ const defaultImgs = [
 
 function buildGameProject(repoUri: string): GameProject {
   const gameRootPath = getGameRootPath()
-  const allFiles: string[] = getSourceFoldersNames().flatMap((source: string) => getAllFilePathsFrom(`${gameRootPath}/${source}`))
+  const sourceFolders: string[] = getSourceFoldersNames()
+  const allFiles: string[] = sourceFolders.flatMap((source: string) => getAllFilePathsFrom(`${gameRootPath}/${source}`))
   const wpgmGame = allFiles.find((file: string) => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
   if (!wpgmGame) throw new Error('Program not found')
-  const main = `game.${wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '')}`
+  const main = `game.${wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').split('/').pop()}` //Ahora es un hackazo esto maso, revisar
   const sources = filesWithValidSuffixes(allFiles, EXPECTED_WOLLOK_EXTENSIONS)
   const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/`
   const gameAssetsPaths = filesWithValidSuffixes(allFiles, VALID_MEDIA_EXTENSIONS).map(path => assetSource + path.substr(gameRootPath.length + 1))
-  const assetFolderName = gameAssetsPaths[0]?.substring(assetSource.length).split('/')[0]
-  const assetsDir = assetSource + assetFolderName + '/'
   const imagePaths = gameAssetsPaths.concat(defaultImagesNeededFor(gameAssetsPaths))
 
   let description
@@ -127,7 +126,7 @@ function buildGameProject(repoUri: string): GameProject {
   } catch {
     description = '## No description found'
   }
-  return { main, sources, description, imagePaths, assetsDir }
+  return { main, sources, description, imagePaths, sourceFolders }
 }
 
 function getSourceFoldersNames(): string[] {
