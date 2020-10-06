@@ -155,11 +155,11 @@ export const currentVisualStates = (evaluation: Evaluation): VisualState[] => {
   })
 
 }
-
+type SoundStatus = 'played' | 'paused' | 'stopped'
 export interface SoundState {
   id: Id,
   file: string,
-  status: string,
+  status: SoundStatus,
   volume: number,
   loop: boolean
 }
@@ -173,7 +173,7 @@ export const currentSoundStates = (evaluation: Evaluation): SoundState[] => {
 
     const wStatus: RuntimeObject = evaluation.instance(sound.get('status')!.id)
     wStatus.assertIsString()
-    const status = wStatus.innerValue
+    const status = wStatus.innerValue as SoundStatus
 
     const wVolume: RuntimeObject = evaluation.instance(sound.get('volume')!.id)
     wVolume.assertIsNumber()
