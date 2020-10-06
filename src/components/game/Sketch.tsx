@@ -85,14 +85,14 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     boardGroundPath && sketch.image(imageFromPath(boardGroundPath), 0, 0, sketch.width, sketch.height)
   }
 
-  const loadedSounds: Map<Id, { lastStatus: string, soundFile: p5.SoundFile, started: boolean }> = new Map()
+  const loadedSounds: Map<Id, { lastSoundState: SoundState, soundFile: p5.SoundFile, started: boolean }> = new Map()
 
   function playSounds() {
     currentSoundStates(evaluation).forEach((soundState: SoundState) => {
       if (!loadedSounds.has(soundState.id)) {
         loadedSounds.set(soundState.id,
           {
-            lastStatus: soundState.status,
+            lastSoundState: soundState,
             soundFile: new p5.SoundFile(game.assetsDir + soundState.file),
             started: false,
           })
@@ -102,7 +102,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
       loadedSound.soundFile.setLoop(soundState.loop)
       loadedSound.soundFile.setVolume(soundState.volume)
 
-      if ((loadedSound.lastStatus !== soundState.status && loadedSound.soundFile.isLoaded()) || (!loadedSound.started && loadedSound.soundFile.isLoaded())) {
+      if ((loadedSound.lastSoundState.status !== soundState.status && loadedSound.soundFile.isLoaded()) || (!loadedSound.started && loadedSound.soundFile.isLoaded())) {
         loadedSound.started = true
 
         switch (soundState.status) {
@@ -120,7 +120,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
         }
       }
 
-      loadedSound.lastStatus = soundState.status
+      loadedSound.lastSoundState = soundState
 
     })
   }
