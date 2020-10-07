@@ -39,7 +39,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   const draw = (sketch: p5Types) => {
     flushEvents(evaluation, currentTime(sketch))
     updateBoard()
-    removeUnusedLoadedSounds()
+    syncSounds()
     playSounds()
     drawBoard(sketch)
   }
@@ -89,6 +89,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     lastSoundState: SoundState,
     soundFile: p5.SoundFile,
     started: boolean,
+    toBePlayed: boolean
   }
 
   const loadedSounds: Map<Id, GameSound> = new Map()
@@ -98,41 +99,52 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   function playSounds() {
+    [...loadedSounds.values()].filter((sound: GameSound) => sound.toBePlayed).forEach((sound: GameSound) => {
+      sound.started = true
+
+      switch (sound.lastSoundState.status) {
+        case "played": {
+          sound.soundFile.play()
+          break
+        }
+        case "paused": {
+          sound.soundFile.pause()
+          break
+        }
+        case "stopped": {
+          sound.soundFile.stop()
+        }
+      }
+    })
+  }
+
+  function syncSounds() {
+    removeUnusedLoadedSounds()
+    updateSounds()
+  }
+
+  function updateSounds() {
     currentSoundStates(evaluation).forEach((soundState: SoundState) => {
       if (!loadedSounds.has(soundState.id)) {
-        loadedSounds.set(soundState.id,
-          {
-            lastSoundState: soundState,
-            soundFile: new p5.SoundFile(game.assetsDir + soundState.file),
-            started: false,
-          })
+        addSoundFromSoundState(soundState)
       }
 
       const loadedSound: GameSound = loadedSounds.get(soundState.id)!
       loadedSound.soundFile.setLoop(soundState.loop)
       loadedSound.soundFile.setVolume(soundState.volume)
-
-      if (soundCanBePlayed(loadedSound, soundState)) {
-        loadedSound.started = true
-
-        switch (soundState.status) {
-          case "played": {
-            loadedSound.soundFile.play()
-            break
-          }
-          case "paused": {
-            loadedSound.soundFile.pause()
-            break
-          }
-          case "stopped": {
-            loadedSound.soundFile.stop()
-          }
-        }
-      }
-
+      loadedSound.toBePlayed = soundCanBePlayed(loadedSound, soundState)
       loadedSound.lastSoundState = soundState
-
     })
+  }
+
+  function addSoundFromSoundState(soundState: SoundState) {
+    loadedSounds.set(soundState.id,
+      {
+        lastSoundState: soundState,
+        soundFile: new p5.SoundFile(game.assetsDir + soundState.file),
+        started: false,
+        toBePlayed: false,
+      })
   }
 
   function removeUnusedLoadedSounds() {
