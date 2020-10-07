@@ -85,7 +85,7 @@ export const nextBoard = (evaluation: Evaluation): Board => {
 
 
 
-const getVisualPosition = (visual: RuntimeObject) => (evaluation: Evaluation): { x: number, y: number, } => {
+const getVisualPosition = (visual: RuntimeObject) => (evaluation: Evaluation) => {
   let position = visual.get('position')
   if (!position) {
     const { sendMessage } = interpret(evaluation.environment, WRENatives)
@@ -112,11 +112,11 @@ const getVisualImage = (visual: RuntimeObject) => (evaluation: Evaluation): stri
   } else {
     return 'wko.png'
   }
-
 }
+
 interface VisualMessage {
-  text: string,
-  time: number,
+  text: string;
+  time: number;
 }
 
 const getVisualMessage = (visual: RuntimeObject): VisualMessage | undefined => {
@@ -137,11 +137,11 @@ const getVisualMessage = (visual: RuntimeObject): VisualMessage | undefined => {
 
 interface VisualState {
   position: {
-    x: number,
-    y: number
-  },
-  image: string,
-  message?: VisualMessage
+    x: number;
+    y: number;
+  };
+  image: string;
+  message?: VisualMessage;
 }
 
 export const currentVisualStates = (evaluation: Evaluation): VisualState[] => {
@@ -157,11 +157,11 @@ export const currentVisualStates = (evaluation: Evaluation): VisualState[] => {
 }
 type SoundStatus = 'played' | 'paused' | 'stopped'
 export interface SoundState {
-  id: Id,
-  file: string,
-  status: SoundStatus,
-  volume: number,
-  loop: boolean
+  id: Id;
+  file: string;
+  status: SoundStatus;
+  volume: number;
+  loop: boolean;
 }
 
 export const currentSoundStates = (evaluation: Evaluation): SoundState[] => {
