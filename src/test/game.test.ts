@@ -2,7 +2,7 @@ import fs from 'fs'
 import { boardToLayers } from '../components/game/utils'
 import { buildEnvironment, interpret } from 'wollok-ts/dist'
 import wre from 'wollok-ts/dist/wre/wre.natives'
-import { nextBoard } from '../components/game/Sketch'
+import { nextBoard } from '../components/game/GameStates'
 
 
 describe('game', () => {

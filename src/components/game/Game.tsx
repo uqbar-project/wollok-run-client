@@ -9,14 +9,15 @@ import wre from 'wollok-ts/dist/wre/wre.natives'
 import Spinner from '../Spinner'
 import $ from './Game.module.scss'
 import GameSelector from './GameSelector'
-import Sketch, { gameInstance } from './Sketch'
+import Sketch from './Sketch'
+import { gameInstance } from './GameStates'
 
 const natives = wre as Natives
 const SRC_DIR = 'src'
 const WOLLOK_FILE_EXTENSION = 'wlk'
 const WOLLOK_PROGRAM_EXTENSION = 'wpgm'
 const EXPECTED_WOLLOK_EXTENSIONS = [WOLLOK_FILE_EXTENSION, WOLLOK_PROGRAM_EXTENSION]
-const VALID_MEDIA_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
+const VALID_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
 const GAME_DIR = 'game'
 export const DEFAULT_GAME_ASSETS_DIR = 'https://raw.githubusercontent.com/uqbar-project/wollok/dev/org.uqbar.project.wollok.game/assets/'
 
@@ -114,7 +115,7 @@ function buildGameProject(repoUri: string): GameProject {
   const main = `game.${wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '')}`
   const sources = getAllFilePathsFrom(GAME_DIR, EXPECTED_WOLLOK_EXTENSIONS)
   const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/`
-  const gameAssetsPaths = getAllFilePathsFrom(GAME_DIR, VALID_MEDIA_EXTENSIONS).map(path => assetSource + path.substr(GAME_DIR.length + 1))
+  const gameAssetsPaths = getAllFilePathsFrom(GAME_DIR, VALID_IMAGE_EXTENSIONS).map(path => assetSource + path.substr(GAME_DIR.length + 1))
   const assetFolderName = gameAssetsPaths[0]?.substring(assetSource.length).split('/')[0]
   const assetsDir = assetSource + assetFolderName + '/'
   const imagePaths = gameAssetsPaths.concat(defaultImagesNeededFor(gameAssetsPaths))
@@ -125,6 +126,7 @@ function buildGameProject(repoUri: string): GameProject {
   } catch {
     description = '## No description found'
   }
+
   return { main, sources, description, imagePaths, assetsDir }
 }
 
