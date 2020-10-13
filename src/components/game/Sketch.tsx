@@ -183,7 +183,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   function imageFromPath(path: string): p5.Image {
-    const possibleImage: p5.Image | undefined = game.sourceFolders.map((sourceFolder: string) => imgs[sourceFolder + path]).find((image: p5.Image | undefined) => image)
+    const possibleImage: p5.Image | undefined = game.sourcePaths.map((sourcePath: string) => imgs[`${sourcePath}/${path}`]).find((image: p5.Image | undefined) => image)
     return possibleImage ?? imgs[DEFAULT_GAME_ASSETS_DIR + path] ?? imgs[DEFAULT_GAME_ASSETS_DIR + 'wko.png']
   }
 

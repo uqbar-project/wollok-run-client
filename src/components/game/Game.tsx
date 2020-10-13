@@ -33,7 +33,7 @@ export interface GameProject {
   sources: string[]
   description: string
   imagePaths: string[]
-  sourceFolders: string[]
+  sourcePaths: string[]
 }
 
 
@@ -109,16 +109,17 @@ const defaultImgs = [
 ]
 
 function buildGameProject(repoUri: string): GameProject {
-  const gameRootPath = getGameRootPath()
+  const gameRootPath: string = getGameRootPath()
   const sourceFolders: string[] = getSourceFoldersNames()
   const allFiles: string[] = sourceFolders.flatMap((source: string) => getAllFilePathsFrom(`${gameRootPath}/${source}`))
   const wpgmGame = allFiles.find((file: string) => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
   if (!wpgmGame) throw new Error('Program not found')
   const main = `game.${wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').split('/').pop()}` //Ahora es un hackazo esto maso, revisar
-  const sources = filesWithValidSuffixes(allFiles, EXPECTED_WOLLOK_EXTENSIONS)
+  const sources: string[] = filesWithValidSuffixes(allFiles, EXPECTED_WOLLOK_EXTENSIONS)
   const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/`
   const gameAssetsPaths = filesWithValidSuffixes(allFiles, VALID_MEDIA_EXTENSIONS).map(path => assetSource + path.substr(gameRootPath.length + 1))
   const imagePaths = gameAssetsPaths.concat(defaultImagesNeededFor(gameAssetsPaths))
+  const sourcePaths = sourceFolders.map((source: string) => assetSource + source)
 
   let description
   try {
@@ -126,11 +127,11 @@ function buildGameProject(repoUri: string): GameProject {
   } catch {
     description = '## No description found'
   }
-  return { main, sources, description, imagePaths, sourceFolders }
+  return { main, sources, description, imagePaths, sourcePaths }
 }
 
 function getSourceFoldersNames(): string[] {
-  const classPathContent: string = BrowserFS.BFSRequire('fs').readFileSync(getClassPathPath(), "utf-8")
+  const classPathContent: string = BrowserFS.BFSRequire('fs').readFileSync(getClassPathPath(), 'utf-8')
   const document: parse.Document = parse(classPathContent)
   const documentAttributes: Attributes[] = document.root.children.map(child => child.attributes)
   return documentAttributes.filter((attribute: Attributes) => attribute.kind === 'src').map((attribute: Attributes) => attribute.path)
@@ -141,7 +142,7 @@ function getGameRootPath(): string {
 }
 
 function getClassPathPath(): string {
-  const allFiles = getAllFilePathsFrom(GAME_DIR, ["classpath"])
+  const allFiles = getAllFilePathsFrom(GAME_DIR, ['classpath'])
   return allFiles.find((filePath: string) => filePath.endsWith(`/${CLASS_PATH_FILE}`))!
 }
 
