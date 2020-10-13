@@ -9,14 +9,16 @@ import wre from 'wollok-ts/dist/wre/wre.natives'
 import Spinner from '../Spinner'
 import $ from './Game.module.scss'
 import GameSelector from './GameSelector'
-import Sketch, { gameInstance } from './Sketch'
+import Sketch from './Sketch'
 import parse, { Attributes } from 'xml-parser'
+import { gameInstance } from './GameStates'
 
 const natives = wre as Natives
 const WOLLOK_FILE_EXTENSION = 'wlk'
 const WOLLOK_PROGRAM_EXTENSION = 'wpgm'
 const EXPECTED_WOLLOK_EXTENSIONS = [WOLLOK_FILE_EXTENSION, WOLLOK_PROGRAM_EXTENSION]
-const VALID_MEDIA_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
+const VALID_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
+const VALID_SOUND_EXTENSIONS = ['mp3', 'ogg', 'wav']
 const GAME_DIR = 'game'
 export const DEFAULT_GAME_ASSETS_DIR = 'https://raw.githubusercontent.com/uqbar-project/wollok/dev/org.uqbar.project.wollok.game/assets/'
 const CLASS_PATH_FILE = '.classpath'
@@ -33,6 +35,7 @@ export interface GameProject {
   sources: string[]
   description: string
   imagePaths: string[]
+  soundPaths: string[]
   sourcePaths: string[]
 }
 
@@ -117,7 +120,8 @@ function buildGameProject(repoUri: string): GameProject {
   const main = `game.${wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').split('/').pop()}` //Ahora es un hackazo esto maso, revisar
   const sources: string[] = filesWithValidSuffixes(allFiles, EXPECTED_WOLLOK_EXTENSIONS)
   const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/`
-  const gameAssetsPaths = filesWithValidSuffixes(allFiles, VALID_MEDIA_EXTENSIONS).map(path => assetSource + path.substr(gameRootPath.length + 1))
+  const gameAssetsPaths = filesWithValidSuffixes(allFiles, VALID_IMAGE_EXTENSIONS).map(path => assetSource + path.substr(gameRootPath.length + 1))
+  const soundPaths = filesWithValidSuffixes(allFiles, VALID_SOUND_EXTENSIONS)
   const imagePaths = gameAssetsPaths.concat(defaultImagesNeededFor(gameAssetsPaths))
   const sourcePaths = sourceFolders.map((source: string) => assetSource + source)
 
@@ -127,7 +131,7 @@ function buildGameProject(repoUri: string): GameProject {
   } catch {
     description = '## No description found'
   }
-  return { main, sources, description, imagePaths, sourcePaths }
+  return { main, sources, description, imagePaths, soundPaths, sourcePaths }
 }
 
 function getSourceFoldersNames(): string[] {

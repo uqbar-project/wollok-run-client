@@ -2,76 +2,11 @@ import p5 from 'p5'
 import p5Types from 'p5'
 import React from 'react'
 import Sketch from 'react-p5'
-// import 'p5/lib/addons/p5.sound'
-import { Evaluation, Id, interpret, WRENatives } from 'wollok-ts'
-import { RuntimeObject } from 'wollok-ts/dist/interpreter'
+import 'p5/lib/addons/p5.sound'
+import { Evaluation, interpret, WRENatives, Id } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './Game'
 import { Board, boardToLayers } from './utils'
-
-const io = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.io.io').id
-
-export const gameInstance = (evaluation: Evaluation): RuntimeObject => {
-  return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
-}
-
-function gameInstanceField(evaluation: Evaluation, field: string): RuntimeObject | undefined {
-  const gameField: RuntimeObject | undefined = gameInstance(evaluation).get(field)
-  return gameField && evaluation.instance(gameField.id)
-}
-
-function numberGameFieldValue(evaluation: Evaluation, field: string): number {
-  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)!
-  fieldInst.assertIsNumber()
-  return fieldInst.innerValue
-}
-
-function stringGameFieldValue(evaluation: Evaluation, field: string): string {
-  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)!
-  fieldInst.assertIsString()
-  return fieldInst.innerValue
-}
-
-function width(evaluation: Evaluation): number {
-  return numberGameFieldValue(evaluation, 'width')
-}
-
-function height(evaluation: Evaluation): number {
-  return numberGameFieldValue(evaluation, 'height')
-}
-
-function cellSize(evaluation: Evaluation): number {
-  return numberGameFieldValue(evaluation, 'cellSize')
-}
-
-function ground(evaluation: Evaluation): string {
-  return stringGameFieldValue(evaluation, 'ground')
-}
-
-function boardGround(evaluation: Evaluation): string | undefined {
-  return gameInstanceField(evaluation, 'boardGround') && stringGameFieldValue(evaluation, 'boardGround')
-}
-
-const emptyBoard = (evaluation: Evaluation): Board => {
-  const groundPath = ground(evaluation)
-  const boardgroundPath = boardGround(evaluation)
-  return Array.from(Array(height(evaluation)), () =>
-    Array.from(Array(width(evaluation)), () => !boardgroundPath ? [{ img: groundPath }] : [])
-  )
-}
-
-export const nextBoard = (evaluation: Evaluation): Board => {
-  const next = emptyBoard(evaluation)
-  for (const { position: { x, y }, image, message } of currentVisualStates(evaluation)) {
-    next[y] && next[y][x] && next[y][x].push({ img: `${image}`, message })
-  }
-  return next
-}
-
-const flushEvents = (evaluation: Evaluation, ms: number): void => {
-  const { sendMessage } = interpret(evaluation.environment, WRENatives)
-  const time = evaluation.createInstance('wollok.lang.Number', ms)
-  sendMessage('flushEvents', io(evaluation), time)(evaluation)
-}
+import { flushEvents, boardGround, cellSize, width, height, currentSoundStates, SoundState, io, nextBoard } from './GameStates'
 
 function wKeyCode(key: string, keyCode: number): string {
   if (keyCode >= 48 && keyCode <= 57) return `Digit${key}`
@@ -91,56 +26,6 @@ function wKeyCode(key: string, keyCode: number): string {
   return '' //If an unknown key is pressed, a string should be returned
 }
 
-// interface VisualState {
-//   position: {
-//     x: any,
-//     y: any
-//   },
-//   image: any,
-//   message?: any
-// }
-
-const currentVisualStates = (evaluation: Evaluation) => {
-  const { sendMessage } = interpret(evaluation.environment, WRENatives)
-
-  const wVisuals: RuntimeObject = gameInstanceField(evaluation, 'visuals')!
-  wVisuals.assertIsCollection()
-  const visuals = wVisuals.innerValue
-  return visuals.map((id: Id) => {
-    const currentFrame = evaluation.currentFrame()!
-    const visual = evaluation.instance(id)
-    let position = visual.get('position')
-    if (!position) {
-      sendMessage('position', id)(evaluation)
-      position = evaluation.instance(currentFrame.operandStack.pop()!)
-    }
-    const wx: RuntimeObject = evaluation.instance(position.get('x')!.id)
-    wx.assertIsNumber()
-    const x = Math.trunc(wx.innerValue)
-    const wy: RuntimeObject = evaluation.instance(position.get('y')!.id)
-    wy.assertIsNumber()
-    const y = Math.trunc(wy.innerValue)
-
-    let image
-    if (visual.module().lookupMethod('image', 0)) {
-      sendMessage('image', id)(evaluation)
-      const wImage: RuntimeObject = evaluation.instance(currentFrame.operandStack.pop()!)
-      wImage.assertIsString()
-      image = wImage.innerValue
-    } else {
-      image = 'wko.png'
-    }
-    const actor = evaluation.instance(id)
-    const wMessage: RuntimeObject | undefined = actor.get('message')
-    const wMessageTime: RuntimeObject | undefined = actor.get('messageTime')
-    // wMessage?.assertIsString()
-    const text = wMessage ? wMessage.innerValue : undefined
-    const message = text ? { text, time: wMessageTime ? wMessageTime.innerValue : undefined } : undefined
-    return { position: { x, y }, image, message }
-  })
-
-}
-
 interface SketchProps {
   game: GameProject
   evaluation: Evaluation
@@ -154,6 +39,8 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   const draw = (sketch: p5Types) => {
     flushEvents(evaluation, currentTime(sketch))
     updateBoard()
+    syncSounds()
+    playSounds()
     drawBoard(sketch)
   }
 
@@ -197,6 +84,81 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     const boardGroundPath = boardGround(evaluation)
 
     boardGroundPath && sketch.image(imageFromPath(boardGroundPath), 0, 0, sketch.width, sketch.height)
+  }
+
+  interface GameSound {
+    lastSoundState: SoundState
+    soundFile: p5.SoundFile
+    started: boolean
+    toBePlayed: boolean
+  }
+
+  const loadedSounds: Map<Id, GameSound> = new Map()
+
+  function soundCanBePlayed(loadedSound: GameSound, currentSoundState: SoundState): boolean {
+    return (loadedSound.lastSoundState.status !== currentSoundState.status || !loadedSound.started) && loadedSound.soundFile.isLoaded()
+  }
+
+  function playSounds() {
+    [...loadedSounds.values()].filter((sound: GameSound) => sound.toBePlayed).forEach((sound: GameSound) => {
+      sound.started = true
+
+      switch (sound.lastSoundState.status) {
+        case 'played': {
+          sound.soundFile.play()
+          break
+        }
+        case 'paused': {
+          sound.soundFile.pause()
+          break
+        }
+        case 'stopped': {
+          sound.soundFile.stop()
+        }
+      }
+    })
+  }
+
+  function syncSounds() {
+    removeUnusedLoadedSounds()
+    updateSounds()
+  }
+
+  function updateSounds() {
+    currentSoundStates(evaluation).forEach((soundState: SoundState) => {
+      if (!loadedSounds.has(soundState.id)) {
+        addSoundFromSoundState(soundState)
+      }
+
+      const loadedSound: GameSound = loadedSounds.get(soundState.id)!
+      loadedSound.soundFile.setLoop(soundState.loop)
+      loadedSound.soundFile.setVolume(soundState.volume)
+      loadedSound.toBePlayed = soundCanBePlayed(loadedSound, soundState)
+      loadedSound.lastSoundState = soundState
+    })
+  }
+
+  function getSoundPathFromFileName(fileName: string): string | undefined {
+    return game.soundPaths.find((soundPath: string) => soundPath.endsWith(fileName))
+  }
+
+  function addSoundFromSoundState(soundState: SoundState) {
+    loadedSounds.set(soundState.id,
+      {
+        lastSoundState: soundState,
+        soundFile: new p5.SoundFile(getSoundPathFromFileName(soundState.file)!), //TODO add soundfile not found exception
+        started: false,
+        toBePlayed: false,
+      })
+  }
+
+  function removeUnusedLoadedSounds() {
+    const soundIdsBeingUsed: Id[] = currentSoundStates(evaluation).map((soundState: SoundState) => soundState.id)
+    const unusedSoundIds: Id[] = [...loadedSounds.keys()].filter((id: Id) => !soundIdsBeingUsed.includes(id))
+    unusedSoundIds.forEach((unusedId: Id) => {
+      loadedSounds.get(unusedId)?.soundFile.stop()
+      loadedSounds.delete(unusedId)
+    })
   }
 
   function drawBoard(sketch: p5) {
