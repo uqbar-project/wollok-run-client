@@ -44,7 +44,6 @@
     "use-interval": "^1.2.1",
     "uuid": "^3.4.0",
     "wollok-ts": "github:uqbar-project/wollok-ts#game",
-    "properties-reader": "^2.1.1",
     "xml-parser": "^1.2.1"
   },
   "scripts": {
