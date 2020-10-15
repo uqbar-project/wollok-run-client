@@ -89,7 +89,6 @@ export const nextBoard = (evaluation: Evaluation): Board => {
 }
 
 
-
 const getVisualPosition = (visual: RuntimeObject) => (evaluation: Evaluation) => {
   let position = visual.get('position')
   if (!position) {
@@ -133,14 +132,14 @@ const getVisualMessage = (visual: RuntimeObject): VisualMessage | undefined => {
     wMessageTime.assertIsNumber()
     const messageTime: number = wMessageTime.innerValue
 
-    return { text: message, time: messageTime, }
+    return { text: message, time: messageTime }
   }
   else {
     return undefined
   }
 }
 
-interface VisualState {
+export interface VisualState {
   position: {
     x: number;
     y: number;
