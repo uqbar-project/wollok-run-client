@@ -25,7 +25,7 @@ const CLASS_PATH_FILE = '.classpath'
 
 const fetchFile = (path: string) => {
   return {
-    name: 'game/' + path.split('/').pop(),
+    name: path,
     content: BrowserFS.BFSRequire('fs').readFileSync(path)!.toString(),
   }
 }
@@ -117,7 +117,7 @@ function buildGameProject(repoUri: string): GameProject {
   const allFiles: string[] = sourceFolders.flatMap((source: string) => getAllFilePathsFrom(`${gameRootPath}/${source}`))
   const wpgmGame = allFiles.find((file: string) => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
   if (!wpgmGame) throw new Error('Program not found')
-  const main = `game.${wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').split('/').pop()}` //Ahora es un hackazo esto maso, revisar
+  const main = wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').replace(/\//gi, '.') //Ahora es un hackazo esto maso, revisar
   const sources: string[] = filesWithValidSuffixes(allFiles, EXPECTED_WOLLOK_EXTENSIONS)
   const rootPath = `https://raw.githubusercontent.com/${repoUri}/master/`
   const gameAssetsPaths = filesWithValidSuffixes(allFiles, VALID_IMAGE_EXTENSIONS).map(path => rootPath + path.substr(gameRootPath.length + 1))
@@ -151,7 +151,7 @@ function getClassPathPath(): string {
 }
 
 function defaultImagesNeededFor(imagePaths: string[]): string[] {
-  const imageNameInPath = (path: string) => { return path.split('/').pop()! }
+  const imageNameInPath = (path: string) => path.split('/').pop()!
   const knownImageNames = imagePaths.map(path => imageNameInPath(path))
   return defaultImgs.filter(defaultImg => !knownImageNames.includes(imageNameInPath(defaultImg)))
 }
