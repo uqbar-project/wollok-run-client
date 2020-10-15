@@ -44,7 +44,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     drawBoard(sketch)
   }
 
-  const canvasResolution = () => {
+  const canvasResolution = () => { //TODO sacar de aca, que reciba la evaluation
     const cellPixelSize = cellSize(evaluation)
 
     const pixelWidth = width(evaluation) * cellPixelSize
@@ -69,7 +69,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     })
   }
 
-  function imageFromPath(path: string): p5.Image {
+  function imageFromPath(path: string): p5.Image { //TODO hacer otra funcion que reciba game e imgs, y devuelva esto, para testear
     const possibleImage: p5.Image | undefined = game.sourcePaths.map((sourcePath: string) => imgs[`${sourcePath}/${path}`]).find((image: p5.Image | undefined) => image)
     return possibleImage ?? imgs[DEFAULT_GAME_ASSETS_DIR + path] ?? imgs[DEFAULT_GAME_ASSETS_DIR + 'wko.png']
   }
@@ -99,7 +99,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     return (loadedSound.lastSoundState.status !== currentSoundState.status || !loadedSound.started) && loadedSound.soundFile.isLoaded()
   }
 
-  function playSounds() {
+  function playSounds() { //TODO? hacer gamesound clase para testear??
     [...loadedSounds.values()].filter((sound: GameSound) => sound.toBePlayed).forEach((sound: GameSound) => {
       sound.started = true
 
@@ -161,7 +161,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     })
   }
 
-  function drawBoard(sketch: p5) {
+  function drawBoard(sketch: p5) { //TODO lo mismo de sacar cosas intermedias
     const cellPixelSize = cellSize(evaluation)
     drawBoardGround(sketch)
     boardToLayers(board).forEach(layer => {
@@ -188,7 +188,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     sendMessage('queueEvent', io(evaluation), eventId)(evaluation)
   }
 
-  function keyPressed(sketch: p5) {
+  function keyPressed(sketch: p5) { //TODO sacar construccion intermedia para testear
     const left = evaluation.createInstance('wollok.lang.String', 'keypress')
     const keyPressedCode = evaluation.createInstance('wollok.lang.String', wKeyCode(sketch.key, sketch.keyCode))
     const anyKeyCode = evaluation.createInstance('wollok.lang.String', 'ANY')
