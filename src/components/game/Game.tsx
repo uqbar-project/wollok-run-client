@@ -117,7 +117,7 @@ function buildGameProject(repoUri: string): GameProject {
   const allFiles: string[] = sourceFolders.flatMap((source: string) => getAllFilePathsFrom(`${gameRootPath}/${source}`))
   const wpgmGame = allFiles.find((file: string) => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
   if (!wpgmGame) throw new Error('Program not found')
-  const main = wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').replace(/\//gi, '.') //Ahora es un hackazo esto maso, revisar
+  const main = wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').replace(/\//gi, '.')
   const sources: string[] = filesWithValidSuffixes(allFiles, EXPECTED_WOLLOK_EXTENSIONS)
   const rootPath = `https://raw.githubusercontent.com/${repoUri}/master/`
   const gameAssetsPaths = filesWithValidSuffixes(allFiles, VALID_IMAGE_EXTENSIONS).map(path => rootPath + path.substr(gameRootPath.length + 1))
