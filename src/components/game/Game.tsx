@@ -112,26 +112,41 @@ const defaultImgs = [
 ]
 
 function buildGameProject(repoUri: string): GameProject {
-  const gameRootPath: string = getGameRootPath()
-  const sourceFolders: string[] = getSourceFoldersNames()
-  const allFiles: string[] = sourceFolders.flatMap((source: string) => getAllFilePathsFrom(`${gameRootPath}/${source}`))
-  const wpgmGame = allFiles.find((file: string) => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
-  if (!wpgmGame) throw new Error('Program not found')
-  const main = wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').replace(/\//gi, '.')
-  const sources: string[] = filesWithValidSuffixes(allFiles, EXPECTED_WOLLOK_EXTENSIONS)
-  const rootPath = `https://raw.githubusercontent.com/${repoUri}/master/`
-  const gameAssetsPaths = filesWithValidSuffixes(allFiles, VALID_IMAGE_EXTENSIONS).map(path => rootPath + path.substr(gameRootPath.length + 1))
-  const soundPaths = filesWithValidSuffixes(allFiles, VALID_SOUND_EXTENSIONS).map(path => rootPath + path.substr(gameRootPath.length + 1))
-  const imagePaths = gameAssetsPaths.concat(defaultImagesNeededFor(gameAssetsPaths))
-  const sourcePaths = sourceFolders.map((source: string) => rootPath + source)
+  const allFilesPaths: string[] = getAllSourceFiles()
+  const wpgmGamePath = allFilesPaths.find((file: string) => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
+  if (!wpgmGamePath) throw new Error('Program not found')
+  const mainFQN: string = wpgmGamePath.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').replace(/\//gi, '.')
+  const wollokFilesPaths: string[] = filesWithValidSuffixes(allFilesPaths, EXPECTED_WOLLOK_EXTENSIONS)
+  const assetsRootPath = `https://raw.githubusercontent.com/${repoUri}/master/`
+  const knownImagePaths = assetsWithValidSuffixes(allFilesPaths, assetsRootPath, VALID_IMAGE_EXTENSIONS)
+  const imagePaths = knownImagePaths.concat(defaultImagesNeededFor(knownImagePaths))
+  const soundPaths = assetsWithValidSuffixes(allFilesPaths, assetsRootPath, VALID_SOUND_EXTENSIONS)
+  const sourcePaths = getAssetsSourceFoldersPaths(assetsRootPath)
+  const description = getProjectDescription()
 
-  let description
+  return { main: mainFQN, sources: wollokFilesPaths, description, imagePaths, soundPaths, sourcePaths }
+}
+
+function getProjectDescription(): string {
   try {
-    description = BrowserFS.BFSRequire('fs').readFileSync(`${gameRootPath}/README.md`).toString()
-  } catch {
-    description = '## No description found'
+    return BrowserFS.BFSRequire('fs').readFileSync(`${getGameRootPath()}/README.md`).toString()
   }
-  return { main, sources, description, imagePaths, soundPaths, sourcePaths }
+  catch{
+    return '## No description found'
+  }
+
+}
+
+function getAssetsSourceFoldersPaths(assetsRootPath: string): string[] {
+  return getSourceFoldersNames().map((source: string) => assetsRootPath + source)
+}
+
+function getAllSourceFiles(): string[] {
+  return getSourceFoldersNames().flatMap((source: string) => getAllFilePathsFrom(`${getGameRootPath()}/${source}`))
+}
+
+function assetsWithValidSuffixes(files: string[], rootPath: string, validSuffixes: string[]): string[] {
+  return filesWithValidSuffixes(files, validSuffixes).map(path => rootPath + path.substr(getGameRootPath().length + 1))
 }
 
 function getSourceFoldersNames(): string[] {
