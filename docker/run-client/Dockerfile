@@ -1,12 +1,16 @@
-FROM node:12
+####################
+# Base Image
+####################
 
+FROM node:12 as base
+
+# Create app directory
 WORKDIR /usr/src/app
 
+# Avoid running as root
 RUN groupadd -r app && useradd -r -m -g app app
 RUN chown app:app .
 USER app
-
-# Create app directory
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
@@ -14,12 +18,18 @@ USER app
 COPY package*.json ./
 
 RUN npm install
-# If you are building your code for production
-# RUN npm ci --only=production
 
-# Bundle app source
+# Copy app source
 COPY . .
 
-EXPOSE 3000
+####################
+# Development Image
+####################
 
+FROM base as dev
+EXPOSE 3000
 CMD [ "npm", "start" ]
+
+
+# If you are building your code for production
+# RUN npm ci --only=production
