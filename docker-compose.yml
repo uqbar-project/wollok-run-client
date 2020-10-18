@@ -8,6 +8,8 @@ services:
     ports:
       - "3000:3000"
     tty: true # docker run -t
+    volumes:
+      - ./src:/usr/src/app/src
   cors:
     build: "docker/cors-proxy"
     ports:
