@@ -32,3 +32,18 @@ npm start
 > ```
 >
 > El server se levantará por default en el puerto `9999`
+
+### Alternativa usando Docker
+
+Simplemente ejecutar
+
+```
+docker-compose up
+```
+
+Y eso pone en funcionamiento todos los servicios necesarios.
+
+Esta aplicación ha sido desarrollada usando
+
+- Docker version 19.03.11, build dd360c7
+- docker-compose version 1.25.5, build unknown
