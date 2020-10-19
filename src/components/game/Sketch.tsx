@@ -6,7 +6,7 @@ import 'p5/lib/addons/p5.sound'
 import { Evaluation, interpret, WRENatives, Id } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './Game'
 import { Board, boardToLayers } from './utils'
-import { flushEvents, boardGround, cellSize, width, height, currentSoundStates, SoundState, io, nextBoard } from './GameStates'
+import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, io, nextBoard, canvasResolution } from './GameStates'
 
 function wKeyCode(key: string, keyCode: number): string {
   if (keyCode >= 48 && keyCode <= 57) return `Digit${key}`
@@ -44,20 +44,8 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     drawBoard(sketch)
   }
 
-  const canvasResolution = () => { //TODO sacar de aca, que reciba la evaluation
-    const cellPixelSize = cellSize(evaluation)
-
-    const pixelWidth = width(evaluation) * cellPixelSize
-    const pixelHeight = height(evaluation) * cellPixelSize
-
-    return {
-      x: pixelWidth,
-      y: pixelHeight,
-    }
-  }
-
   const setup = (sketch: p5Types, canvasParentRef: any) => {
-    const resolution = canvasResolution()
+    const resolution = canvasResolution(evaluation)
 
     sketch.createCanvas(resolution.x, resolution.y).parent(canvasParentRef)
     loadImages(sketch)

@@ -3,7 +3,7 @@ import { Board } from './utils'
 import { RuntimeObject, TRUE_ID } from 'wollok-ts/dist/interpreter'
 import { Id } from 'wollok-ts'
 
-export const io = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.io.io').id
+export const io = (evaluation: Evaluation): string => evaluation.environment.getNodeByFQN('wollok.io.io').id
 
 export const gameInstance = (evaluation: Evaluation): RuntimeObject => {
   return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
@@ -38,11 +38,11 @@ function getBooleanFieldValueFrom(wObject: RuntimeObject, evaluation: Evaluation
   return fieldInst.id === TRUE_ID
 }
 
-export function width(evaluation: Evaluation): number {
+function width(evaluation: Evaluation): number {
   return getNumberFieldValueFrom(gameInstance(evaluation), evaluation, 'width')
 }
 
-export function height(evaluation: Evaluation): number {
+function height(evaluation: Evaluation): number {
   return getNumberFieldValueFrom(gameInstance(evaluation), evaluation, 'height')
 }
 
@@ -87,7 +87,6 @@ export const nextBoard = (evaluation: Evaluation): Board => {
   }
   return next
 }
-
 
 const getVisualPosition = (visual: RuntimeObject) => (evaluation: Evaluation) => {
   let position = visual.get('position')
@@ -180,4 +179,16 @@ export const currentSoundStates = (evaluation: Evaluation): SoundState[] => {
     return { id, file, status, volume, loop }
   })
 
+}
+
+export const canvasResolution = (evaluation: Evaluation): { x: number, y: number } => {
+  const cellPixelSize = cellSize(evaluation)
+
+  const pixelWidth = width(evaluation) * cellPixelSize
+  const pixelHeight = height(evaluation) * cellPixelSize
+
+  return {
+    x: pixelWidth,
+    y: pixelHeight,
+  }
 }

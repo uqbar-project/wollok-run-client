@@ -1,9 +1,13 @@
 import fs from 'fs'
 import { boardToLayers } from '../components/game/utils'
-import { buildEnvironment, interpret } from 'wollok-ts/dist'
+import { buildEnvironment, interpret, Evaluation } from 'wollok-ts/dist'
 import wre from 'wollok-ts/dist/wre/wre.natives'
-import { nextBoard, currentVisualStates, VisualState, currentSoundStates, SoundState, flushEvents } from '../components/game/GameStates';
+import { nextBoard, currentVisualStates, VisualState, currentSoundStates, SoundState, flushEvents, canvasResolution } from '../components/game/GameStates'
 
+const readFiles = (files: string[]) => files.map(file => ({
+  name: file,
+  content: fs.readFileSync(`src/test/${file}`, 'utf8'),
+}))
 
 describe('game', () => {
   const ground1 = { img: 'ground1' }
@@ -34,21 +38,21 @@ describe('game', () => {
     ])
   })
 
-  test('a visual outside of the canvas should not be drawn', () => {
-    const environment = buildEnvironment(readFiles('games/gameTest.wpgm'))
+  const gameTest = (testName: string, gameProgramFile: string, gameFiles: string[], cbTest: (evaluation: Evaluation) => void) => {
+    const environment = buildEnvironment(readFiles(gameFiles))
     const { buildEvaluation, runProgram } = interpret(environment, wre)
     const evaluation = buildEvaluation()
-    runProgram('games.gameTest.mockGame', evaluation)
+    runProgram(`games.${gameProgramFile}.mockGame`, evaluation)
+    it(testName, () => cbTest(evaluation))
+  }
+
+  gameTest('a visual outside of the canvas should not be drawn', 'gameTest', ['games/gameTest.wpgm'], (evaluation) => {
     const [[visuals]] = nextBoard(evaluation)
     expect(visuals).toContainEqual({ img: 'in.png' })
     expect(visuals).not.toContainEqual({ img: 'out.png' })
   })
 
-  test('visuals', () => {
-    const environment = buildEnvironment(readFiles('games/pepita.wpgm'))
-    const { buildEvaluation, runProgram } = interpret(environment, wre)
-    const evaluation = buildEvaluation()
-    runProgram('games.pepita.mockGame', evaluation)
+  gameTest('visualStates', 'pepita', ['games/pepita.wpgm'], (evaluation) => {
     const pepitaState: VisualState = currentVisualStates(evaluation)[0]
     expect(pepitaState).toStrictEqual({
       image: 'pepita.png',
@@ -57,11 +61,7 @@ describe('game', () => {
     })
   })
 
-  test('sounds', () => {
-    const environment = buildEnvironment(readFiles('games/sounds.wpgm'))
-    const { buildEvaluation, runProgram } = interpret(environment, wre)
-    const evaluation = buildEvaluation()
-    runProgram('games.sounds.mockGame', evaluation)
+  gameTest('soundStates', 'sounds', ['games/sounds.wpgm'], (evaluation) => {
     const soundState: SoundState = currentSoundStates(evaluation)[0]
     expect(soundState).toStrictEqual({
       id: soundState.id,
@@ -72,11 +72,7 @@ describe('game', () => {
     })
   })
 
-  test('flush events', () => {
-    const environment = buildEnvironment(readFiles('games/pepita.wpgm'))
-    const { buildEvaluation, runProgram } = interpret(environment, wre)
-    const evaluation = buildEvaluation()
-    runProgram('games.pepita.mockGame', evaluation)
+  gameTest('flushEvents', 'pepita', ['games/pepita.wpgm'], (evaluation) => {
     const pepitaState: VisualState = currentVisualStates(evaluation)[0]
     expect(pepitaState.position).toStrictEqual({ x: 1, y: -1 })
     flushEvents(evaluation, 101)
@@ -84,10 +80,12 @@ describe('game', () => {
     expect(newPepitaState.position).toStrictEqual({ x: 0, y: 0 })
   })
 
+  gameTest('The canvas resolution should be calculated according to the game', 'gameResolution', ['games/gameResolution.wpgm'], (evaluation) => {
+    const resolution = canvasResolution(evaluation)
+
+    expect(resolution).toStrictEqual({
+      x: 300,
+      y: 375,
+    })
+  })
 })
-
-
-const readFiles = (...files: string[]) => files.map(file => ({
-  name: file,
-  content: fs.readFileSync(`src/test/${file}`, 'utf8'),
-}))
