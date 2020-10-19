@@ -1,21 +1,27 @@
 import { SoundState } from './GameStates'
-import p5 from 'p5'
+import { SoundFile } from 'p5'
+import 'p5/lib/addons/p5.sound'
+
 
 export class GameSound {
   private lastSoundState: SoundState
-  private soundFile: p5.SoundFile
+  private soundFile: SoundFile
   private started: boolean
   public toBePlayed: boolean
 
   constructor(lastSoundState: SoundState, soundPath: string) {
     this.lastSoundState = lastSoundState
-    this.soundFile = new p5.SoundFile(soundPath)
+    this.soundFile = new SoundFile(soundPath)
     this.started = false
     this.toBePlayed = false
   }
 
-  private canBePlayed(newSoundState: SoundState): boolean {
-    return (this.lastSoundState.status !== newSoundState.status || !this.started) && this.soundFile.isLoaded()
+  public isLoaded(): boolean {
+    return this.soundFile.isLoaded()
+  }
+
+  public canBePlayed(newSoundState: SoundState): boolean {
+    return (this.lastSoundState.status !== newSoundState.status || !this.started) && this.isLoaded()
   }
 
   public update(newSoundState: SoundState): void {

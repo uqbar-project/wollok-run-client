@@ -3,6 +3,7 @@ import { boardToLayers } from '../components/game/utils'
 import { buildEnvironment, interpret, Evaluation } from 'wollok-ts/dist'
 import wre from 'wollok-ts/dist/wre/wre.natives'
 import { nextBoard, currentVisualStates, VisualState, currentSoundStates, SoundState, flushEvents, canvasResolution } from '../components/game/GameStates'
+import { GameSound } from '../components/game/GameSound'
 
 const readFiles = (files: string[]) => files.map(file => ({
   name: file,
@@ -87,5 +88,23 @@ describe('game', () => {
       x: 300,
       y: 375,
     })
+  })
+})
+
+describe('GameSound', () => {
+
+  const soundState: SoundState = {
+    id: 'abc',
+    file: 'sound.mp3',
+    status: 'played',
+    volume: 1,
+    loop: false,
+  }
+
+  test('sound', () => {
+    const sound: GameSound = new GameSound(soundState, 'games/sound.mp3')
+    jest.spyOn(sound, 'isLoaded').mockReturnValueOnce(false).mockReturnValueOnce(true)
+    expect(sound.canBePlayed(soundState)).toBeFalsy()
+    expect(sound.canBePlayed(soundState)).toBeTruthy()
   })
 })
