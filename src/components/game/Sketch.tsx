@@ -7,6 +7,7 @@ import { Evaluation, interpret, WRENatives, Id } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './Game'
 import { Board, boardToLayers } from './utils'
 import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, io, nextBoard, canvasResolution } from './GameStates'
+import { GameSound } from './GameSound'
 
 function wKeyCode(key: string, keyCode: number): string {
   if (keyCode >= 48 && keyCode <= 57) return `Digit${key}`
@@ -74,37 +75,10 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     boardGroundPath && sketch.image(imageFromPath(boardGroundPath), 0, 0, sketch.width, sketch.height)
   }
 
-  interface GameSound {
-    lastSoundState: SoundState
-    soundFile: p5.SoundFile
-    started: boolean
-    toBePlayed: boolean
-  }
-
   const loadedSounds: Map<Id, GameSound> = new Map()
 
-  function soundCanBePlayed(loadedSound: GameSound, currentSoundState: SoundState): boolean {
-    return (loadedSound.lastSoundState.status !== currentSoundState.status || !loadedSound.started) && loadedSound.soundFile.isLoaded()
-  }
-
-  function playSounds() { //TODO? hacer gamesound clase para testear??
-    [...loadedSounds.values()].filter((sound: GameSound) => sound.toBePlayed).forEach((sound: GameSound) => {
-      sound.started = true
-
-      switch (sound.lastSoundState.status) {
-        case 'played': {
-          sound.soundFile.play()
-          break
-        }
-        case 'paused': {
-          sound.soundFile.pause()
-          break
-        }
-        case 'stopped': {
-          sound.soundFile.stop()
-        }
-      }
-    })
+  function playSounds() {
+    [...loadedSounds.values()].forEach((sound: GameSound) => sound.playSound())
   }
 
   function syncSounds() {
@@ -119,10 +93,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
       }
 
       const loadedSound: GameSound = loadedSounds.get(soundState.id)!
-      loadedSound.soundFile.setLoop(soundState.loop)
-      loadedSound.soundFile.setVolume(soundState.volume)
-      loadedSound.toBePlayed = soundCanBePlayed(loadedSound, soundState)
-      loadedSound.lastSoundState = soundState
+      loadedSound.update(soundState)
     })
   }
 
@@ -131,20 +102,14 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   function addSoundFromSoundState(soundState: SoundState) {
-    loadedSounds.set(soundState.id,
-      {
-        lastSoundState: soundState,
-        soundFile: new p5.SoundFile(getSoundPathFromFileName(soundState.file)!), //TODO add soundfile not found exception
-        started: false,
-        toBePlayed: false,
-      })
+    loadedSounds.set(soundState.id, new GameSound(soundState, getSoundPathFromFileName(soundState.file)!)) //TODO add soundfile not found exception
   }
 
   function removeUnusedLoadedSounds() {
     const soundIdsBeingUsed: Id[] = currentSoundStates(evaluation).map((soundState: SoundState) => soundState.id)
     const unusedSoundIds: Id[] = [...loadedSounds.keys()].filter((id: Id) => !soundIdsBeingUsed.includes(id))
     unusedSoundIds.forEach((unusedId: Id) => {
-      loadedSounds.get(unusedId)?.soundFile.stop()
+      loadedSounds.get(unusedId)?.stopSound()
       loadedSounds.delete(unusedId)
     })
   }

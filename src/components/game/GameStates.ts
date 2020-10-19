@@ -181,7 +181,7 @@ export const currentSoundStates = (evaluation: Evaluation): SoundState[] => {
 
 }
 
-export const canvasResolution = (evaluation: Evaluation): { x: number, y: number } => {
+export const canvasResolution = (evaluation: Evaluation): { x: number; y: number } => {
   const cellPixelSize = cellSize(evaluation)
 
   const pixelWidth = width(evaluation) * cellPixelSize
