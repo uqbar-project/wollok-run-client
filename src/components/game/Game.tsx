@@ -141,7 +141,7 @@ function getAssetsSourceFoldersPaths(assetsRootPath: string): string[] {
   return getSourceFoldersNames().map((source: string) => assetsRootPath + source)
 }
 
-function getAllSourceFiles(): string[] {
+export function getAllSourceFiles(): string[] {
   return getSourceFoldersNames().flatMap((source: string) => getAllFilePathsFrom(`${getGameRootPath()}/${source}`))
 }
 
@@ -149,14 +149,14 @@ function assetsWithValidSuffixes(files: string[], rootPath: string, validSuffixe
   return filesWithValidSuffixes(files, validSuffixes).map(path => rootPath + path.substr(getGameRootPath().length + 1))
 }
 
-function getSourceFoldersNames(): string[] {
+export function getSourceFoldersNames(): string[] {
   const classPathContent: string = BrowserFS.BFSRequire('fs').readFileSync(getClassPathPath(), 'utf-8')
   const document: parse.Document = parse(classPathContent)
   const documentAttributes: Attributes[] = document.root.children.map(child => child.attributes)
   return documentAttributes.filter((attribute: Attributes) => attribute.kind === 'src').map((attribute: Attributes) => attribute.path)
 }
 
-function getGameRootPath(): string {
+export function getGameRootPath(): string {
   return getClassPathPath().split(`/${CLASS_PATH_FILE}`)[0]
 }
 
@@ -171,11 +171,11 @@ function defaultImagesNeededFor(imagePaths: string[]): string[] {
   return defaultImgs.filter(defaultImg => !knownImageNames.includes(imageNameInPath(defaultImg)))
 }
 
-function filesWithValidSuffixes(files: string[], validSuffixes: string[]): string[] {
+export function filesWithValidSuffixes(files: string[], validSuffixes: string[]): string[] {
   return files.filter((file: string) => validSuffixes.some(suffix => file.endsWith(`.${suffix}`)))
 }
 
-function getAllFilePathsFrom(parentDirectory: string, validSuffixes?: string[]): string[] {
+export function getAllFilePathsFrom(parentDirectory: string, validSuffixes?: string[]): string[] {
   const browserFS = BrowserFS.BFSRequire('fs')
   const allFiles = browserFS
     .readdirSync(parentDirectory)

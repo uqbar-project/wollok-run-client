@@ -32,6 +32,11 @@ export function buildKeyPressEvent(evaluation: Evaluation, keyCode: string): Id 
   return evaluation.createInstance('wollok.lang.List', [eventType, wKey])
 }
 
+export function queueGameEvent(evaluation: Evaluation, eventId: string) {
+  const { sendMessage } = interpret(evaluation.environment, WRENatives)
+  sendMessage('queueEvent', io(evaluation), eventId)(evaluation)
+}
+
 interface SketchProps {
   game: GameProject
   evaluation: Evaluation
@@ -141,18 +146,12 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
 
   function currentTime(sketch: p5) { return sketch.millis() }
 
-  function queueGameEvent(eventId: string) {
-    const { sendMessage } = interpret(evaluation.environment, WRENatives)
-    sendMessage('queueEvent', io(evaluation), eventId)(evaluation)
-  }
-
-  function keyPressed(sketch: p5) {
+  function keyPressed(sketch: p5): void {
     const keyPressedEvent = buildKeyPressEvent(evaluation, wKeyCode(sketch.key, sketch.keyCode))
     const anyKeyPressedEvent = buildKeyPressEvent(evaluation, 'ANY')
 
-    queueGameEvent(keyPressedEvent)
-    queueGameEvent(anyKeyPressedEvent)
-    return false
+    queueGameEvent(evaluation, keyPressedEvent)
+    queueGameEvent(evaluation, anyKeyPressedEvent)
   }
 
   return <Sketch setup={setup as any} draw={draw as any} keyPressed={keyPressed as any} />

@@ -3,9 +3,9 @@ import { boardToLayers } from '../components/game/utils'
 import { buildEnvironment, interpret, Evaluation, Id } from 'wollok-ts/dist'
 import wre from 'wollok-ts/dist/wre/wre.natives'
 import { nextBoard, currentVisualStates, VisualState, currentSoundStates, SoundState, flushEvents, canvasResolution } from '../components/game/GameStates'
-import { wKeyCode, buildKeyPressEvent } from '../components/game/Sketch'
+import { wKeyCode, buildKeyPressEvent, queueGameEvent } from '../components/game/Sketch'
 import { RuntimeObject } from 'wollok-ts/dist/interpreter'
-import { GameSound } from '../components/game/GameSound'
+import * as Game from '../components/game/Game'
 
 const readFiles = (files: string[]) => files.map(file => ({
   name: file,
@@ -105,8 +105,39 @@ describe('game', () => {
     expect(keyPressEvent).toStrictEqual(['keypress', 'Digit1'])
 
   })
+
+  gameTest('Cuando se toca una tecla, el evento asociado debe ocurrir', 'movement', ['games/movement.wpgm'], (evaluation) => { //traducir a english
+    const keyCode = wKeyCode('ArrowRight', 39)
+    const keyPressEvent: Id = buildKeyPressEvent(evaluation, keyCode)
+    const firstPepitaPosition = currentVisualStates(evaluation)[0].position
+    expect(firstPepitaPosition).toStrictEqual({ x: 0, y: 0 })
+    queueGameEvent(evaluation, keyPressEvent)
+    flushEvents(evaluation, 1)
+    const finalPepitaPosition = currentVisualStates(evaluation)[0].position
+    expect(finalPepitaPosition).toStrictEqual({ x: 1, y: 1 })
+  })
 })
 
+describe('GameProject build', () => {
+  beforeAll(() => {
+    jest.spyOn(Game, 'getAllFilePathsFrom').mockImplementation((parentDir: string, validSuffixes?: string[] | undefined): string[] => {
+      const allFiles = ['game/src/pepita.wlk', 'game/src/juego.wpgm', 'game/assets/pepita.png', 'game/classpath']
+      const filesInParentDir = allFiles.filter((file: string) => file.startsWith(parentDir))
+      return validSuffixes ? Game.filesWithValidSuffixes(filesInParentDir, validSuffixes) : filesInParentDir
+    })
+
+    jest.spyOn(Game, 'getSourceFoldersNames').mockReturnValue(['src', 'assets'])
+  })
+
+  afterAll(() => {
+    jest.resetAllMocks()
+  })
+
+  test('validacion', () => {
+    expect(Game.getAllSourceFiles()).toStrictEqual('12s')
+  })
+})
+/*
 describe('GameSound', () => {
 
   const soundState: SoundState = {
@@ -124,3 +155,4 @@ describe('GameSound', () => {
     expect(sound.canBePlayed(soundState)).toBeTruthy()
   })
 })
+*/
