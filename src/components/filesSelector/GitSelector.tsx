@@ -1,6 +1,5 @@
 import React, { memo, useState, useEffect } from 'react'
-import { RouteComponentProps } from '@reach/router'
-import { FilesCallback } from './FilesSelector'
+import { FilesCallback, FilesSelectorProps } from './FilesSelector'
 import * as BrowserFS from 'browserfs'
 import * as git from 'isomorphic-git'
 import $ from './FilesSelector.module.scss'
@@ -21,7 +20,7 @@ const loadGitFiles = (cb: FilesCallback) => async (repoUrl: string) => {
 
 const fetchFile = (path: string) => {
   return {
-    name: path,
+    name: path.replace('git/', ''),
     content: BrowserFS.BFSRequire('fs').readFileSync(path),
   }
 }
@@ -40,8 +39,7 @@ const getAllFilePathsFrom = (rootDirectory: string): string[] => {
 }
 
 
-type GitSelectorProps = RouteComponentProps & { cb: FilesCallback }
-const GitSelector = (props: GitSelectorProps) => {
+const GitSelector = (props: FilesSelectorProps) => {
   const [gitUrl, setGitUrl] = useState<string>()
   const repoUri = new URLSearchParams(props.location!.search).get(GIT)
 

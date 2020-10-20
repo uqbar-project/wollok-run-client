@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { RouteComponentProps } from '@reach/router'
 import GitSelector from './GitSelector'
 import LocalSelector from './LocalSelector'
+import Spinner from '../Spinner';
 
 export type File = {
   name: string
@@ -10,12 +11,19 @@ export type File = {
 
 export type FilesCallback = (files: File[]) => void
 
-type FilesSelectorProps = RouteComponentProps & {cb: FilesCallback}
+export type FilesSelectorProps = RouteComponentProps & { cb: FilesCallback }
 const FilesSelector = (props: FilesSelectorProps) => {
-  return <div>
-    <GitSelector {...props}/>
-    <LocalSelector {...props}/>
-  </div>
+  const [loading, setLoading] = useState<boolean>(false)
+
+  //TODO: Manejar asyncronismo
+  const innerProps = { ...props, cb: (files: File[]) => { setLoading(true); props.cb(files) } }
+
+  return loading
+    ? <Spinner />
+    : <div>
+      <GitSelector {...innerProps} />
+      <LocalSelector {...innerProps} />
+    </div>
 }
 
 export default FilesSelector

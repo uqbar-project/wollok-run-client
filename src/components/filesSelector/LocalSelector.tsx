@@ -1,6 +1,5 @@
 import React, { ChangeEvent } from 'react'
-import { RouteComponentProps } from '@reach/router'
-import { FilesCallback, File } from './FilesSelector'
+import { FilesCallback, File, FilesSelectorProps } from './FilesSelector'
 import $ from './FilesSelector.module.scss'
 
 const loadLocalFiles = (cb: FilesCallback) => async (event: ChangeEvent<HTMLInputElement>) => {
@@ -18,8 +17,7 @@ const loadLocalFiles = (cb: FilesCallback) => async (event: ChangeEvent<HTMLInpu
   cb(files)
 }
 
-type LocalSelectorProps = RouteComponentProps & {cb: FilesCallback}
-const LocalSelector = (props: LocalSelectorProps) => {
+const LocalSelector = (props: FilesSelectorProps) => {
   return <div className={$.selector}>
     <label>Cargá un proyecto Wollok desde tu máquina</label>
     <input type='file' webkitdirectory='' multiple onChange={loadLocalFiles(props.cb)} />
