@@ -1,0 +1,44 @@
+@import "../../_theme.scss";
+
+.selector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  height: 100%;
+
+  & > form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    height: 13%;
+    width: 100%;
+    & > div {
+      display: flex;
+      flex-direction: column;
+      width: 60%;
+      & > label {
+        padding: 0 0 5px 20px;
+        font-size: large;
+      }
+      & > input {
+        padding: 20px;
+        font-size: x-large;
+        border-color: #ac4142;
+        border-radius: 50px;
+      }
+    }
+
+    & > button {
+      margin-top: 25px;
+      padding: 10px 20px 10px 20px;
+      border-radius: 50px;
+      font-weight: bold;
+      color: white;
+      font-size: large;
+      background-color: #ac4142;
+    }
+  }
+}
