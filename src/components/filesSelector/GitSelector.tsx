@@ -1,12 +1,13 @@
 import React, { memo, useState, useEffect } from 'react'
-import { FilesCallback, FilesSelectorProps } from './FilesSelector'
+import { SelectorProps } from './FilesSelector'
 import * as BrowserFS from 'browserfs'
 import * as git from 'isomorphic-git'
 import $ from './FilesSelector.module.scss'
 
 const GIT = 'git'
 
-const loadGitFiles = (cb: FilesCallback) => async (repoUrl: string) => {
+const loadGitFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (repoUrl: string) => {
+  onStartLoad()
   await git.clone({
     dir: GIT,
     corsProxy: 'http://localhost:9999',
@@ -15,7 +16,7 @@ const loadGitFiles = (cb: FilesCallback) => async (repoUrl: string) => {
     depth: 1,
   })
   const files = getAllFilePathsFrom(GIT).map(fetchFile)
-  cb(files)
+  onFilesLoad(files)
 }
 
 const fetchFile = (path: string) => {
@@ -39,7 +40,7 @@ const getAllFilePathsFrom = (rootDirectory: string): string[] => {
 }
 
 
-const GitSelector = (props: FilesSelectorProps) => {
+const GitSelector = (props: SelectorProps) => {
   const [gitUrl, setGitUrl] = useState<string>()
   const repoUri = new URLSearchParams(document.location.search).get(GIT)
 
@@ -47,9 +48,9 @@ const GitSelector = (props: FilesSelectorProps) => {
     BrowserFS.configure({ fs: 'InMemory', options: {} }, (err: any) => {
       if (err) throw new Error('FS error')
       git.plugins.set('fs', BrowserFS.BFSRequire('fs'))
-      if (repoUri) loadGitFiles(props.cb)(repoUri)
+      if (repoUri) loadGitFiles(props)(repoUri)
     })
-  }, [props.cb, repoUri])
+  }, [props, repoUri])
 
   const navigateToGame = () => {
     document.location.search = `${GIT}=${gitUrl}`

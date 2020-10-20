@@ -31,7 +31,7 @@ const LoadScreen = ({ setDebugTarget }: LoadScreenProps) => {
   return (
     <div className={$.container}>
       {!tests
-        ? <FilesSelector cb={onFilesLoad} />
+        ? <FilesSelector onFilesLoad={onFilesLoad} />
         : (
           <div>
             {tests.length} tests found:

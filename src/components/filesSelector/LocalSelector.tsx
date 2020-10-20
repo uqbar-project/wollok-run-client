@@ -1,8 +1,9 @@
 import React, { ChangeEvent } from 'react'
-import { FilesCallback, File, FilesSelectorProps } from './FilesSelector'
+import { File, SelectorProps } from './FilesSelector'
 import $ from './FilesSelector.module.scss'
 
-const loadLocalFiles = (cb: FilesCallback) => async (event: ChangeEvent<HTMLInputElement>) => {
+const loadLocalFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (event: ChangeEvent<HTMLInputElement>) => {
+  onStartLoad()
   const files = await Promise.all([...event.target.files!]
     // .filter(file => file.name.match(/\.(?:wlk|wtest|wpgm)$/))
     .map(file => new Promise<File>((resolve) => {
@@ -14,13 +15,13 @@ const loadLocalFiles = (cb: FilesCallback) => async (event: ChangeEvent<HTMLInpu
       reader.readAsArrayBuffer(file)
     }))
   )
-  cb(files)
+  onFilesLoad(files)
 }
 
-const LocalSelector = (props: FilesSelectorProps) => {
+const LocalSelector = (props: SelectorProps) => {
   return <div className={$.selector}>
     <label>Cargá un proyecto Wollok desde tu máquina</label>
-    <input type='file' webkitdirectory='' multiple onChange={loadLocalFiles(props.cb)} />
+    <input type='file' webkitdirectory='' multiple onChange={loadLocalFiles(props)} />
   </div>
 }
 

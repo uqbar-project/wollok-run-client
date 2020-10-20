@@ -31,7 +31,7 @@ export interface GameProject {
 
 
 export type GameProps = RouteComponentProps
-const Game = (props: GameProps) => {
+const Game = (_: GameProps) => {
   const [game, setGame] = useState<GameProject>()
   const [evaluation, setEvaluation] = useState<Evaluation>()
 
@@ -52,7 +52,7 @@ const Game = (props: GameProps) => {
   return (
     <div className={$.container}>
       {!evaluation || !game
-        ? <FilesSelector cb={loadGame} {...props} />
+        ? <FilesSelector onFilesLoad={loadGame} />
         : <>
           <h1>{title}</h1>
           <div>
