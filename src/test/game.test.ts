@@ -1,8 +1,10 @@
 import fs from 'fs'
 import { boardToLayers } from '../components/game/utils'
-import { buildEnvironment, interpret, Evaluation } from 'wollok-ts/dist'
+import { buildEnvironment, interpret, Evaluation, Id } from 'wollok-ts/dist'
 import wre from 'wollok-ts/dist/wre/wre.natives'
 import { nextBoard, currentVisualStates, VisualState, currentSoundStates, SoundState, flushEvents, canvasResolution } from '../components/game/GameStates'
+import { wKeyCode, buildKeyPressEvent } from '../components/game/Sketch'
+import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import { GameSound } from '../components/game/GameSound'
 
 const readFiles = (files: string[]) => files.map(file => ({
@@ -88,6 +90,20 @@ describe('game', () => {
       x: 300,
       y: 375,
     })
+  })
+
+  gameTest('Key press events', 'pepita', ['games/pepita.wpgm'], (evaluation) => {
+    const keyCode = wKeyCode('1', 49)
+    const wKeyPressEventId: Id = buildKeyPressEvent(evaluation, keyCode)
+    const wKeyPressEvent: RuntimeObject = evaluation.instance(wKeyPressEventId)
+    wKeyPressEvent.assertIsCollection()
+    const keyPressEvent: string[] = wKeyPressEvent.innerValue.map((id: Id) => {
+      const wString: RuntimeObject = evaluation.instance(id)
+      wString.assertIsString()
+      return wString.innerValue
+    })
+    expect(keyPressEvent).toStrictEqual(['keypress', 'Digit1'])
+
   })
 })
 
