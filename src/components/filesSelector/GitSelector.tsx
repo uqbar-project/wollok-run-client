@@ -41,7 +41,7 @@ const getAllFilePathsFrom = (rootDirectory: string): string[] => {
 
 const GitSelector = (props: FilesSelectorProps) => {
   const [gitUrl, setGitUrl] = useState<string>()
-  const repoUri = new URLSearchParams(props.location!.search).get(GIT)
+  const repoUri = new URLSearchParams(document.location.search).get(GIT)
 
   useEffect(() => {
     BrowserFS.configure({ fs: 'InMemory', options: {} }, (err: any) => {
@@ -52,7 +52,6 @@ const GitSelector = (props: FilesSelectorProps) => {
   }, [props.cb, repoUri])
 
   const navigateToGame = () => {
-    // TODO: Usar props.location?
     document.location.search = `${GIT}=${gitUrl}`
   }
 
