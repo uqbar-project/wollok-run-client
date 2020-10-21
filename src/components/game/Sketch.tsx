@@ -4,7 +4,7 @@ import React from 'react'
 import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, interpret, WRENatives, Id } from 'wollok-ts'
-import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './Game'
+import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { Board, boardToLayers } from './utils'
 import { flushEvents, boardGround, cellSize, width, height, currentSoundStates, SoundState, io, nextBoard } from './GameStates'
 
