@@ -61,7 +61,7 @@ const GitSelector = (props: SelectorProps) => {
       <img src={'/wollok-logo.png'} width={'280px'} height={'90px'} alt={'wollok logo'}></img>
       <form onSubmit={event => { event.preventDefault(); navigateToGame() }}>
         <div>
-          <label>Pegar URL de Github del juego a correr ( ͡° ͜ʖ ͡°)</label>
+          <label>Pegá la URL del repositorio del juego a correr ( ͡° ͜ʖ ͡°)</label>
           <input type='text' placeholder='https://github.com/wollok/pepitagame' onChange={event => setGitUrl(event.target.value)} />
         </div>
         <button type='submit'>Cargar Juego</button>

@@ -98,9 +98,9 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   interface GameSound {
-    lastSoundState: SoundState,
-    soundFile: p5.SoundFile,
-    started: boolean,
+    lastSoundState: SoundState
+    soundFile: p5.SoundFile
+    started: boolean
     toBePlayed: boolean
   }
 
@@ -115,15 +115,15 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
       sound.started = true
 
       switch (sound.lastSoundState.status) {
-        case "played": {
+        case 'played': {
           sound.soundFile.play()
           break
         }
-        case "paused": {
+        case 'paused': {
           sound.soundFile.pause()
           break
         }
-        case "stopped": {
+        case 'stopped': {
           sound.soundFile.stop()
         }
       }

@@ -3,7 +3,7 @@ import { Board } from './utils'
 import { RuntimeObject, TRUE_ID } from 'wollok-ts/dist/interpreter'
 import { Id } from 'wollok-ts'
 
-export const io = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.io.io').id
+export const io = (evaluation: Evaluation): Id => evaluation.environment.getNodeByFQN('wollok.io.io').id
 
 export const gameInstance = (evaluation: Evaluation): RuntimeObject => {
   return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
@@ -89,7 +89,6 @@ export const nextBoard = (evaluation: Evaluation): Board => {
 }
 
 
-
 const getVisualPosition = (visual: RuntimeObject) => (evaluation: Evaluation) => {
   let position = visual.get('position')
   if (!position) {
@@ -133,7 +132,7 @@ const getVisualMessage = (visual: RuntimeObject): VisualMessage | undefined => {
     wMessageTime.assertIsNumber()
     const messageTime: number = wMessageTime.innerValue
 
-    return { text: message, time: messageTime, }
+    return { text: message, time: messageTime }
   }
   else {
     return undefined
