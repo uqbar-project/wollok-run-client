@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import GitSelector from './GitSelector'
 import LocalSelector from './LocalSelector'
 import Spinner from '../Spinner'
+import $ from './FilesSelector.module.scss'
 
 export type File = {
   name: string
@@ -20,9 +21,12 @@ const FilesSelector = (props: FilesSelectorProps) => {
 
   return loading
     ? <Spinner />
-    : <div>
-      <GitSelector {...props} onStartLoad={onStartLoad} />
-      <LocalSelector {...props} onStartLoad={onStartLoad} />
+    : <div className={$.container}>
+      <img src={'/wollok-logo.png'} width={280} height={90} alt={'wollok logo'} />
+      <div>
+        <GitSelector {...props} onStartLoad={onStartLoad} />
+        <LocalSelector {...props} onStartLoad={onStartLoad} />
+      </div>
     </div>
 }
 

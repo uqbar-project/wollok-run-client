@@ -20,8 +20,8 @@ const loadLocalFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (e
 
 const LocalSelector = (props: SelectorProps) => {
   return <div className={$.selector}>
-    <label>Cargá un proyecto Wollok desde tu máquina</label>
-    <input type='file' webkitdirectory='' multiple onChange={loadLocalFiles(props)} />
+    <label>Cargá un proyecto Wollok desde tu máquina ( ͡° ͜ʖ ͡°)</label>
+    <input className={$.loadButton} type='file' webkitdirectory='' multiple onChange={loadLocalFiles(props)} />
   </div>
 }
 

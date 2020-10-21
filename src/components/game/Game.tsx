@@ -29,20 +29,15 @@ const Game = (_: GameProps) => {
 
   const title = evaluation ? evaluation.instance(gameInstance(evaluation).get('title')!.id).innerValue : ''
 
-  return (
-    <div className={$.container}>
-      {!evaluation || !game
-        ? <FilesSelector onFilesLoad={loadGame} />
-        : <>
-          <h1>{title}</h1>
-          <div>
-            <Sketch game={game} evaluation={evaluation} />
-            <ReactMarkdown source={game.description} className={$.description} />
-          </div>
-        </>
-      }
+  return !evaluation || !game
+    ? <FilesSelector onFilesLoad={loadGame} />
+    : <div className={$.container}>
+      <h1>{title}</h1>
+      <div>
+        <Sketch game={game} evaluation={evaluation} />
+        <ReactMarkdown source={game.description} className={$.description} />
+      </div>
     </div>
-  )
 }
 
 export default memo(Game)
