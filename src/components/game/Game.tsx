@@ -25,8 +25,8 @@ export interface GameProject {
   main: string
   sources: SourceFile[]
   description: string
-  imagePaths: string[]
   assetsDir: string
+  images: { path: string, imageUrl: string }[]
 }
 
 
@@ -67,15 +67,6 @@ const Game = (_: GameProps) => {
 
 export default memo(Game)
 
-const defaultImgs = [
-  DEFAULT_GAME_ASSETS_DIR + 'ground.png',
-  DEFAULT_GAME_ASSETS_DIR + 'wko.png',
-  DEFAULT_GAME_ASSETS_DIR + 'speech.png',
-  DEFAULT_GAME_ASSETS_DIR + 'speech2.png',
-  DEFAULT_GAME_ASSETS_DIR + 'speech3.png',
-  DEFAULT_GAME_ASSETS_DIR + 'speech4.png',
-]
-
 function buildGameProject(files: File[]): GameProject {
   const repoUri = new URLSearchParams(document.location.search).get('git')?.replace('https://github.com/', '') //TODO: Arreglar las imágenes para evitar esto, sino no va a andar con proyectos locales
 
@@ -84,19 +75,19 @@ function buildGameProject(files: File[]): GameProject {
   const main = wpgmFile.name.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').replace(/\//gi, '.')
   const sources = files.filter(withExtension(...EXPECTED_WOLLOK_EXTENSIONS)).map(({ name, content }) => ({ name, content: content.toString('utf8') }))
   const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/`
-  const gameAssetsPaths = files.filter(withExtension(...VALID_IMAGE_EXTENSIONS)).map(({ name }) => assetSource + name)
+  const imgFiles = files.filter(withExtension(...VALID_IMAGE_EXTENSIONS))
+  const gameAssetsPaths = imgFiles.map(({ name }) => assetSource + name)
   const assetFolderName = gameAssetsPaths[0]?.substring(assetSource.length).split('/')[0]
   const assetsDir = assetSource + assetFolderName + '/'
-  const imagePaths = gameAssetsPaths.concat(defaultImagesNeededFor(gameAssetsPaths))
   const description = files.find(withExtension('md'))?.content.toString('utf8') || '## No description found'
+  const images = imgFiles.map(({ name, content }) => (
+    {
+      path: name.split('/').pop()!, //TODO: Contemplar sub-directorios
+      imageUrl: URL.createObjectURL(new Blob([content], { type: 'image/png' })),
+    }
+  ))
 
-  return { main, sources, description, imagePaths, assetsDir }
-}
-
-function defaultImagesNeededFor(imagePaths: string[]): string[] {
-  const imageNameInPath = (path: string) => { return path.split('/').pop()! }
-  const knownImageNames = imagePaths.map(path => imageNameInPath(path))
-  return defaultImgs.filter(defaultImg => !knownImageNames.includes(imageNameInPath(defaultImg)))
+  return { main, sources, description, assetsDir, images }
 }
 
 const withExtension = (...extensions: string[]) => ({ name }: File) =>
