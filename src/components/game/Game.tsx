@@ -10,20 +10,22 @@ import Spinner from '../Spinner'
 import $ from './Game.module.scss'
 import GameSelector from './GameSelector'
 import Sketch from './Sketch'
+import parse, { Attributes } from 'xml-parser'
 import { gameInstance } from './GameStates'
 
 const natives = wre as Natives
-const SRC_DIR = 'src'
 const WOLLOK_FILE_EXTENSION = 'wlk'
 const WOLLOK_PROGRAM_EXTENSION = 'wpgm'
 const EXPECTED_WOLLOK_EXTENSIONS = [WOLLOK_FILE_EXTENSION, WOLLOK_PROGRAM_EXTENSION]
 const VALID_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
+const VALID_SOUND_EXTENSIONS = ['mp3', 'ogg', 'wav']
 const GAME_DIR = 'game'
 export const DEFAULT_GAME_ASSETS_DIR = 'https://raw.githubusercontent.com/uqbar-project/wollok/dev/org.uqbar.project.wollok.game/assets/'
+const CLASS_PATH_FILE = '.classpath'
 
 const fetchFile = (path: string) => {
   return {
-    name: 'game/' + path.split('/').pop(),
+    name: path,
     content: BrowserFS.BFSRequire('fs').readFileSync(path)!.toString(),
   }
 }
@@ -33,7 +35,8 @@ export interface GameProject {
   sources: string[]
   description: string
   imagePaths: string[]
-  assetsDir: string
+  soundPaths: string[]
+  sourcePaths: string[]
 }
 
 
@@ -109,31 +112,67 @@ const defaultImgs = [
 ]
 
 function buildGameProject(repoUri: string): GameProject {
-  const files = BrowserFS.BFSRequire('fs').readdirSync(`${GAME_DIR}/${SRC_DIR}`)
-  const wpgmGame = files.find((file: string) => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
-  if (!wpgmGame) throw new Error('Program not found')
-  const main = `game.${wpgmGame.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '')}`
-  const sources = getAllFilePathsFrom(GAME_DIR, EXPECTED_WOLLOK_EXTENSIONS)
-  const assetSource = `https://raw.githubusercontent.com/${repoUri}/master/`
-  const gameAssetsPaths = getAllFilePathsFrom(GAME_DIR, VALID_IMAGE_EXTENSIONS).map(path => assetSource + path.substr(GAME_DIR.length + 1))
-  const assetFolderName = gameAssetsPaths[0]?.substring(assetSource.length).split('/')[0]
-  const assetsDir = assetSource + assetFolderName + '/'
-  const imagePaths = gameAssetsPaths.concat(defaultImagesNeededFor(gameAssetsPaths))
+  const allFilesPaths: string[] = getAllSourceFiles()
+  const wpgmGamePath = allFilesPaths.find((file: string) => file.endsWith(`.${WOLLOK_PROGRAM_EXTENSION}`))
+  if (!wpgmGamePath) throw new Error('Program not found')
+  const mainFQN: string = wpgmGamePath.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').replace(/\//gi, '.')
+  const wollokFilesPaths: string[] = filesWithValidSuffixes(allFilesPaths, EXPECTED_WOLLOK_EXTENSIONS)
+  const assetsRootPath = `https://raw.githubusercontent.com/${repoUri}/master/`
+  const knownImagePaths = assetsWithValidSuffixes(allFilesPaths, assetsRootPath, VALID_IMAGE_EXTENSIONS)
+  const imagePaths = knownImagePaths.concat(defaultImagesNeededFor(knownImagePaths))
+  const soundPaths = assetsWithValidSuffixes(allFilesPaths, assetsRootPath, VALID_SOUND_EXTENSIONS)
+  const sourcePaths = getAssetsSourceFoldersPaths(assetsRootPath)
+  const description = getProjectDescription()
 
-  let description
+  return { main: mainFQN, sources: wollokFilesPaths, description, imagePaths, soundPaths, sourcePaths }
+}
+
+function getProjectDescription(): string {
   try {
-    description = BrowserFS.BFSRequire('fs').readFileSync(`${GAME_DIR}/README.md`).toString()
-  } catch {
-    description = '## No description found'
+    return BrowserFS.BFSRequire('fs').readFileSync(`${getGameRootPath()}/README.md`).toString()
+  }
+  catch{
+    return '## No description found'
   }
 
-  return { main, sources, description, imagePaths, assetsDir }
+}
+
+function getAssetsSourceFoldersPaths(assetsRootPath: string): string[] {
+  return getSourceFoldersNames().map((source: string) => assetsRootPath + source)
+}
+
+function getAllSourceFiles(): string[] {
+  return getSourceFoldersNames().flatMap((source: string) => getAllFilePathsFrom(`${getGameRootPath()}/${source}`))
+}
+
+function assetsWithValidSuffixes(files: string[], rootPath: string, validSuffixes: string[]): string[] {
+  return filesWithValidSuffixes(files, validSuffixes).map(path => rootPath + path.substr(getGameRootPath().length + 1))
+}
+
+function getSourceFoldersNames(): string[] {
+  const classPathContent: string = BrowserFS.BFSRequire('fs').readFileSync(getClassPathPath(), 'utf-8')
+  const document: parse.Document = parse(classPathContent)
+  const documentAttributes: Attributes[] = document.root.children.map(child => child.attributes)
+  return documentAttributes.filter((attribute: Attributes) => attribute.kind === 'src').map((attribute: Attributes) => attribute.path)
+}
+
+function getGameRootPath(): string {
+  return getClassPathPath().split(`/${CLASS_PATH_FILE}`)[0]
+}
+
+function getClassPathPath(): string {
+  const allFiles = getAllFilePathsFrom(GAME_DIR, ['classpath'])
+  return allFiles.find((filePath: string) => filePath.endsWith(`/${CLASS_PATH_FILE}`))!
 }
 
 function defaultImagesNeededFor(imagePaths: string[]): string[] {
-  const imageNameInPath = (path: string) => { return path.split('/').pop()! }
+  const imageNameInPath = (path: string) => path.split('/').pop()!
   const knownImageNames = imagePaths.map(path => imageNameInPath(path))
   return defaultImgs.filter(defaultImg => !knownImageNames.includes(imageNameInPath(defaultImg)))
+}
+
+function filesWithValidSuffixes(files: string[], validSuffixes: string[]): string[] {
+  return files.filter((file: string) => validSuffixes.some(suffix => file.endsWith(`.${suffix}`)))
 }
 
 function getAllFilePathsFrom(parentDirectory: string, validSuffixes?: string[]): string[] {
@@ -146,7 +185,5 @@ function getAllFilePathsFrom(parentDirectory: string, validSuffixes?: string[]):
         getAllFilePathsFrom(fullPath, validSuffixes) : fullPath
     })
     .flat()
-  return validSuffixes ?
-    allFiles.filter((file: string) => validSuffixes!.some(suffix => file.endsWith(`.${suffix}`))) :
-    allFiles
+  return validSuffixes ? filesWithValidSuffixes(allFiles, validSuffixes) : allFiles
 }

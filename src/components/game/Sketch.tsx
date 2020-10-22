@@ -6,7 +6,7 @@ import 'p5/lib/addons/p5.sound'
 import { Evaluation, interpret, WRENatives, Id } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './Game'
 import { Board, boardToLayers } from './utils'
-import { flushEvents, boardGround, cellSize, width, height, currentSoundStates, SoundState, io, nextBoard } from './GameStates';
+import { flushEvents, boardGround, cellSize, width, height, currentSoundStates, SoundState, io, nextBoard } from './GameStates'
 
 function wKeyCode(key: string, keyCode: number): string {
   if (keyCode >= 48 && keyCode <= 57) return `Digit${key}`
@@ -70,7 +70,8 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   function imageFromPath(path: string): p5.Image {
-    return imgs[game.assetsDir + path] ?? imgs[DEFAULT_GAME_ASSETS_DIR + path] ?? imgs[DEFAULT_GAME_ASSETS_DIR + 'wko.png']
+    const possibleImage: p5.Image | undefined = game.sourcePaths.map((sourcePath: string) => imgs[`${sourcePath}/${path}`]).find((image: p5.Image | undefined) => image)
+    return possibleImage ?? imgs[DEFAULT_GAME_ASSETS_DIR + path] ?? imgs[DEFAULT_GAME_ASSETS_DIR + 'wko.png']
   }
 
   function updateBoard() {
@@ -86,9 +87,9 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   interface GameSound {
-    lastSoundState: SoundState,
-    soundFile: p5.SoundFile,
-    started: boolean,
+    lastSoundState: SoundState
+    soundFile: p5.SoundFile
+    started: boolean
     toBePlayed: boolean
   }
 
@@ -103,15 +104,15 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
       sound.started = true
 
       switch (sound.lastSoundState.status) {
-        case "played": {
+        case 'played': {
           sound.soundFile.play()
           break
         }
-        case "paused": {
+        case 'paused': {
           sound.soundFile.pause()
           break
         }
-        case "stopped": {
+        case 'stopped': {
           sound.soundFile.stop()
         }
       }
@@ -137,11 +138,15 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     })
   }
 
+  function getSoundPathFromFileName(fileName: string): string | undefined {
+    return game.soundPaths.find((soundPath: string) => soundPath.endsWith(fileName))
+  }
+
   function addSoundFromSoundState(soundState: SoundState) {
     loadedSounds.set(soundState.id,
       {
         lastSoundState: soundState,
-        soundFile: new p5.SoundFile(game.assetsDir + soundState.file),
+        soundFile: new p5.SoundFile(getSoundPathFromFileName(soundState.file)!), //TODO add soundfile not found exception
         started: false,
         toBePlayed: false,
       })
