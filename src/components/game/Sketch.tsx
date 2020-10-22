@@ -1,12 +1,13 @@
 import p5 from 'p5'
 import p5Types from 'p5'
-import React from 'react'
+import React, { useState } from 'react'
 import Sketch from 'react-p5'
+import Ending from './Ending'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, interpret, WRENatives, Id } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './Game'
 import { Board, boardToLayers } from './utils'
-import { flushEvents, boardGround, cellSize, width, height, currentSoundStates, SoundState, io, nextBoard } from './GameStates'
+import { flushEvents, boardGround, cellSize, width, height, currentSoundStates, SoundState, io, nextBoard, gameStop } from './GameStates'
 
 function wKeyCode(key: string, keyCode: number): string {
   if (keyCode >= 48 && keyCode <= 57) return `Digit${key}`
@@ -31,13 +32,15 @@ interface SketchProps {
   evaluation: Evaluation
 }
 
-const SketchComponent = ({ game, evaluation }: SketchProps) => {
+const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
+  const [stop, setStop] = useState(false)
   const imgs: { [id: string]: p5.Image } = {}
   let board: Board
-
+  let evaluation = e.copy()
 
   const draw = (sketch: p5Types) => {
     flushEvents(evaluation, currentTime(sketch))
+    checkStop()
     updateBoard()
     syncSounds()
     playSounds()
@@ -84,6 +87,17 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     const boardGroundPath = boardGround(evaluation)
 
     boardGroundPath && sketch.image(imageFromPath(boardGroundPath), 0, 0, sketch.width, sketch.height)
+  }
+
+  function checkStop() {
+    if (gameStop(evaluation)) {
+      setStop(true)
+    }
+  }
+
+  function restart() {
+    evaluation = e.copy()
+    setStop(false)
   }
 
   interface GameSound {
@@ -200,7 +214,9 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     return false
   }
 
-  return <Sketch setup={setup as any} draw={draw as any} keyPressed={keyPressed as any} />
+  return stop
+    ? <Ending restart={restart} />
+    : <Sketch setup={setup as any} draw={draw as any} keyPressed={keyPressed as any} />
 }
 
 export default SketchComponent

@@ -3,7 +3,7 @@ import { Board } from './utils'
 import { RuntimeObject, TRUE_ID } from 'wollok-ts/dist/interpreter'
 import { Id } from 'wollok-ts'
 
-export const io = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.io.io').id
+export const io = (evaluation: Evaluation): Id => evaluation.environment.getNodeByFQN('wollok.io.io').id
 
 export const gameInstance = (evaluation: Evaluation): RuntimeObject => {
   return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
@@ -28,6 +28,7 @@ function getStringFieldValueFrom(wObject: RuntimeObject, evaluation: Evaluation,
 
 function getListFieldValueFrom(wObject: RuntimeObject, evaluation: Evaluation, field: string): Id[] {
   const fieldInst: RuntimeObject = getInstanceFieldFrom(wObject, evaluation, field)!
+  if (!fieldInst) return [] //TODO: Iniciar la colección de visuals en TS
   fieldInst.assertIsCollection()
   return fieldInst.innerValue
 }
@@ -66,6 +67,11 @@ function sounds(evaluation: Evaluation): Id[] {
   return getInstanceFieldFrom(gameInstance(evaluation), evaluation, 'sounds') ? getListFieldValueFrom(gameInstance(evaluation), evaluation, 'sounds') : []
 }
 
+export function gameStop(evaluation: Evaluation): boolean {
+  return !getBooleanFieldValueFrom(gameInstance(evaluation), evaluation, 'running')
+}
+
+
 export const emptyBoard = (evaluation: Evaluation): Board => {
   const groundPath = ground(evaluation)
   const boardgroundPath = boardGround(evaluation)
@@ -87,8 +93,6 @@ export const nextBoard = (evaluation: Evaluation): Board => {
   }
   return next
 }
-
-
 
 const getVisualPosition = (visual: RuntimeObject) => (evaluation: Evaluation) => {
   let position = visual.get('position')
@@ -133,7 +137,7 @@ const getVisualMessage = (visual: RuntimeObject): VisualMessage | undefined => {
     wMessageTime.assertIsNumber()
     const messageTime: number = wMessageTime.innerValue
 
-    return { text: message, time: messageTime, }
+    return { text: message, time: messageTime }
   }
   else {
     return undefined
