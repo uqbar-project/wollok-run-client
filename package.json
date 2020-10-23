@@ -73,7 +73,6 @@
     "eslint": "^6.6.0",
     "eslint-plugin-react": "^7.20.6",
     "fs": "0.0.1-security",
-    "ts-node": "^9.0.0",
     "typescript-plugin-css-modules": "^2.4.0"
   }
 }
