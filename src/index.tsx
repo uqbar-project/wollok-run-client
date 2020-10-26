@@ -9,16 +9,27 @@ import Worksheet from './components/worksheet/Worksheet'
 import './index.scss'
 import * as serviceWorker from './serviceWorker'
 import BytecodeDebugger from './components/bytecodeDebugger/BytecodeDebugger'
+import { createMuiTheme } from '@material-ui/core/styles'
+import { ThemeProvider } from '@material-ui/core/styles'
+
+const wollokTheme = createMuiTheme({
+  palette: {
+    primary: { main: '#ac4142' },
+    secondary: { main: '#7283a7' },
+  },
+})
 
 if (process.env.NODE_ENV !== 'production') whyDidYouRender(React, { trackHooks: true })
 
 const Routes = () => (
-  <Router>
-    <Worksheet path='/worksheet' />
-    <Game path='/game' />
-    <BytecodeDebugger path='/debugger' />
-    <Redirect from='/' to='/worksheet' default noThrow />
-  </Router>
+  <ThemeProvider theme={wollokTheme}>
+    <Router>
+      <Worksheet path='/worksheet' />
+      <Game path='/game' />
+      <BytecodeDebugger path='/debugger' />
+      <Redirect from='/' to='/worksheet' default noThrow />
+    </Router>
+  </ThemeProvider>
 )
 
 const root = document.getElementById('root')!
