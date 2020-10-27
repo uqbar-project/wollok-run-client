@@ -17,11 +17,16 @@ interface SourceFile {
   content: string;
 }
 
+interface MediaFile {
+  path: string;
+  url: string;
+}
 export interface GameProject {
   main: string;
   sources: SourceFile[];
   description: string;
-  images: { path: string; imageUrl: string }[];
+  images: MediaFile[];
+  sounds: MediaFile[];
 }
 
 export const mainProgram = ({ main }: GameProject, environment: Environment): string => {
@@ -36,18 +41,22 @@ export const buildGameProject = (files: File[]): GameProject => {
   if (!wpgmFile) throw new Error('Program file not found')
   const main = wpgmFile.name.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').replace(/\//gi, '.')
   const sources = files.filter(withExtension(...EXPECTED_WOLLOK_EXTENSIONS)).map(({ name, content }) => ({ name, content: content.toString('utf8') }))
-  const imgFiles = files.filter(withExtension(...VALID_IMAGE_EXTENSIONS))
   const description = files.find(withExtension('md'))?.content.toString('utf8') || '## No description found'
-  const sourcePaths = getSourceFoldersNames(files)
 
-  const images = imgFiles.map(({ name, content }) => (
+  const images = getMediaFilesWithExtension(files, VALID_IMAGE_EXTENSIONS, 'image/png')
+  const sounds = getMediaFilesWithExtension(files, VALID_SOUND_EXTENSIONS, 'audio/mp3')
+
+  return { main, sources, description, images, sounds }
+}
+
+function getMediaFilesWithExtension(files: File[], validExtensions: string[], type: string): MediaFile[] {
+  const mediaFiles = files.filter(withExtension(...validExtensions))
+  return mediaFiles.map(({ name, content }) => (
     {
-      path: filePathWithoutSource(name, sourcePaths),
-      imageUrl: URL.createObjectURL(new Blob([content], { type: 'image/png' })),
+      path: filePathWithoutSource(name, getSourceFoldersNames(files)),
+      url: URL.createObjectURL(new Blob([content], { type: type })),
     }
   ))
-
-  return { main, sources, description, images }
 }
 
 function filePathWithoutSource(filePath: string, sourcePaths: string[]) {

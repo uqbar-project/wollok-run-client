@@ -76,8 +76,8 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     defaultImgs.forEach((path: string) => {
       imgs[path] = sketch.loadImage(DEFAULT_GAME_ASSETS_DIR + path)
     })
-    game.images.forEach(({ path, imageUrl }) => {
-      imgs[path] = sketch.loadImage(imageUrl)
+    game.images.forEach(({ path, url }) => {
+      imgs[path] = sketch.loadImage(url)
     })
   }
 
@@ -150,8 +150,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   function getSoundPathFromFileName(fileName: string): string | undefined {
-    return 'asd'
-    //return game.soundPaths.find((soundPath: string) => soundPath.endsWith(fileName))
+    return game.sounds.find(({ path }) => path === fileName)?.url
   }
 
   function addSoundFromSoundState(soundState: SoundState) {
