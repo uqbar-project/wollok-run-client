@@ -1,4 +1,4 @@
-import { RouteComponentProps, Link } from '@reach/router'
+import { RouteComponentProps } from '@reach/router'
 import * as BrowserFS from 'browserfs'
 import * as git from 'isomorphic-git'
 import React, { memo, useEffect, useState } from 'react'
@@ -12,8 +12,6 @@ import GameSelector from './GameSelector'
 import Sketch from './Sketch'
 import parse, { Attributes } from 'xml-parser'
 import { gameInstance } from './GameStates'
-import ArrowBackIcon from '@material-ui/icons/ArrowBack'
-import { Button } from '@material-ui/core'
 
 const natives = wre as Natives
 const WOLLOK_FILE_EXTENSION = 'wlk'
@@ -83,8 +81,6 @@ const Game = (props: GameProps) => {
           <div>
             <Sketch game={game} evaluation={evaluation} />
             <ReactMarkdown source={game.description} className={$.description} />
-            <Button component={Link} to="/game"
-              variant="contained" color="primary" startIcon={<ArrowBackIcon />}>Reiniciar el juego</Button>
           </div>
 
         </>

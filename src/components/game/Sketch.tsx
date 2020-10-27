@@ -2,7 +2,7 @@ import p5 from 'p5'
 import p5Types from 'p5'
 import React, { useState } from 'react'
 import Sketch from 'react-p5'
-import Ending from './Ending'
+import Ending, { RestartButton } from './Ending'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, interpret, WRENatives, Id } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './Game'
@@ -215,8 +215,12 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
   }
 
   return stop
-    ? <Ending restart={restart} />
-    : <Sketch setup={setup as any} draw={draw as any} keyPressed={keyPressed as any} />
+    ? <Ending restartProps={{ restart }} />
+    : <div>
+      <Sketch setup={setup as any} draw={draw as any} keyPressed={keyPressed as any} />
+      <RestartButton restart={restart} />
+    </div>
+
 }
 
 export default SketchComponent

@@ -2,11 +2,20 @@ import React from 'react'
 import { Button } from '@material-ui/core'
 import ReplayIcon from '@material-ui/icons/Replay'
 
-type EndingProps = { restart: () => void }
-const Ending = ({ restart }: EndingProps) => {
+type RestartProps = { restart: () => void }
+export function RestartButton(props: RestartProps) {
+  return <Button onClick={event => { event.preventDefault(); props.restart() }} variant="contained" color="primary" startIcon={<ReplayIcon />}>Reiniciar el juego</Button>
+}
+
+
+type EndingProps = {
+  restartProps: RestartProps
+}
+
+const Ending = (props: EndingProps) => {
   return <div>
     <h1>Se terminó el juego</h1>
-    <Button onClick={event => { event.preventDefault(); restart() }} variant="contained" color="primary" startIcon={<ReplayIcon />}>Reiniciar el juego</Button>
+    <RestartButton {...props.restartProps} />
   </div>
 }
 
