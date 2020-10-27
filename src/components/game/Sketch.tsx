@@ -149,11 +149,16 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     })
   }
 
+  function getSoundPathFromFileName(fileName: string): string | undefined {
+    return 'asd'
+    //return game.soundPaths.find((soundPath: string) => soundPath.endsWith(fileName))
+  }
+
   function addSoundFromSoundState(soundState: SoundState) {
     loadedSounds.set(soundState.id,
       {
         lastSoundState: soundState,
-        soundFile: new p5.SoundFile(game.assetsDir + soundState.file),
+        soundFile: new p5.SoundFile(getSoundPathFromFileName(soundState.file)!), //TODO add soundfile not found exception
         started: false,
         toBePlayed: false,
       })
