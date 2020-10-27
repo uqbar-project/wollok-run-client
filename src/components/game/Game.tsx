@@ -68,22 +68,13 @@ const Game = (props: GameProps) => {
     })
   }
 
-  const title = evaluation ? evaluation.instance(gameInstance(evaluation).get('title')!.id).innerValue : ''
-
   return (
     <div className={$.container} >
       {!evaluation || !game
         ? !repoUri
           ? <GameSelector />
           : <Spinner />
-        : <>
-          <h1>{title}</h1>
-          <div>
-            <Sketch game={game} evaluation={evaluation} />
-            <ReactMarkdown source={game.description} className={$.description} />
-          </div>
-
-        </>
+        : <GameScreen game={game} evaluation={evaluation} />
       }
     </div >
   )
@@ -91,6 +82,21 @@ const Game = (props: GameProps) => {
 
 export default memo(Game)
 
+type GameScreenProps = {
+  evaluation: Evaluation
+  game: GameProject
+}
+const GameScreen = ({ evaluation, game }: GameScreenProps) => {
+  const title = evaluation ? evaluation.instance(gameInstance(evaluation).get('title')!.id).innerValue : ''
+
+  return <>
+    <h1>{title}</h1>
+    <div>
+      <Sketch game={game} evaluation={evaluation} />
+      <ReactMarkdown source={game.description} className={$.description} />
+    </div>
+  </>
+}
 
 async function cloneRepository(repoUri: string) {
   await git.clone({
