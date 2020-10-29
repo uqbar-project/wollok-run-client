@@ -4,9 +4,18 @@ import React from 'react'
 import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, interpret, WRENatives, Id } from 'wollok-ts'
-import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './Game'
+import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { Board, boardToLayers } from './utils'
 import { flushEvents, boardGround, cellSize, width, height, currentSoundStates, SoundState, io, nextBoard } from './GameStates'
+
+const defaultImgs = [
+  'ground.png',
+  'wko.png',
+  'speech.png',
+  'speech2.png',
+  'speech3.png',
+  'speech4.png',
+]
 
 function wKeyCode(key: string, keyCode: number): string {
   if (keyCode >= 48 && keyCode <= 57) return `Digit${key}`
@@ -64,14 +73,16 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   function loadImages(sketch: p5Types) {
-    game.imagePaths.forEach((gamePath: string) => {
-      imgs[gamePath] = sketch.loadImage(gamePath)
+    defaultImgs.forEach((path: string) => {
+      imgs[path] = sketch.loadImage(DEFAULT_GAME_ASSETS_DIR + path)
+    })
+    game.images.forEach(({ path, url }) => {
+      imgs[path] = sketch.loadImage(url)
     })
   }
 
   function imageFromPath(path: string): p5.Image {
-    const possibleImage: p5.Image | undefined = game.sourcePaths.map((sourcePath: string) => imgs[`${sourcePath}/${path}`]).find((image: p5.Image | undefined) => image)
-    return possibleImage ?? imgs[DEFAULT_GAME_ASSETS_DIR + path] ?? imgs[DEFAULT_GAME_ASSETS_DIR + 'wko.png']
+    return imgs[path] ?? imgs['wko.png']
   }
 
   function updateBoard() {
@@ -139,7 +150,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   function getSoundPathFromFileName(fileName: string): string | undefined {
-    return game.soundPaths.find((soundPath: string) => soundPath.endsWith(fileName))
+    return game.sounds.find(({ path }) => path === fileName)?.url
   }
 
   function addSoundFromSoundState(soundState: SoundState) {
