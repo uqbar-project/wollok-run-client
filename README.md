@@ -8,6 +8,12 @@ Actualmente cuenta con las siguientes implementaciones:
 - **Debugger** Una forma de correr tests y poder ejecutar _paso a paso_ viendo el estado de la WVM.
 - **Worksheet** Un psudo IDE con un editor, consola y diagrama dinámico.
 
+### Dónde ver el proyecto andando
+
+- Para correr un programa Wollok: https://server.wollok.org
+- Probar un Wollok Game desde la web (en construcción): https://server.wollok.org/game  
+  - Por ejemplo: https://game.wollok.org/game?github=wollok/losVengadoresGame
+
 ### ¿Cómo levantar la app?
 
 En primer lugar, asegurarse de tener instalado node >= 11.

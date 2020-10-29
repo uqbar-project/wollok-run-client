@@ -1,8 +1,9 @@
-import React, { ChangeEvent, memo, useState, Dispatch } from 'react'
+import React, { memo, useState, Dispatch } from 'react'
 import { buildEnvironment, is, Id as IdType } from 'wollok-ts'
 import { Environment } from 'wollok-ts/dist'
 import { FiPlayCircle as RunIcon } from 'react-icons/fi'
 import $ from './LoadScreen.module.scss'
+import FilesSelector, { File } from '../filesSelector/FilesSelector'
 
 
 export type DebugTarget = { environment: Environment, testId: IdType }
@@ -13,24 +14,15 @@ export type LoadScreenProps = {
 
 const LoadScreen = ({ setDebugTarget }: LoadScreenProps) => {
 
-  const [environment, setEnvironment] = useState<Environment|undefined>(undefined)
+  const [environment, setEnvironment] = useState<Environment | undefined>(undefined)
 
   const tests = environment?.descendants()?.filter(is('Test'))
 
-
-  const onFilesLoad = async (event: ChangeEvent<HTMLInputElement>) => {
-    const files = await Promise.all([...event.target.files!]
+  const onFilesLoad = async (files: File[]) => {
+    const wollokFiles = files
       .filter(file => file.name.match(/\.(?:wlk|wtest|wpgm)$/))
-      .map(file => new Promise<{ name: string, content: string }>((resolve) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve({
-          name: file.webkitRelativePath,
-          content: reader.result as string,
-        })
-        reader.readAsText(file)
-      }))
-    )
-    setEnvironment(buildEnvironment(files))
+      .map(({ name, content }) => ({ name, content: content.toString('utf8') }))
+    setEnvironment(buildEnvironment(wollokFiles))
   }
 
   const onTestSelected = (testId: IdType) => () => environment && setDebugTarget({ environment, testId })
@@ -38,17 +30,18 @@ const LoadScreen = ({ setDebugTarget }: LoadScreenProps) => {
 
   return (
     <div className={$.container}>
-      <input type='file' webkitdirectory='' multiple onChange={onFilesLoad}/>
-      {tests && (
-        <div>
-          {tests.length} tests found:
-          <ul>
-            {tests?.map(test => (
-              <li key={test.id}><RunIcon onClick={onTestSelected(test.id)}/>{test.name}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {!tests
+        ? <FilesSelector onFilesLoad={onFilesLoad} />
+        : (
+          <div>
+            {tests.length} tests found:
+            <ul>
+              {tests?.map(test => (
+                <li key={test.id}><RunIcon onClick={onTestSelected(test.id)} />{test.name}</li>
+              ))}
+            </ul>
+          </div>
+        )}
     </div>
   )
 }
