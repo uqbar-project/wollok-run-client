@@ -2,13 +2,40 @@ import p5 from 'p5'
 import p5Types from 'p5'
 import React from 'react'
 import Sketch from 'react-p5'
+import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id } from 'wollok-ts'
-import { GameProject } from './Game'
+import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { Board, boardToLayers } from './utils'
 import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, nextBoard, canvasResolution } from './GameStates'
 import { GameSound } from './GameSound'
-import { DEFAULT_GAME_ASSETS_DIR } from './gameProject'
-import { buildKeyPressEvent, wKeyCode, queueGameEvent } from './SketchUtils'
+import { buildKeyPressEvent, queueGameEvent } from './SketchUtils'
+
+const defaultImgs = [
+  'ground.png',
+  'wko.png',
+  'speech.png',
+  'speech2.png',
+  'speech3.png',
+  'speech4.png',
+]
+
+function wKeyCode(key: string, keyCode: number): string {
+  if (keyCode >= 48 && keyCode <= 57) return `Digit${key}`
+  if (keyCode >= 65 && keyCode <= 90) return `Key${key.toUpperCase()}`
+  if (keyCode === 18) return 'AltLeft'
+  if (keyCode === 225) return 'AltRight'
+  if (keyCode === 8) return 'Backspace'
+  if (keyCode === 17) return 'Control'
+  if (keyCode === 46) return 'Delete'
+  if (keyCode >= 37 && keyCode <= 40) return key
+  if (keyCode === 13) return 'Enter'
+  if (keyCode === 189) return 'Minus'
+  if (keyCode === 187) return 'Plus'
+  if (keyCode === 191) return 'Slash'
+  if (keyCode === 32) return 'Space'
+  if (keyCode === 16) return 'Shift'
+  return '' //If an unknown key is pressed, a string should be returned
+}
 
 interface SketchProps {
   game: GameProject
@@ -36,14 +63,16 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   function loadImages(sketch: p5Types) {
-    game.imagePaths.forEach((gamePath: string) => {
-      imgs[gamePath] = sketch.loadImage(gamePath)
+    defaultImgs.forEach((path: string) => {
+      imgs[path] = sketch.loadImage(DEFAULT_GAME_ASSETS_DIR + path)
+    })
+    game.images.forEach(({ path, url }) => {
+      imgs[path] = sketch.loadImage(url)
     })
   }
 
-  function imageFromPath(path: string): p5.Image { //TODO hacer otra funcion que reciba game e imgs, y devuelva esto, para testear
-    const possibleImage: p5.Image | undefined = game.sourcePaths.map((sourcePath: string) => imgs[`${sourcePath}/${path}`]).find((image: p5.Image | undefined) => image)
-    return possibleImage ?? imgs[DEFAULT_GAME_ASSETS_DIR + path] ?? imgs[DEFAULT_GAME_ASSETS_DIR + 'wko.png']
+  function imageFromPath(path: string): p5.Image {
+    return imgs[path] ?? imgs['wko.png']
   }
 
   function updateBoard() {
@@ -81,7 +110,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   }
 
   function getSoundPathFromFileName(fileName: string): string | undefined {
-    return game.soundPaths.find((soundPath: string) => soundPath.endsWith(fileName))
+    return game.sounds.find(({ path }) => path === fileName)?.url
   }
 
   function addSoundFromSoundState(soundState: SoundState) {

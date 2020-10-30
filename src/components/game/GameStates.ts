@@ -3,7 +3,7 @@ import { Board } from './utils'
 import { RuntimeObject, TRUE_ID } from 'wollok-ts/dist/interpreter'
 import { Id } from 'wollok-ts'
 
-export const io = (evaluation: Evaluation): string => evaluation.environment.getNodeByFQN('wollok.io.io').id
+export const io = (evaluation: Evaluation): Id => evaluation.environment.getNodeByFQN('wollok.io.io').id
 
 export const gameInstance = (evaluation: Evaluation): RuntimeObject => {
   return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
