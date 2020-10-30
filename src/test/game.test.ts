@@ -116,38 +116,6 @@ describe('game', () => {
     expect(finalPepitaPosition).toStrictEqual({ x: 1, y: 1 })
   })
 })
-/*
-describe('GameProject build', () => {
-  let gameProject: Game.GameProject
-
-  beforeAll(() => {
-    jest.spyOn(Game, 'getAllFilePathsFrom').mockImplementation((parentDir: string, validSuffixes?: string[] | undefined): string[] => {
-      const allFiles = ['game/src/pepita.wlk', 'game/src/juego.wpgm', 'game/assets/pepita.png', `game/${buildGameProject.CLASS_PATH_FILE}`]
-      const filesInParentDir = allFiles.filter((file: string) => file.startsWith(parentDir))
-      return validSuffixes ? buildGameProject.filesWithValidSuffixes(filesInParentDir, validSuffixes) : filesInParentDir
-    })
-
-    jest.spyOn(Game, 'getSourceFoldersNames').mockReturnValue(['src', 'assets'])
-
-    gameProject = buildGameProject.buildGameProject('wollok/pepita')
-  })
-
-  afterAll(() => {
-    jest.resetAllMocks()
-  })
-
-  test('imagen pepita', () => {
-    expect(gameProject.imagePaths).toContain('https://raw.githubusercontent.com/wollok/pepita/master/assets/pepita.png')
-  })
-  test('imagen default', () => {
-    expect(gameProject.imagePaths).toContain('https://raw.githubusercontent.com/uqbar-project/wollok/dev/org.uqbar.project.wollok.game/assets/wko.png')
-  })
-  test('main fqn', () => {
-    expect(gameProject.main).toBe('game.src.juego')
-  })
-})
-*/
-
 
 /*
 describe('GameSound', () => {
