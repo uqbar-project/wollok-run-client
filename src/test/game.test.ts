@@ -82,7 +82,7 @@ describe('game', () => {
     expect(newPepitaState.position).toStrictEqual({ x: 0, y: 0 })
   })
 
-  gameTest('The canvas resolution should be calculated according to the game', 'gameResolution', ['games/gameResolution.wpgm'], (evaluation) => {
+  gameTest('canvasResolution', 'gameResolution', ['games/gameResolution.wpgm'], (evaluation) => {
     const resolution = canvasResolution(evaluation)
 
     expect(resolution).toStrictEqual({
@@ -91,7 +91,7 @@ describe('game', () => {
     })
   })
 
-  gameTest('Key press events', 'pepita', ['games/pepita.wpgm'], (evaluation) => {
+  gameTest('buildKeyPressEvent', 'pepita', ['games/pepita.wpgm'], (evaluation) => {
     const keyCode = wKeyCode('1', 49)
     const wKeyPressEventId: Id = buildKeyPressEvent(evaluation, keyCode)
     const wKeyPressEvent: RuntimeObject = evaluation.instance(wKeyPressEventId)
@@ -105,7 +105,7 @@ describe('game', () => {
 
   })
 
-  gameTest('Cuando se toca una tecla, el evento asociado debe ocurrir', 'movement', ['games/movement.wpgm'], (evaluation) => { //traducir a english
+  gameTest('When a key is pressed, the event associated with the key should happen', 'movement', ['games/movement.wpgm'], (evaluation) => {
     const keyCode = wKeyCode('ArrowRight', 39)
     const keyPressEvent: Id = buildKeyPressEvent(evaluation, keyCode)
     const firstPepitaPosition = currentVisualStates(evaluation)[0].position
