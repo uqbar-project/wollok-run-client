@@ -126,7 +126,7 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     })
   }
 
-  function drawBoard(sketch: p5) { //TODO lo mismo de sacar cosas intermedias
+  function drawBoard(sketch: p5) {
     const cellPixelSize = cellSize(evaluation)
     drawBoardGround(sketch)
     boardToLayers(board).forEach(layer => {
