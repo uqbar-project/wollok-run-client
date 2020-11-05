@@ -1,12 +1,14 @@
 import p5 from 'p5'
 import p5Types from 'p5'
-import React from 'react'
+import React, { useState } from 'react'
 import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, interpret, WRENatives, Id } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { Board, boardToLayers } from './utils'
-import { flushEvents, boardGround, cellSize, width, height, currentSoundStates, SoundState, io, nextBoard } from './GameStates'
+import { flushEvents, boardGround, cellSize, width, height, currentSoundStates, SoundState, io, nextBoard, gameStop } from './GameStates'
+import { Button } from '@material-ui/core'
+import ReplayIcon from '@material-ui/icons/Replay'
 
 const defaultImgs = [
   'ground.png',
@@ -40,13 +42,15 @@ interface SketchProps {
   evaluation: Evaluation
 }
 
-const SketchComponent = ({ game, evaluation }: SketchProps) => {
+const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
+  const [stop, setStop] = useState(false)
   const imgs: { [id: string]: p5.Image } = {}
   let board: Board
-
+  let evaluation = e.copy()
 
   const draw = (sketch: p5Types) => {
     flushEvents(evaluation, currentTime(sketch))
+    checkStop()
     updateBoard()
     syncSounds()
     playSounds()
@@ -95,6 +99,17 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     const boardGroundPath = boardGround(evaluation)
 
     boardGroundPath && sketch.image(imageFromPath(boardGroundPath), 0, 0, sketch.width, sketch.height)
+  }
+
+  function checkStop() {
+    if (gameStop(evaluation)) {
+      setStop(true)
+    }
+  }
+
+  function restart() {
+    evaluation = e.copy()
+    setStop(false)
   }
 
   interface GameSound {
@@ -210,8 +225,17 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     queueGameEvent(anyKeyPressedId)
     return false
   }
-
-  return <Sketch setup={setup as any} draw={draw as any} keyPressed={keyPressed as any} />
+  return <div>
+    {stop ?
+      <h1>Se terminó el juego</h1>
+      : <Sketch setup={setup as any} draw={draw as any} keyPressed={keyPressed as any} />}
+    <RestartButton restart={restart} />
+  </div>
 }
 
 export default SketchComponent
+
+type RestartProps = { restart: () => void }
+export function RestartButton(props: RestartProps) {
+  return <Button onClick={event => { event.preventDefault(); props.restart() }} variant="contained" color="primary" startIcon={<ReplayIcon />}>Reiniciar el juego</Button>
+}

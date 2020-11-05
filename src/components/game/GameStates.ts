@@ -28,6 +28,7 @@ function getStringFieldValueFrom(wObject: RuntimeObject, evaluation: Evaluation,
 
 function getListFieldValueFrom(wObject: RuntimeObject, evaluation: Evaluation, field: string): Id[] {
   const fieldInst: RuntimeObject = getInstanceFieldFrom(wObject, evaluation, field)!
+  if (!fieldInst) return [] //TODO: Iniciar la colección de visuals en TS
   fieldInst.assertIsCollection()
   return fieldInst.innerValue
 }
@@ -66,6 +67,11 @@ function sounds(evaluation: Evaluation): Id[] {
   return getInstanceFieldFrom(gameInstance(evaluation), evaluation, 'sounds') ? getListFieldValueFrom(gameInstance(evaluation), evaluation, 'sounds') : []
 }
 
+export function gameStop(evaluation: Evaluation): boolean {
+  return !getBooleanFieldValueFrom(gameInstance(evaluation), evaluation, 'running')
+}
+
+
 export const emptyBoard = (evaluation: Evaluation): Board => {
   const groundPath = ground(evaluation)
   const boardgroundPath = boardGround(evaluation)
@@ -87,7 +93,6 @@ export const nextBoard = (evaluation: Evaluation): Board => {
   }
   return next
 }
-
 
 const getVisualPosition = (visual: RuntimeObject) => (evaluation: Evaluation) => {
   let position = visual.get('position')
