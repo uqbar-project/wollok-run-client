@@ -65,8 +65,8 @@ function getAllSourceFiles(files: File[]): File[] {
 }
 
 function possiblePathsToFile(filePath: string, sourcePaths: string[]): string[] {
-  const possiblePaths: string[] = sourcePaths.filter((source: string) => filePath.startsWith(source))!
-  return possiblePaths.map((sourcePath: string) => filePath.substring(sourcePath.length + 1))
+  const possibleSources: string[] = sourcePaths.filter((source: string) => filePath.startsWith(source))!
+  return possibleSources.map((sourcePath: string) => filePath.substring(sourcePath.length + 1))
 }
 
 function getRootPath(files: File[]): string {
