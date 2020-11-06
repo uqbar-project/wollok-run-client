@@ -51,10 +51,10 @@ export const buildGameProject = (allFiles: File[]): GameProject => {
 
 function getMediaFiles(allFiles: File[], validExtensions: string[], type: string): MediaFile[] {
   const mediaFiles = allFiles.filter(withExtension(...validExtensions))
-  const sourcePaths = getSourcePaths(allFiles)
+  const mediaSourcePaths = getSourcePaths(allFiles).concat(getRootPath(allFiles))
   return mediaFiles.map(({ name, content }) => (
     {
-      possiblePaths: possiblePathsToFile(name, sourcePaths),
+      possiblePaths: possiblePathsToFile(name, mediaSourcePaths).concat(''),
       url: URL.createObjectURL(new Blob([content], { type: type })),
     }
   ))
@@ -71,7 +71,7 @@ function possiblePathsToFile(filePath: string, sourcePaths: string[]): string[] 
 
 function getRootPath(files: File[]): string {
   const classpathPath: string = getClasspathFile(files).name
-  return classpathPath.split(`.${CLASSPATH_NAME}`)[0]
+  return classpathPath.split(`.${CLASSPATH_NAME}`)[0].slice(0, -1)
 }
 
 
@@ -80,7 +80,7 @@ function getSourcePaths(files: File[]): string[] {
   const document: parse.Document = parse(classPathContent)
   const documentAttributes: Attributes[] = document.root.children.map(child => child.attributes)
   const sourceFolderNames = documentAttributes.filter((attribute: Attributes) => attribute.kind === 'src').map((attribute: Attributes) => attribute.path)
-  return sourceFolderNames.map((sourceName: string) => getRootPath(files) + sourceName)
+  return sourceFolderNames.map((sourceName: string) => `${getRootPath(files)}/${sourceName}`)
 }
 
 function getClasspathFile(files: File[]): File {
