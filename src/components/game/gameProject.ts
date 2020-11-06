@@ -54,7 +54,7 @@ function getMediaFiles(allFiles: File[], validExtensions: string[], type: string
   const mediaSourcePaths = getSourcePaths(allFiles).concat(getRootPath(allFiles))
   return mediaFiles.map(({ name, content }) => (
     {
-      possiblePaths: possiblePathsToFile(name, mediaSourcePaths).concat(''),
+      possiblePaths: possiblePathsToFile(name, mediaSourcePaths),
       url: URL.createObjectURL(new Blob([content], { type: type })),
     }
   ))
