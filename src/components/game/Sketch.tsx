@@ -80,8 +80,9 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     defaultImgs.forEach((path: string) => {
       imgs[path] = sketch.loadImage(DEFAULT_GAME_ASSETS_DIR + path)
     })
-    game.images.forEach(({ path, url }) => {
-      imgs[path] = sketch.loadImage(url)
+    game.images.forEach(({ possiblePaths, url }) => {
+      const loadedImage = sketch.loadImage(url)
+      possiblePaths.forEach((path: string) => imgs[path] = loadedImage)
     })
   }
 
@@ -164,15 +165,15 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     })
   }
 
-  function getSoundPathFromFileName(fileName: string): string | undefined {
-    return game.sounds.find(({ path }) => path === fileName)?.url
+  function getSoundUrlFromFileName(fileName: string): string | undefined {
+    return game.sounds.find(({ possiblePaths }) => possiblePaths.includes(fileName))?.url
   }
 
   function addSoundFromSoundState(soundState: SoundState) {
     loadedSounds.set(soundState.id,
       {
         lastSoundState: soundState,
-        soundFile: new p5.SoundFile(getSoundPathFromFileName(soundState.file)!), //TODO add soundfile not found exception
+        soundFile: new p5.SoundFile(getSoundUrlFromFileName(soundState.file)!), //TODO add soundfile not found exception
         started: false,
         toBePlayed: false,
       })
