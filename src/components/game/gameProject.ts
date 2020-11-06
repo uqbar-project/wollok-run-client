@@ -66,12 +66,12 @@ function getAllSourceFiles(files: File[]): File[] {
 
 function possiblePathsToFile(filePath: string, sourcePaths: string[]): string[] {
   const possibleSources: string[] = sourcePaths.filter((source: string) => filePath.startsWith(source))!
-  return possibleSources.map((sourcePath: string) => filePath.substring(sourcePath.length + 1))
+  return possibleSources.map((sourcePath: string) => filePath.substring(sourcePath.length))
 }
 
 function getRootPath(files: File[]): string {
   const classpathPath: string = getClasspathFile(files).name
-  return classpathPath.split(`.${CLASSPATH_NAME}`)[0].slice(0, -1)
+  return classpathPath.split(`.${CLASSPATH_NAME}`)[0]
 }
 
 
@@ -80,7 +80,7 @@ function getSourcePaths(files: File[]): string[] {
   const document: parse.Document = parse(classPathContent)
   const documentAttributes: Attributes[] = document.root.children.map(child => child.attributes)
   const sourceFolderNames = documentAttributes.filter((attribute: Attributes) => attribute.kind === 'src').map((attribute: Attributes) => attribute.path)
-  return sourceFolderNames.map((sourceName: string) => `${getRootPath(files)}/${sourceName}`)
+  return sourceFolderNames.map((sourceName: string) => `${getRootPath(files)}${sourceName}/`)
 }
 
 function getClasspathFile(files: File[]): File {
