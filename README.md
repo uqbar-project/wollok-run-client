@@ -8,13 +8,13 @@ Actualmente cuenta con las siguientes implementaciones:
 - **Debugger** Una forma de correr tests y poder ejecutar _paso a paso_ viendo el estado de la WVM.
 - **Worksheet** Un psudo IDE con un editor, consola y diagrama dinámico.
 
-### Dónde ver el proyecto andando
+## Dónde ver el proyecto andando
 
 - Para correr un programa Wollok: https://server.wollok.org
-- Probar un Wollok Game desde la web (en construcción): https://server.wollok.org/game  
+- Probar un Wollok Game desde la web (en construcción): https://server.wollok.org/game
   - Por ejemplo: https://game.wollok.org/game?github=wollok/losVengadoresGame
 
-### ¿Cómo levantar la app?
+## ¿Cómo levantar la app?
 
 En primer lugar, asegurarse de tener instalado node >= 11.
 
@@ -39,12 +39,14 @@ npm start
 >
 > El server se levantará por default en el puerto `9999`
 
-### Alternativa usando Docker
+## Alternativa usando Docker
+
+### TL;DR
 
 Simplemente ejecutar
 
 ```
-docker-compose up
+./compose.sh dev up
 ```
 
 Y eso pone en funcionamiento todos los servicios necesarios.
@@ -53,3 +55,17 @@ Esta aplicación ha sido desarrollada usando
 
 - Docker version 19.03.11, build dd360c7
 - docker-compose version 1.25.5, build unknown
+
+### Quiero entender qué pasa
+
+Toda la configuración para levantar los servicios docker, está en los archivos `docker-compose*.yml`.
+El script `compose` es simplemente un helper para elegir los archivos adecuados, que siempre son dos (uno de base y otro específico del ambiente dev o prod según corresponda).
+
+Ejecutar
+
+```
+./compose.sh prod up
+```
+
+Va a levantar los mismos servicios pero en modo producción, corriendo el build de react-cra en modo optimizado y poniendo el build resultante en una imagen donde la sirve un nginx.
+Usando este comando es posible levantarlo localmente en las mismas exactas condiciones que se ejecutará en producción (aunque para desarrollar sería muy incómodo).

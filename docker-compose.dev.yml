@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  web:
+    build:
+      target: dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/usr/src/app/src
+    tty: true # docker run -t
