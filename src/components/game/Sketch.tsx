@@ -1,14 +1,16 @@
 import p5 from 'p5'
 import p5Types from 'p5'
-import React from 'react'
+import React, { useState } from 'react'
 import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { Board, boardToLayers } from './utils'
-import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, nextBoard, canvasResolution } from './GameStates'
+import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, nextBoard, canvasResolution, gameStop } from './GameStates'
 import { GameSound } from './GameSound'
 import { buildKeyPressEvent, queueGameEvent } from './SketchUtils'
+import { Button } from '@material-ui/core'
+import ReplayIcon from '@material-ui/icons/Replay'
 
 const defaultImgs = [
   'ground.png',
@@ -42,13 +44,15 @@ interface SketchProps {
   evaluation: Evaluation
 }
 
-const SketchComponent = ({ game, evaluation }: SketchProps) => {
+const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
+  const [stop, setStop] = useState(false)
   const imgs: { [id: string]: p5.Image } = {}
   let board: Board
-
+  let evaluation = e.copy()
 
   const draw = (sketch: p5Types) => {
     flushEvents(evaluation, currentTime(sketch))
+    checkStop()
     updateBoard()
     syncSounds()
     playSounds()
@@ -66,8 +70,9 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     defaultImgs.forEach((path: string) => {
       imgs[path] = sketch.loadImage(DEFAULT_GAME_ASSETS_DIR + path)
     })
-    game.images.forEach(({ path, url }) => {
-      imgs[path] = sketch.loadImage(url)
+    game.images.forEach(({ possiblePaths, url }) => {
+      const loadedImage = sketch.loadImage(url)
+      possiblePaths.forEach((path: string) => imgs[path] = loadedImage)
     })
   }
 
@@ -85,6 +90,17 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     const boardGroundPath = boardGround(evaluation)
 
     boardGroundPath && sketch.image(imageFromPath(boardGroundPath), 0, 0, sketch.width, sketch.height)
+  }
+
+  function checkStop() {
+    if (gameStop(evaluation)) {
+      setStop(true)
+    }
+  }
+
+  function restart() {
+    evaluation = e.copy()
+    setStop(false)
   }
 
   const loadedSounds: Map<Id, GameSound> = new Map()
@@ -109,12 +125,12 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     })
   }
 
-  function getSoundPathFromFileName(fileName: string): string | undefined {
-    return game.sounds.find(({ path }) => path === fileName)?.url
+  function getSoundUrlFromFileName(fileName: string): string | undefined {
+    return game.sounds.find(({ possiblePaths }) => possiblePaths.includes(fileName))?.url
   }
 
   function addSoundFromSoundState(soundState: SoundState) {
-    loadedSounds.set(soundState.id, new GameSound(soundState, getSoundPathFromFileName(soundState.file)!)) //TODO add soundfile not found exception
+    loadedSounds.set(soundState.id, new GameSound(soundState, getSoundUrlFromFileName(soundState.file)!)) //TODO add soundfile not found exception
   }
 
   function removeUnusedLoadedSounds() {
@@ -155,8 +171,17 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
     queueGameEvent(evaluation, keyPressedEvent)
     queueGameEvent(evaluation, anyKeyPressedEvent)
   }
-
-  return <Sketch setup={setup as any} draw={draw as any} keyPressed={keyPressed as any} />
+  return <div>
+    {stop ?
+      <h1>Se terminó el juego</h1>
+      : <Sketch setup={setup as any} draw={draw as any} keyPressed={keyPressed as any} />}
+    <RestartButton restart={restart} />
+  </div>
 }
 
 export default SketchComponent
+
+type RestartProps = { restart: () => void }
+export function RestartButton(props: RestartProps) {
+  return <Button onClick={event => { event.preventDefault(); props.restart() }} variant="contained" color="primary" startIcon={<ReplayIcon />}>Reiniciar el juego</Button>
+}

@@ -13,6 +13,9 @@
     display: flex;
     margin: auto;
   }
+  h1,h2,h3,h4{
+    color:black
+  }
 
   h1 {
     font-size: 1.5em;
@@ -23,10 +26,12 @@
     display: flex;
     flex-direction: column;
     width: 40%;
-    height: 100%;
+    max-height: 80vh;
     margin-left: 1vw;
     padding-left: 4vw;
     border-left: 2px solid $color-primary;
+    overflow: auto;
+
     h1{
       font-size: 3em;
     }
