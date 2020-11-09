@@ -5,6 +5,7 @@ import wre from 'wollok-ts/dist/wre/wre.natives'
 import { nextBoard, currentVisualStates, VisualState, currentSoundStates, SoundState, flushEvents, canvasResolution } from '../components/game/GameStates'
 import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import { wKeyCode, buildKeyPressEvent, queueGameEvent } from '../components/game/SketchUtils'
+import { buildGameProject, GameProject } from '../components/game/gameProject'
 
 const readFiles = (files: string[]) => files.map(file => ({
   name: file,
@@ -115,6 +116,26 @@ describe('game', () => {
     const finalPepitaPosition = currentVisualStates(evaluation)[0].position
     expect(finalPepitaPosition).toStrictEqual({ x: 1, y: 1 })
   })
+})
+
+describe('buildGameProject', () => {
+  let gameProject: GameProject
+
+  beforeAll(() => {
+    const filePaths = ['src/pepita.wlk', 'src/juego.wpgm', 'assets/pepita.png', 'assets/sound.mp3', '.classpath'].map(path => `gameProject/${path}`)
+    const allFiles = readFiles(filePaths).map((file) => { return { name: file.name, content: new Buffer(file.content) } })
+    URL.createObjectURL = jest.fn().mockReturnValue('asd')
+    gameProject = buildGameProject(allFiles)
+  })
+
+  afterAll(() => {
+    jest.resetAllMocks()
+  })
+
+  test('image paths', () => {
+    expect(gameProject.images[0].possiblePaths.sort()).toEqual(['assets/pepita.png', 'pepita.png'].sort())
+  })
+
 })
 
 /*
