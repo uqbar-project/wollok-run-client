@@ -1,7 +1,8 @@
+import { VisualMessage } from './GameStates'
 
 export type Cell = {
   img: string;
-  message?: any;
+  message?: VisualMessage;
 }
 
 export type Board = Cell[][][]  // y, x, actors
@@ -22,7 +23,7 @@ const zipLongest = <T>(...list: T[][]) => {
 }
 
 
-function returnMap <T>(shortest: T[], arrs: T[][]) {
+function returnMap<T>(shortest: T[], arrs: T[][]) {
   return shortest.map(function (_item, i) {
     return arrs.map(function (arr) {
       return arr[i]

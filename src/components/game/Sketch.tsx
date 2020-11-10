@@ -142,8 +142,15 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     })
   }
 
+  interface DrawableMessage {
+    message: string
+    x: number
+    y: number
+  }
+
   function drawBoard(sketch: p5) {
     const cellPixelSize = cellSize(evaluation)
+    const messagesToDraw: DrawableMessage[] = []
     drawBoardGround(sketch)
     boardToLayers(board).forEach(layer => {
       layer.forEach((row, _y) => {
@@ -152,14 +159,19 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
         row.forEach((actor, _x) => {
           if (!actor) return
           const { img, message } = actor
-          const x = _x * cellPixelSize
+          const xPosition = _x * cellPixelSize
           const imageObject: p5.Image = imageFromPath(img)
           const yPosition = y - imageObject.height
-          sketch.image(imageObject, x, yPosition)
-          if (message && message.time > currentTime(sketch)) sketch.text(message.text, x, yPosition)
+          sketch.image(imageObject, xPosition, yPosition)
+          if (message && message.time > currentTime(sketch)) messagesToDraw.push({ message: message.text, x: xPosition, y: yPosition })
         })
       })
     })
+    messagesToDraw.forEach(drawMessage(sketch))
+  }
+
+  const drawMessage = (sketch: p5) => (message: DrawableMessage) => {
+    sketch.text(message.message, message.x, message.y)
   }
 
   function currentTime(sketch: p5) { return sketch.millis() }
