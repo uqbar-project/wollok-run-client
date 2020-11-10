@@ -121,8 +121,11 @@ describe('game', () => {
 describe('buildGameProject', () => {
   let gameProject: GameProject
 
+  const expectEqualElements = (list1: any[], list2: any[]) =>
+    expect(list1.sort()).toEqual(list2.sort())
+
   beforeAll(() => {
-    const filePaths = ['src/pepita.wlk', 'src/juego.wpgm', 'assets/pepita.png', 'assets/sound.mp3', '.classpath'].map(path => `gameProject/${path}`)
+    const filePaths = ['src/pepita.wlk', 'src/juego.wpgm', 'assets/pepita.png', 'src/sound.mp3', '.classpath', 'README.md'].map(path => `gameProject/${path}`)
     const allFiles = readFiles(filePaths).map((file) => { return { name: file.name, content: new Buffer(file.content) } })
     URL.createObjectURL = jest.fn().mockReturnValue('asd')
     gameProject = buildGameProject(allFiles)
@@ -132,8 +135,21 @@ describe('buildGameProject', () => {
     jest.resetAllMocks()
   })
 
-  test('image paths', () => {
-    expect(gameProject.images[0].possiblePaths.sort()).toEqual(['assets/pepita.png', 'pepita.png'].sort())
+  test('media paths', () => {
+    expectEqualElements(gameProject.images[0].possiblePaths, ['assets/pepita.png', 'pepita.png'])
+    expectEqualElements(gameProject.sounds[0].possiblePaths, ['src/sound.mp3', 'sound.mp3'])
+  })
+
+  test('main', () => {
+    expect(gameProject.main).toStrictEqual('gameProject.src.juego')
+  })
+
+  test('wollok files', () => {
+    expectEqualElements(gameProject.sources.map(sourceFile => sourceFile.name), ['gameProject/src/juego.wpgm', 'gameProject/src/pepita.wlk'])
+  })
+
+  test('description', () => {
+    expect(gameProject.description.trim()).toBe('Descripcion de pepita')
   })
 
 })
