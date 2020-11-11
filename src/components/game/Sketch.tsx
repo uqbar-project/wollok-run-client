@@ -11,6 +11,7 @@ import { GameSound } from './GameSound'
 import { buildKeyPressEvent, queueGameEvent } from './SketchUtils'
 import { Button } from '@material-ui/core'
 import ReplayIcon from '@material-ui/icons/Replay'
+import { DrawableMessage, drawMessage } from './messages'
 
 const defaultImgs = [
   'ground.png',
@@ -142,12 +143,6 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     })
   }
 
-  interface DrawableMessage {
-    message: string
-    x: number
-    y: number
-  }
-
   function drawBoard(sketch: p5) {
     const cellPixelSize = cellSize(evaluation)
     const messagesToDraw: DrawableMessage[] = []
@@ -167,11 +162,7 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
         })
       })
     })
-    messagesToDraw.forEach(drawMessage(sketch))
-  }
-
-  const drawMessage = (sketch: p5) => (message: DrawableMessage) => {
-    sketch.text(message.message, message.x, message.y)
+    messagesToDraw.forEach(drawMessage(sketch, cellSize(evaluation)))
   }
 
   function currentTime(sketch: p5) { return sketch.millis() }
