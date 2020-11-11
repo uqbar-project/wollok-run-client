@@ -162,7 +162,7 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
         })
       })
     })
-    messagesToDraw.forEach(drawMessage(sketch, cellSize(evaluation)))
+    messagesToDraw.forEach(drawMessage(sketch))
   }
 
   function currentTime(sketch: p5) { return sketch.millis() }
