@@ -19,13 +19,20 @@ function messageSize(sketch: p5, message: DrawableMessage, cellSize: number) {
   const sizeLimit = messageSizeLimit(cellSize)
   const textWidth = sketch.textWidth(message.message)
   const xSize = Math.min(textWidth, sizeLimit.x)
-  const ySize = cellSize * (textWidth / sizeLimit.y)
+  const ySize = cellSize * Math.ceil(textWidth / sizeLimit.y) / 2
   return { x: xSize, y: ySize }
+}
+
+function messageBackgroundPosition(sketch: p5, message: DrawableMessage, cellSize: number) {
+  const xPosition = message.x + cellSize
+  const yPosition = messageTextPosition(message, cellSize).y - sketch.textDescent()
+  return { x: xPosition, y: yPosition }
 }
 
 function drawMessageBackground(sketch: p5, message: DrawableMessage, cellSize: number) {
   const size = messageSize(sketch, message, cellSize)
-  sketch.rect(message.x + cellSize, message.y + sketch.textDescent() - cellSize, size.x, size.y, 20, 15, 10, 5)
+  const position = messageBackgroundPosition(sketch, message, cellSize)
+  sketch.rect(position.x, position.y, size.x, size.y, 20, 15, 10, 5)
 }
 
 export const drawMessage = (sketch: p5, cellSize: number) => (message: DrawableMessage): void => {
