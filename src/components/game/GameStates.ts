@@ -39,11 +39,11 @@ function getBooleanFieldValueFrom(wObject: RuntimeObject, evaluation: Evaluation
   return fieldInst.id === TRUE_ID
 }
 
-export function width(evaluation: Evaluation): number {
+function width(evaluation: Evaluation): number {
   return getNumberFieldValueFrom(gameInstance(evaluation), evaluation, 'width')
 }
 
-export function height(evaluation: Evaluation): number {
+function height(evaluation: Evaluation): number {
   return getNumberFieldValueFrom(gameInstance(evaluation), evaluation, 'height')
 }
 
@@ -144,7 +144,7 @@ const getVisualMessage = (visual: RuntimeObject): VisualMessage | undefined => {
   }
 }
 
-interface VisualState {
+export interface VisualState {
   position: {
     x: number;
     y: number;
@@ -185,4 +185,16 @@ export const currentSoundStates = (evaluation: Evaluation): SoundState[] => {
     return { id, file, status, volume, loop }
   })
 
+}
+
+export const canvasResolution = (evaluation: Evaluation): { x: number; y: number } => {
+  const cellPixelSize = cellSize(evaluation)
+
+  const pixelWidth = width(evaluation) * cellPixelSize
+  const pixelHeight = height(evaluation) * cellPixelSize
+
+  return {
+    x: pixelWidth,
+    y: pixelHeight,
+  }
 }
