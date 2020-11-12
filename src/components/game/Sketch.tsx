@@ -170,7 +170,9 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
 
     queueGameEvent(evaluation, keyPressedEvent)
     queueGameEvent(evaluation, anyKeyPressedEvent)
+    return false
   }
+  
   return <div>
     {stop ?
       <h1>Se terminó el juego</h1>
