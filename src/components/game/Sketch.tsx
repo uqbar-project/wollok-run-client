@@ -164,15 +164,16 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
 
   function currentTime(sketch: p5) { return sketch.millis() }
 
-  function keyPressed(sketch: p5): void {
+  function keyPressed(sketch: p5) {
     const keyPressedEvent = buildKeyPressEvent(evaluation, wKeyCode(sketch.key, sketch.keyCode))
     const anyKeyPressedEvent = buildKeyPressEvent(evaluation, 'ANY')
 
     queueGameEvent(evaluation, keyPressedEvent)
     queueGameEvent(evaluation, anyKeyPressedEvent)
+
     return false
   }
-  
+
   return <div>
     {stop ?
       <h1>Se terminó el juego</h1>
