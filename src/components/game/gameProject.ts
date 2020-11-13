@@ -37,7 +37,7 @@ export const mainProgram = ({ main }: GameProject, environment: Environment): st
 }
 
 export const buildGameProject = (allFiles: File[]): GameProject => {
-  const wollokFiles = getAllSourceFiles(allFiles).filter(withExtension(...EXPECTED_WOLLOK_EXTENSIONS)).map(({ name, content }) => ({ name, content: content.toString('utf8') }))
+  const wollokFiles = getAllSourceFiles(allFiles).filter(withExtension(...EXPECTED_WOLLOK_EXTENSIONS)).map(normalizeWollokFile)
   const wpgmFile = wollokFiles.find(withExtension(WOLLOK_PROGRAM_EXTENSION))
   if (!wpgmFile) throw new Error('Program file not found')
   const main = wpgmFile.name.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').replace(/\//gi, '.')
@@ -89,3 +89,13 @@ function getClasspathFile(files: File[]): File {
 
 const withExtension = (...extensions: string[]) => ({ name }: File | SourceFile) =>
   extensions.some(extension => name.endsWith(`.${extension}`))
+
+/**
+ * Workaroud for:
+ * https://github.com/uqbar-project/wollok-ts/issues/72
+ * https://github.com/uqbar-project/wollok-language/issues/31
+ */
+const normalizeWollokFile = ({ name, content }: File) => ({
+  name: name.replace('game.wpgm', 'juego.wpgm'),
+  content: content.toString('utf8').replace(/\+\+/g, '+=1').replace(/--/g, '-=1').replace('program game', 'program juego'),
+})
