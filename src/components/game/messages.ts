@@ -24,15 +24,27 @@ function messageXPosition(sketch: p5, message: DrawableMessage) {
   return xPositionIsOutOfCanvas(sketch, xPos, width) ? inverseXPos : xPos
 }
 
+function yPositionIsOutOfCanvas(yPosition: number) {
+  return yPosition < 0
+}
+
+function messageYPosition(sketch: p5, message: DrawableMessage) {
+  const messageSizeOffset = messageSize(sketch, message).y * 1.05
+  const yPos = message.y - messageSizeOffset
+  const inverseYPos = message.y + sizeFactor
+
+  return yPositionIsOutOfCanvas(yPos) ? inverseYPos : yPos
+}
+
 function messageTextPosition(sketch: p5, message: DrawableMessage) {
-  return { x: messageXPosition(sketch, message), y: message.y - messageSize(sketch, message).y * 1.05 }
+  return { x: messageXPosition(sketch, message), y: messageYPosition(sketch, message) }
 }
 
 function messageSize(sketch: p5, message: DrawableMessage) {
   const sizeLimit = messageSizeLimit()
   const textWidth = sketch.textWidth(message.message)
   const xSize = Math.min(textWidth, sizeLimit.x)
-  const ySize = (sizeFactor - 15) * Math.ceil(textWidth / sizeLimit.x) / 2
+  const ySize = Math.min((sizeFactor - 15) * Math.ceil(textWidth / sizeLimit.x) / 2, sizeLimit.y)
   return { x: xSize, y: ySize }
 }
 
