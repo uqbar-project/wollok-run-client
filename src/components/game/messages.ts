@@ -12,8 +12,20 @@ function messageSizeLimit() {
   return { x: sizeFactor * 3, y: sizeFactor * 3 }
 }
 
+function xPositionIsOutOfCanvas(sketch: p5, xPosition: number, width: number) {
+  return xPosition + width > sketch.width
+}
+
+function messageXPosition(sketch: p5, message: DrawableMessage) {
+  const xPos = message.x + sizeFactor
+  const width = messageSize(sketch, message).x
+  const inverseXPos = message.x - width
+
+  return xPositionIsOutOfCanvas(sketch, xPos, width) ? inverseXPos : xPos
+}
+
 function messageTextPosition(sketch: p5, message: DrawableMessage) {
-  return { x: message.x + sizeFactor + 5, y: message.y - messageSize(sketch, message).y * 1.05 }
+  return { x: messageXPosition(sketch, message), y: message.y - messageSize(sketch, message).y * 1.05 }
 }
 
 function messageSize(sketch: p5, message: DrawableMessage) {
@@ -25,7 +37,7 @@ function messageSize(sketch: p5, message: DrawableMessage) {
 }
 
 function messageBackgroundPosition(sketch: p5, message: DrawableMessage) {
-  const xPosition = message.x + sizeFactor
+  const xPosition = messageTextPosition(sketch, message).x - 5
   const yPosition = messageTextPosition(sketch, message).y
   return { x: xPosition, y: yPosition }
 }
