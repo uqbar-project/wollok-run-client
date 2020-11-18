@@ -1,0 +1,7 @@
+import wollok.game.*
+import pepita.*
+
+program pepitaGame{
+  game.addVisual(pepita)
+  game.start()
+}

@@ -6,13 +6,17 @@ Actualmente cuenta con las siguientes implementaciones:
 
 - **Game** Una interfaz para correr juegos hechos con Wollok Game.
 - **Debugger** Una forma de correr tests y poder ejecutar _paso a paso_ viendo el estado de la WVM.
-- **Worksheet** Un psudo IDE con un editor, consola y diagrama dinámico.
+- **Worksheet** Un pseudo IDE con un editor, consola y diagrama dinámico.
 
 ## Dónde ver el proyecto andando
 
-- Para correr un programa Wollok: https://server.wollok.org
-- Probar un Wollok Game desde la web (en construcción): https://server.wollok.org/game
-  - Por ejemplo: https://game.wollok.org/game?github=wollok/losVengadoresGame
+El proyecto se encuentra deployado en `https://server.wollok.org` en donde se encuentra:
+
+- **Worksheet**: https://game.wollok.org/worksheet
+- **Debugger**: https://game.wollok.org/debugger
+- **Game**: Probar un Wollok Game desde la web: https://server.wollok.org/game  
+  - Por ejemplo: https://game.wollok.org/game?git=https://github.com/wollok/elJuegoDePepita
+
 
 ## ¿Cómo levantar la app?
 
@@ -37,7 +41,17 @@ npm start
 > npm run cors
 > ```
 >
-> El server se levantará por default en el puerto `9999`
+> El server se levantará por default en la ruta `http://localhost:9999`
+>
+> Para configurar la ruta del proxy hay que cambiar la variable de entorno `REACT_APP_PROXY_URL`. Por ejemplo para levantar la app con una ruta de proxy customizada se puede hacer
+> 
+> ```
+> # Linux
+> REACT_APP_PROXY_URL=http://localhost:8787 npm start
+> 
+> # Windows
+> set "REACT_APP_PROXY_URL=http://localhost:8787" &&  npm start
+> ```
 
 ## Alternativa usando Docker
 

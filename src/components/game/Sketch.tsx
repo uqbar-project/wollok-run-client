@@ -3,10 +3,12 @@ import p5Types from 'p5'
 import React, { useState } from 'react'
 import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
-import { Evaluation, interpret, WRENatives, Id } from 'wollok-ts'
+import { Evaluation, Id } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { Board, boardToLayers } from './utils'
-import { flushEvents, boardGround, cellSize, width, height, currentSoundStates, SoundState, io, nextBoard, gameStop } from './GameStates'
+import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, nextBoard, canvasResolution, gameStop } from './GameStates'
+import { GameSound } from './GameSound'
+import { buildKeyPressEvent, queueGameEvent } from './SketchUtils'
 import { Button } from '@material-ui/core'
 import ReplayIcon from '@material-ui/icons/Replay'
 
@@ -57,20 +59,8 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     drawBoard(sketch)
   }
 
-  const canvasResolution = () => {
-    const cellPixelSize = cellSize(evaluation)
-
-    const pixelWidth = width(evaluation) * cellPixelSize
-    const pixelHeight = height(evaluation) * cellPixelSize
-
-    return {
-      x: pixelWidth,
-      y: pixelHeight,
-    }
-  }
-
   const setup = (sketch: p5Types, canvasParentRef: any) => {
-    const resolution = canvasResolution()
+    const resolution = canvasResolution(evaluation)
 
     sketch.createCanvas(resolution.x, resolution.y).parent(canvasParentRef)
     loadImages(sketch)
@@ -80,8 +70,9 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     defaultImgs.forEach((path: string) => {
       imgs[path] = sketch.loadImage(DEFAULT_GAME_ASSETS_DIR + path)
     })
-    game.images.forEach(({ path, url }) => {
-      imgs[path] = sketch.loadImage(url)
+    game.images.forEach(({ possiblePaths, url }) => {
+      const loadedImage = sketch.loadImage(url)
+      possiblePaths.forEach((path: string) => imgs[path] = loadedImage)
     })
   }
 
@@ -112,37 +103,10 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     setStop(false)
   }
 
-  interface GameSound {
-    lastSoundState: SoundState
-    soundFile: p5.SoundFile
-    started: boolean
-    toBePlayed: boolean
-  }
-
   const loadedSounds: Map<Id, GameSound> = new Map()
 
-  function soundCanBePlayed(loadedSound: GameSound, currentSoundState: SoundState): boolean {
-    return (loadedSound.lastSoundState.status !== currentSoundState.status || !loadedSound.started) && loadedSound.soundFile.isLoaded()
-  }
-
   function playSounds() {
-    [...loadedSounds.values()].filter((sound: GameSound) => sound.toBePlayed).forEach((sound: GameSound) => {
-      sound.started = true
-
-      switch (sound.lastSoundState.status) {
-        case 'played': {
-          sound.soundFile.play()
-          break
-        }
-        case 'paused': {
-          sound.soundFile.pause()
-          break
-        }
-        case 'stopped': {
-          sound.soundFile.stop()
-        }
-      }
-    })
+    [...loadedSounds.values()].forEach((sound: GameSound) => sound.playSound())
   }
 
   function syncSounds() {
@@ -157,32 +121,23 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
       }
 
       const loadedSound: GameSound = loadedSounds.get(soundState.id)!
-      loadedSound.soundFile.setLoop(soundState.loop)
-      loadedSound.soundFile.setVolume(soundState.volume)
-      loadedSound.toBePlayed = soundCanBePlayed(loadedSound, soundState)
-      loadedSound.lastSoundState = soundState
+      loadedSound.update(soundState)
     })
   }
 
-  function getSoundPathFromFileName(fileName: string): string | undefined {
-    return game.sounds.find(({ path }) => path === fileName)?.url
+  function getSoundUrlFromFileName(fileName: string): string | undefined {
+    return game.sounds.find(({ possiblePaths }) => possiblePaths.includes(fileName))?.url
   }
 
   function addSoundFromSoundState(soundState: SoundState) {
-    loadedSounds.set(soundState.id,
-      {
-        lastSoundState: soundState,
-        soundFile: new p5.SoundFile(getSoundPathFromFileName(soundState.file)!), //TODO add soundfile not found exception
-        started: false,
-        toBePlayed: false,
-      })
+    loadedSounds.set(soundState.id, new GameSound(soundState, getSoundUrlFromFileName(soundState.file)!)) //TODO add soundfile not found exception
   }
 
   function removeUnusedLoadedSounds() {
     const soundIdsBeingUsed: Id[] = currentSoundStates(evaluation).map((soundState: SoundState) => soundState.id)
     const unusedSoundIds: Id[] = [...loadedSounds.keys()].filter((id: Id) => !soundIdsBeingUsed.includes(id))
     unusedSoundIds.forEach((unusedId: Id) => {
-      loadedSounds.get(unusedId)?.soundFile.stop()
+      loadedSounds.get(unusedId)?.stopSound()
       loadedSounds.delete(unusedId)
     })
   }
@@ -209,22 +164,16 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
 
   function currentTime(sketch: p5) { return sketch.millis() }
 
-  function queueGameEvent(eventId: string) {
-    const { sendMessage } = interpret(evaluation.environment, WRENatives)
-    sendMessage('queueEvent', io(evaluation), eventId)(evaluation)
-  }
-
   function keyPressed(sketch: p5) {
-    const left = evaluation.createInstance('wollok.lang.String', 'keypress')
-    const keyPressedCode = evaluation.createInstance('wollok.lang.String', wKeyCode(sketch.key, sketch.keyCode))
-    const anyKeyCode = evaluation.createInstance('wollok.lang.String', 'ANY')
-    const keyPressedId = evaluation.createInstance('wollok.lang.List', [left, keyPressedCode])
-    const anyKeyPressedId = evaluation.createInstance('wollok.lang.List', [left, anyKeyCode])
+    const keyPressedEvent = buildKeyPressEvent(evaluation, wKeyCode(sketch.key, sketch.keyCode))
+    const anyKeyPressedEvent = buildKeyPressEvent(evaluation, 'ANY')
 
-    queueGameEvent(keyPressedId)
-    queueGameEvent(anyKeyPressedId)
+    queueGameEvent(evaluation, keyPressedEvent)
+    queueGameEvent(evaluation, anyKeyPressedEvent)
+
     return false
   }
+
   return <div>
     {stop ?
       <h1>Se terminó el juego</h1>
