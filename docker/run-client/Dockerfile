@@ -17,19 +17,32 @@ USER app
 # where available (npm@5+)
 COPY package*.json ./
 
-RUN npm install
-
-# Copy app source
-COPY . .
 
 ####################
 # Development Image
 ####################
 
-FROM base as dev
+FROM base AS dev
+RUN npm install
+COPY . .
 EXPOSE 3000
 CMD [ "npm", "start" ]
 
 
-# If you are building your code for production
-# RUN npm ci --only=production
+####################
+# Production Builder
+####################
+
+FROM base AS builder
+RUN npm ci --only=production
+COPY . .
+RUN npm run build
+
+####################
+# Production
+####################
+
+# Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx
+FROM nginx:1.15 AS prod
+COPY --from=builder /usr/src/app/build/ /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
