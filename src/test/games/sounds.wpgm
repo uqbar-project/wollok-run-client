@@ -5,6 +5,6 @@ program mockGame {
   game.height(10)
   const sound = game.sound("sound.mp3")
   sound.volume(1)
-  sound.play()
   game.start()
+  sound.play()
 }
