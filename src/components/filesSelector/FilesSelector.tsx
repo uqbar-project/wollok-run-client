@@ -4,6 +4,7 @@ import LocalSelector from './LocalSelector'
 import Spinner from '../Spinner'
 import $ from './FilesSelector.module.scss'
 import { WollokLogo } from '../Home/Home'
+import { BackArrow } from '../BackArrow'
 
 export type File = {
   name: string
@@ -23,6 +24,7 @@ const FilesSelector = (props: FilesSelectorProps) => {
   return loading
     ? <Spinner />
     : <div className={$.container}>
+      <div><BackArrow returnPath='/' /></div>
       <WollokLogo />
       <div>
         <GitSelector {...props} onStartLoad={onStartLoad} />
