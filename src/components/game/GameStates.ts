@@ -4,10 +4,9 @@ import { RuntimeObject, TRUE_ID } from 'wollok-ts/dist/interpreter'
 import { Id } from 'wollok-ts'
 
 export const io = (evaluation: Evaluation): Id => evaluation.environment.getNodeByFQN('wollok.io.io').id
-
-export const gameInstance = (evaluation: Evaluation): RuntimeObject => {
-  return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
-}
+const mirror = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.gameMirror.gameMirror').id
+export const game = (evaluation: Evaluation): Id => evaluation.environment.getNodeByFQN('wollok.game.game').id
+export const gameInstance = (evaluation: Evaluation): RuntimeObject => evaluation.instance(game(evaluation))
 
 function getInstanceFieldFrom(wObject: RuntimeObject, evaluation: Evaluation, field: string): RuntimeObject | undefined {
   const gameField: RuntimeObject | undefined = wObject.get(field)
@@ -83,7 +82,7 @@ export const emptyBoard = (evaluation: Evaluation): Board => {
 export const flushEvents = (evaluation: Evaluation, ms: number): void => {
   const { sendMessage } = interpret(evaluation.environment, WRENatives)
   const time = evaluation.createInstance('wollok.lang.Number', ms)
-  sendMessage('flushEvents', io(evaluation), time)(evaluation)
+  sendMessage('flushEvents', mirror(evaluation), time)(evaluation)
 }
 
 export const nextBoard = (evaluation: Evaluation): Board => {
