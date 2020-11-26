@@ -96,6 +96,6 @@ const withExtension = (...extensions: string[]) => ({ name }: File | SourceFile)
  * https://github.com/uqbar-project/wollok-language/issues/31
  */
 const normalizeWollokFile = ({ name, content }: File) => ({
-  name: name.replace('game.wpgm', 'juego.wpgm'),
-  content: content.toString('utf8').replace(/\+\+/g, '+=1').replace(/--/g, '-=1').replace('program game', 'program juego'),
+  name: name.replace('game.wpgm', '_juego_.wpgm'),
+  content: content.toString('utf8').replace(/\+\+/g, '+=1').replace(/--/g, '-=1').replace('program game', 'program _juego_'),
 })
