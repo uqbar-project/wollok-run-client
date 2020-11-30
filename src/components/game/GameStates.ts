@@ -3,11 +3,12 @@ import { Board } from './utils'
 import { RuntimeObject, TRUE_ID } from 'wollok-ts/dist/interpreter'
 import { Id } from 'wollok-ts'
 
-export const io = (evaluation: Evaluation): Id => evaluation.environment.getNodeByFQN('wollok.io.io').id
+const { round } = Math
 
-export const gameInstance = (evaluation: Evaluation): RuntimeObject => {
-  return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
-}
+export const io = (evaluation: Evaluation): Id => evaluation.environment.getNodeByFQN('wollok.io.io').id
+const mirror = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.gameMirror.gameMirror').id
+export const game = (evaluation: Evaluation): Id => evaluation.environment.getNodeByFQN('wollok.game.game').id
+export const gameInstance = (evaluation: Evaluation): RuntimeObject => evaluation.instance(game(evaluation))
 
 function getInstanceFieldFrom(wObject: RuntimeObject, evaluation: Evaluation, field: string): RuntimeObject | undefined {
   const gameField: RuntimeObject | undefined = wObject.get(field)
@@ -71,19 +72,18 @@ export function gameStop(evaluation: Evaluation): boolean {
   return !getBooleanFieldValueFrom(gameInstance(evaluation), evaluation, 'running')
 }
 
-
 export const emptyBoard = (evaluation: Evaluation): Board => {
   const groundPath = ground(evaluation)
   const boardgroundPath = boardGround(evaluation)
-  return Array.from(Array(height(evaluation)), () =>
-    Array.from(Array(width(evaluation)), () => !boardgroundPath ? [{ img: groundPath }] : [])
+  return Array.from(Array(round(height(evaluation))), () =>
+    Array.from(Array(round(width(evaluation))), () => !boardgroundPath ? [{ img: groundPath }] : [])
   )
 }
 
 export const flushEvents = (evaluation: Evaluation, ms: number): void => {
   const { sendMessage } = interpret(evaluation.environment, WRENatives)
   const time = evaluation.createInstance('wollok.lang.Number', ms)
-  sendMessage('flushEvents', io(evaluation), time)(evaluation)
+  sendMessage('flushEvents', mirror(evaluation), time)(evaluation)
 }
 
 export const nextBoard = (evaluation: Evaluation): Board => {
