@@ -5,8 +5,7 @@ import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
-import { Board, boardToLayers } from './utils'
-import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, nextBoard, canvasResolution, gameStop, currentVisualStates, VisualMessage } from './GameStates';
+import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, canvasResolution, gameStop, currentVisualStates, VisualMessage } from './GameStates'
 import { GameSound } from './GameSound'
 import { buildKeyPressEvent, queueGameEvent } from './SketchUtils'
 import { Button } from '@material-ui/core'
@@ -48,13 +47,11 @@ interface SketchProps {
 const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
   const [stop, setStop] = useState(false)
   const imgs: { [id: string]: p5.Image } = {}
-  let board: Board
   let evaluation = e.copy()
 
   const draw = (sketch: p5Types) => {
     flushEvents(evaluation, currentTime(sketch))
     checkStop()
-    updateBoard()
     syncSounds()
     playSounds()
     drawBoard(sketch)
@@ -79,12 +76,6 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
 
   function imageFromPath(path: string): p5.Image {
     return imgs[path] ?? imgs['wko.png']
-  }
-
-  function updateBoard() {
-    const current = JSON.stringify(board)
-    const next = nextBoard(evaluation)
-    if (JSON.stringify(next) !== current) board = next
   }
 
   function drawBoardGround(sketch: p5) {
@@ -148,9 +139,9 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     const messagesToDraw: DrawableMessage[] = []
     drawBoardGround(sketch)
     currentVisualStates(evaluation).forEach(visual => {
-      const boardPosition = visual.position
-      const y = sketch.height - boardPosition.y * cellPixelSize
-      const xPosition = boardPosition.x * cellPixelSize
+      const gamePosition = visual.position
+      const y = sketch.height - gamePosition.y * cellPixelSize
+      const xPosition = gamePosition.x * cellPixelSize
       const imageObject: p5.Image = imageFromPath(visual.image)
       const yPosition = y - imageObject.height
       sketch.image(imageObject, xPosition, yPosition)
