@@ -6,7 +6,7 @@ import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { Board, boardToLayers } from './utils'
-import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, nextBoard, canvasResolution, gameStop } from './GameStates'
+import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, nextBoard, canvasResolution, gameStop, currentVisualStates } from './GameStates';
 import { GameSound } from './GameSound'
 import { buildKeyPressEvent, queueGameEvent } from './SketchUtils'
 import { Button } from '@material-ui/core'
@@ -147,20 +147,15 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     const cellPixelSize = cellSize(evaluation)
     const messagesToDraw: DrawableMessage[] = []
     drawBoardGround(sketch)
-    boardToLayers(board).forEach(layer => {
-      layer.forEach((row, _y) => {
-        if (!row) return
-        const y = sketch.height - _y * cellPixelSize
-        row.forEach((actor, _x) => {
-          if (!actor) return
-          const { img, message } = actor
-          const xPosition = _x * cellPixelSize
-          const imageObject: p5.Image = imageFromPath(img)
-          const yPosition = y - imageObject.height
-          sketch.image(imageObject, xPosition, yPosition)
-          if (message && message.time > currentTime(sketch)) messagesToDraw.push({ message: message.text, x: xPosition, y: yPosition })
-        })
-      })
+    currentVisualStates(evaluation).forEach(visual => {
+      const boardPosition = visual.position
+      const y = sketch.height - boardPosition.y * cellPixelSize
+      const xPosition = boardPosition.x * cellPixelSize
+      const imageObject: p5.Image = imageFromPath(visual.image)
+      const yPosition = y - imageObject.height
+      sketch.image(imageObject, xPosition, yPosition)
+      const message: VisualMessage | undefined = visual.message
+      if (message && message.time > currentTime(sketch)) messagesToDraw.push({ message: message.text, x: xPosition, y: yPosition })
     })
     messagesToDraw.forEach(drawMessage(sketch))
   }
