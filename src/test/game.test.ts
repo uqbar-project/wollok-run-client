@@ -6,7 +6,7 @@ import { nextBoard, currentVisualStates, VisualState, currentSoundStates, SoundS
 import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import { wKeyCode, buildKeyPressEvent, queueGameEvent } from '../components/game/SketchUtils'
 import { buildGameProject, GameProject } from '../components/game/gameProject'
-import { drawMessage, MessageDrawer, messageTextPosition } from '../components/game/messages'
+import { MessageDrawer, messageTextPosition } from '../components/game/messages'
 
 const readFiles = (files: string[]) => files.map(file => ({
   name: file,
