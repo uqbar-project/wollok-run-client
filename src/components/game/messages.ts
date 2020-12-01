@@ -5,7 +5,7 @@ export interface DrawableMessage {
   y: number;
 }
 
-interface MessageDrawer {
+export interface MessageDrawer {
   width: number;
   textWidth(message: string): number;
   rect(xPos: number, yPos: number, xSize: number, ySize: number, tl?: number, tr?: number, br?: number, bl?: number): void;
@@ -42,7 +42,7 @@ function messageYPosition(drawer: MessageDrawer, message: DrawableMessage) {
   return yPositionIsOutOfCanvas(yPos) ? inverseYPos : yPos
 }
 
-function messageTextPosition(drawer: MessageDrawer, message: DrawableMessage) {
+export function messageTextPosition(drawer: MessageDrawer, message: DrawableMessage): { x: number; y: number } {
   return { x: messageXPosition(drawer, message), y: messageYPosition(drawer, message) }
 }
 
