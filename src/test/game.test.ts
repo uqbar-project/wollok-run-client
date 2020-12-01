@@ -1,8 +1,7 @@
 import fs from 'fs'
-import { boardToLayers } from '../components/game/utils'
 import { buildEnvironment, interpret, Evaluation, Id } from 'wollok-ts/dist'
 import wre from 'wollok-ts/dist/wre/wre.natives'
-import { nextBoard, currentVisualStates, VisualState, currentSoundStates, SoundState, flushEvents, canvasResolution } from '../components/game/GameStates'
+import { drawableVisualStates, VisualState, currentSoundStates, SoundState, flushEvents, canvasResolution } from '../components/game/GameStates'
 import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import { wKeyCode, buildKeyPressEvent, queueGameEvent } from '../components/game/SketchUtils'
 import { buildGameProject, GameProject } from '../components/game/gameProject'
@@ -23,16 +22,16 @@ describe('game', () => {
   }
 
   gameTest('a visual outside of the canvas should not be drawn', 'gameTest', ['games/gameTest.wpgm'], (evaluation) => {
-    const [[visuals]] = nextBoard(evaluation)
-    expect(visuals).toContainEqual({ img: 'in.png' })
-    expect(visuals).not.toContainEqual({ img: 'out.png' })
+    const visuals: VisualState[] = drawableVisualStates(evaluation)
+    expect(visuals).toContainEqual({ image: 'in.png', position: { x: 0, y: 0 }, message: undefined })
+    expect(visuals).not.toContainEqual({ image: 'out.png', position: { x: -1, y: -1 }, message: undefined })
   })
 
   gameTest('visualStates', 'pepita', ['games/pepita.wpgm'], (evaluation) => {
-    const pepitaState: VisualState = currentVisualStates(evaluation)[0]
+    const pepitaState: VisualState = drawableVisualStates(evaluation)[0]
     expect(pepitaState).toStrictEqual({
       image: 'pepita.png',
-      position: { x: 1, y: -1 },
+      position: { x: 1, y: 1 },
       message: undefined,
     })
   })
@@ -49,10 +48,10 @@ describe('game', () => {
   })
 
   gameTest('flushEvents', 'pepita', ['games/pepita.wpgm'], (evaluation) => {
-    const pepitaState: VisualState = currentVisualStates(evaluation)[0]
-    expect(pepitaState.position).toStrictEqual({ x: 1, y: -1 })
+    const pepitaState: VisualState = drawableVisualStates(evaluation)[0]
+    expect(pepitaState.position).toStrictEqual({ x: 1, y: 1 })
     flushEvents(evaluation, 101)
-    const newPepitaState: VisualState = currentVisualStates(evaluation)[0]
+    const newPepitaState: VisualState = drawableVisualStates(evaluation)[0]
     expect(newPepitaState.position).toStrictEqual({ x: 0, y: 0 })
   })
 
@@ -82,11 +81,11 @@ describe('game', () => {
   gameTest('When a key is pressed, the event associated with the key should happen', 'movement', ['games/movement.wpgm'], (evaluation) => {
     const keyCode = wKeyCode('ArrowRight', 39)
     const keyPressEvent: Id = buildKeyPressEvent(evaluation, keyCode)
-    const firstPepitaPosition = currentVisualStates(evaluation)[0].position
+    const firstPepitaPosition = drawableVisualStates(evaluation)[0].position
     expect(firstPepitaPosition).toStrictEqual({ x: 0, y: 0 })
     queueGameEvent(evaluation, keyPressEvent)
     flushEvents(evaluation, 1)
-    const finalPepitaPosition = currentVisualStates(evaluation)[0].position
+    const finalPepitaPosition = drawableVisualStates(evaluation)[0].position
     expect(finalPepitaPosition).toStrictEqual({ x: 1, y: 1 })
   })
 })
