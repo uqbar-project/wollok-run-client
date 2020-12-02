@@ -21,12 +21,6 @@ describe('game', () => {
     it(testName, () => cbTest(evaluation))
   }
 
-  gameTest('a visual outside of the canvas should not be drawn', 'gameTest', ['games/gameTest.wpgm'], (evaluation) => {
-    const visuals: VisualState[] = currentVisualStates(evaluation)
-    expect(visuals).toContainEqual({ image: 'in.png', position: { x: 0, y: 0 }, message: undefined })
-    expect(visuals).not.toContainEqual({ image: 'out.png', position: { x: -1, y: -1 }, message: undefined })
-  })
-
   gameTest('visualStates', 'pepita', ['games/pepita.wpgm'], (evaluation) => {
     const pepitaState: VisualState = currentVisualStates(evaluation)[0]
     expect(pepitaState).toStrictEqual({
