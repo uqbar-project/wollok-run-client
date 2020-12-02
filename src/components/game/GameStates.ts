@@ -134,7 +134,7 @@ export interface VisualState {
   message?: VisualMessage;
 }
 
-const currentVisualStates = (evaluation: Evaluation): VisualState[] => {
+export const currentVisualStates = (evaluation: Evaluation): VisualState[] => {
   return visuals(evaluation).map((id: Id) => {
     const visual = evaluation.instance(id)
     const position = getVisualPosition(visual)(evaluation)
@@ -143,16 +143,6 @@ const currentVisualStates = (evaluation: Evaluation): VisualState[] => {
 
     return { position, image, message }
   })
-}
-
-export const drawableVisualStates = (evaluation: Evaluation): VisualState[] => {
-  return currentVisualStates(evaluation).filter(visualIsInsideBoard(evaluation))
-}
-
-const visualIsInsideBoard = (evaluation: Evaluation) => (visual: VisualState): boolean => {
-  const x = visual.position.x
-  const y = visual.position.y
-  return x >= 0 && x < width(evaluation) && y >= 0 && y < height(evaluation)
 }
 
 type SoundStatus = 'played' | 'paused' | 'stopped'

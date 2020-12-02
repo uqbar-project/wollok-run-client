@@ -5,7 +5,7 @@ import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
-import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, canvasResolution, gameStop, VisualMessage, ground, height, width, VisualState, drawableVisualStates } from './GameStates'
+import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, canvasResolution, gameStop, VisualMessage, ground, height, width, VisualState, currentVisualStates } from './GameStates'
 import { GameSound } from './GameSound'
 import { buildKeyPressEvent, queueGameEvent } from './SketchUtils'
 import { Button } from '@material-ui/core'
@@ -172,7 +172,7 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
   function drawBoard(sketch: p5) {
     const messagesToDraw: DrawableMessage[] = []
     drawBackground(sketch)
-    drawableVisualStates(evaluation).forEach(visual => {
+    currentVisualStates(evaluation).forEach(visual => {
       drawVisual(sketch, visual)
       const position = canvasPositionOfVisual(sketch, visual)
       const message: VisualMessage | undefined = visual.message
