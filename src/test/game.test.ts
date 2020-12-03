@@ -6,6 +6,7 @@ import { nextBoard, currentVisualStates, VisualState, currentSoundStates, SoundS
 import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import { wKeyCode, buildKeyPressEvent, queueGameEvent } from '../components/game/SketchUtils'
 import { buildGameProject, GameProject } from '../components/game/gameProject'
+import { MessageDrawer, messageTextPosition } from '../components/game/messages'
 
 const readFiles = (files: string[]) => files.map(file => ({
   name: file,
@@ -152,6 +153,31 @@ describe('buildGameProject', () => {
     expect(gameProject.description.trim()).toBe('Descripcion de pepita')
   })
 
+})
+
+describe('messages', () => {
+  const drawer: MessageDrawer = {
+    width: 100,
+    textWidth: (text: string) => 5.5 * text.length,
+    rect: () => { },
+    text: () => { },
+  }
+
+  test('when a message is horizontally out of canvas, it should be inverted', () => {
+    const message = { message: 'holaholaholaholaholaholaholaholaholahola', x: 99, y: 0 }
+    expect(messageTextPosition(drawer, message).x).toBeLessThan(message.x)
+  })
+
+  test('when a message is horizontally out of canvas, it should be inverted', () => {
+    const message = { message: 'holaholaholaholaholaholaholaholaholahola', x: 0, y: 10 }
+    expect(messageTextPosition(drawer, message).y).toBeGreaterThan(message.y)
+  })
+
+  test('when a message is inside the canvas, it should not be inverted', () => {
+    const message = { message: 'hola', x: 0, y: 200 }
+    expect(messageTextPosition(drawer, message).y).toBeLessThan(message.y)
+    expect(messageTextPosition(drawer, message).x).toBeGreaterThan(message.x)
+  })
 })
 
 /*

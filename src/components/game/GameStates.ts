@@ -123,7 +123,7 @@ const getVisualImage = (visual: RuntimeObject) => (evaluation: Evaluation): stri
   }
 }
 
-interface VisualMessage {
+export interface VisualMessage {
   text: string;
   time: number;
 }
