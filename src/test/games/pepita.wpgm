@@ -1,7 +1,7 @@
 import wollok.game.*
 
 object pepita{
-  var property position = game.at(1,-1)
+  var property position = game.at(1,1)
   method image() = "pepita.png"
 }
 

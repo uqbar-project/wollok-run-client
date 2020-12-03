@@ -1,9 +1,6 @@
 import { Evaluation, interpret, WRENatives } from 'wollok-ts'
-import { Board } from './utils'
 import { RuntimeObject, TRUE_ID } from 'wollok-ts/dist/interpreter'
 import { Id } from 'wollok-ts'
-
-const { round } = Math
 
 export const io = (evaluation: Evaluation): Id => evaluation.environment.getNodeByFQN('wollok.io.io').id
 const mirror = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.gameMirror.gameMirror').id
@@ -40,19 +37,19 @@ function getBooleanFieldValueFrom(wObject: RuntimeObject, evaluation: Evaluation
   return fieldInst.id === TRUE_ID
 }
 
-function width(evaluation: Evaluation): number {
-  return getNumberFieldValueFrom(gameInstance(evaluation), evaluation, 'width')
+export function width(evaluation: Evaluation): number {
+  return Math.round(getNumberFieldValueFrom(gameInstance(evaluation), evaluation, 'width'))
 }
 
-function height(evaluation: Evaluation): number {
-  return getNumberFieldValueFrom(gameInstance(evaluation), evaluation, 'height')
+export function height(evaluation: Evaluation): number {
+  return Math.round(getNumberFieldValueFrom(gameInstance(evaluation), evaluation, 'height'))
 }
 
 export function cellSize(evaluation: Evaluation): number {
   return getNumberFieldValueFrom(gameInstance(evaluation), evaluation, 'cellSize')
 }
 
-function ground(evaluation: Evaluation): string {
+export function ground(evaluation: Evaluation): string {
   return getStringFieldValueFrom(gameInstance(evaluation), evaluation, 'ground')
 }
 
@@ -72,26 +69,10 @@ export function gameStop(evaluation: Evaluation): boolean {
   return !getBooleanFieldValueFrom(gameInstance(evaluation), evaluation, 'running')
 }
 
-export const emptyBoard = (evaluation: Evaluation): Board => {
-  const groundPath = ground(evaluation)
-  const boardgroundPath = boardGround(evaluation)
-  return Array.from(Array(round(height(evaluation))), () =>
-    Array.from(Array(round(width(evaluation))), () => !boardgroundPath ? [{ img: groundPath }] : [])
-  )
-}
-
 export const flushEvents = (evaluation: Evaluation, ms: number): void => {
   const { sendMessage } = interpret(evaluation.environment, WRENatives)
   const time = evaluation.createInstance('wollok.lang.Number', ms)
   sendMessage('flushEvents', mirror(evaluation), time)(evaluation)
-}
-
-export const nextBoard = (evaluation: Evaluation): Board => {
-  const next = emptyBoard(evaluation)
-  for (const { position: { x, y }, image, message } of currentVisualStates(evaluation)) {
-    next[y] && next[y][x] && next[y][x].push({ img: `${image}`, message })
-  }
-  return next
 }
 
 const getVisualPosition = (visual: RuntimeObject) => (evaluation: Evaluation) => {
@@ -162,8 +143,8 @@ export const currentVisualStates = (evaluation: Evaluation): VisualState[] => {
 
     return { position, image, message }
   })
-
 }
+
 type SoundStatus = 'played' | 'paused' | 'stopped'
 export interface SoundState {
   id: Id;

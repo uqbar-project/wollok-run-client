@@ -5,8 +5,7 @@ import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
-import { Board, boardToLayers } from './utils'
-import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, nextBoard, canvasResolution, gameStop } from './GameStates'
+import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, canvasResolution, gameStop, VisualMessage, ground, height, width, VisualState, currentVisualStates } from './GameStates'
 import { GameSound } from './GameSound'
 import { buildKeyPressEvent, queueGameEvent } from './SketchUtils'
 import { Button } from '@material-ui/core'
@@ -48,13 +47,11 @@ interface SketchProps {
 const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
   const [stop, setStop] = useState(false)
   const imgs: { [id: string]: p5.Image } = {}
-  let board: Board
   let evaluation = e.copy()
 
   const draw = (sketch: p5Types) => {
     flushEvents(evaluation, currentTime(sketch))
     checkStop()
-    updateBoard()
     syncSounds()
     playSounds()
     drawBoard(sketch)
@@ -81,16 +78,30 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     return imgs[path] ?? imgs['wko.png']
   }
 
-  function updateBoard() {
-    const current = JSON.stringify(board)
-    const next = nextBoard(evaluation)
-    if (JSON.stringify(next) !== current) board = next
+  function drawFullBackgroundImage(sketch: p5) {
+    sketch.image(imageFromPath(boardGround(evaluation)!), 0, 0, sketch.width, sketch.height)
   }
 
-  function drawBoardGround(sketch: p5) {
-    const boardGroundPath = boardGround(evaluation)
+  function drawGroundBackground(sketch: p5) {
+    const groundPath = ground(evaluation)
+    const gameWidth = width(evaluation)
+    const gameHeigth = height(evaluation)
+    let x: number
+    let y: number
+    for (x = 0; x < gameWidth; x++) {
+      for (y = 0; y < gameHeigth; y++) {
+        const position = { x, y }
+        drawVisual(sketch, { position, image: groundPath })
+      }
+    }
+  }
 
-    boardGroundPath && sketch.image(imageFromPath(boardGroundPath), 0, 0, sketch.width, sketch.height)
+  function drawBackground(sketch: p5) {
+    const boardGroundPath = boardGround(evaluation)
+    if (boardGroundPath)
+      drawFullBackgroundImage(sketch)
+    else
+      drawGroundBackground(sketch)
   }
 
   function checkStop() {
@@ -143,24 +154,29 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     })
   }
 
-  function drawBoard(sketch: p5) {
+  function canvasPositionOfVisual(sketch: p5, visual: VisualState) {
     const cellPixelSize = cellSize(evaluation)
+    const gamePosition = visual.position
+    const y = sketch.height - gamePosition.y * cellPixelSize
+    const xPosition = gamePosition.x * cellPixelSize
+    const imageObject: p5.Image = imageFromPath(visual.image)
+    const yPosition = y - imageObject.height
+    return { x: xPosition, y: yPosition }
+  }
+
+  function drawVisual(sketch: p5, visual: VisualState) {
+    const position = canvasPositionOfVisual(sketch, visual)
+    sketch.image(imageFromPath(visual.image), position.x, position.y)
+  }
+
+  function drawBoard(sketch: p5) {
     const messagesToDraw: DrawableMessage[] = []
-    drawBoardGround(sketch)
-    boardToLayers(board).forEach(layer => {
-      layer.forEach((row, _y) => {
-        if (!row) return
-        const y = sketch.height - _y * cellPixelSize
-        row.forEach((actor, _x) => {
-          if (!actor) return
-          const { img, message } = actor
-          const xPosition = _x * cellPixelSize
-          const imageObject: p5.Image = imageFromPath(img)
-          const yPosition = y - imageObject.height
-          sketch.image(imageObject, xPosition, yPosition)
-          if (message && message.time > currentTime(sketch)) messagesToDraw.push({ message: message.text, x: xPosition, y: yPosition })
-        })
-      })
+    drawBackground(sketch)
+    currentVisualStates(evaluation).forEach(visual => {
+      drawVisual(sketch, visual)
+      const position = canvasPositionOfVisual(sketch, visual)
+      const message: VisualMessage | undefined = visual.message
+      if (message && message.time > currentTime(sketch)) messagesToDraw.push({ message: message.text, x: position.x, y: position.y })
     })
     messagesToDraw.forEach(drawMessage(sketch))
   }

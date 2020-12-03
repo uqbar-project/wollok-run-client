@@ -1,8 +1,7 @@
 import fs from 'fs'
-import { boardToLayers } from '../components/game/utils'
 import { buildEnvironment, interpret, Evaluation, Id } from 'wollok-ts/dist'
 import wre from 'wollok-ts/dist/wre/wre.natives'
-import { nextBoard, currentVisualStates, VisualState, currentSoundStates, SoundState, flushEvents, canvasResolution } from '../components/game/GameStates'
+import { VisualState, currentSoundStates, SoundState, flushEvents, canvasResolution, currentVisualStates } from '../components/game/GameStates'
 import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import { wKeyCode, buildKeyPressEvent, queueGameEvent } from '../components/game/SketchUtils'
 import { buildGameProject, GameProject } from '../components/game/gameProject'
@@ -14,34 +13,6 @@ const readFiles = (files: string[]) => files.map(file => ({
 }))
 
 describe('game', () => {
-  const ground1 = { img: 'ground1' }
-  const ground2 = { img: 'ground2' }
-  const pepita2 = { img: 'pepita2' }
-  const pepita3 = { img: 'pepita3' }
-
-  const board = [
-    [[ground1], [ground1, pepita2], [ground1]],
-    [[ground2], [ground2, pepita2, pepita3], [ground2]],
-  ]
-
-  test('board to layers', () => {
-    const layers = boardToLayers(board)
-    expect(layers).toEqual([
-      [
-        [ground1, ground1, ground1],
-        [ground2, ground2, ground2],
-      ],
-      [
-        [undefined, pepita2, undefined],
-        [undefined, pepita2, undefined],
-      ],
-      [
-        undefined,
-        [undefined, pepita3, undefined],
-      ],
-    ])
-  })
-
   const gameTest = (testName: string, gameProgramFile: string, gameFiles: string[], cbTest: (evaluation: Evaluation) => void) => {
     const environment = buildEnvironment(readFiles(gameFiles))
     const { buildEvaluation, runProgram } = interpret(environment, wre)
@@ -50,19 +21,18 @@ describe('game', () => {
     it(testName, () => cbTest(evaluation))
   }
 
-  gameTest('a visual outside of the canvas should not be drawn', 'gameTest', ['games/gameTest.wpgm'], (evaluation) => {
-    const [[visuals]] = nextBoard(evaluation)
-    expect(visuals).toContainEqual({ img: 'in.png' })
-    expect(visuals).not.toContainEqual({ img: 'out.png' })
-  })
-
   gameTest('visualStates', 'pepita', ['games/pepita.wpgm'], (evaluation) => {
     const pepitaState: VisualState = currentVisualStates(evaluation)[0]
     expect(pepitaState).toStrictEqual({
       image: 'pepita.png',
-      position: { x: 1, y: -1 },
+      position: { x: 1, y: 1 },
       message: undefined,
     })
+  })
+
+  gameTest('a visual outside of the canvas should be drawn', 'gameTest', ['games/gameTest.wpgm'], (evaluation) => {
+    const visuals = currentVisualStates(evaluation)
+    expect(visuals.map(({ image }) => ({ image }))).toContainEqual({ image: 'out.png' })
   })
 
   gameTest('soundStates', 'sounds', ['games/sounds.wpgm'], (evaluation) => {
@@ -78,7 +48,7 @@ describe('game', () => {
 
   gameTest('flushEvents', 'pepita', ['games/pepita.wpgm'], (evaluation) => {
     const pepitaState: VisualState = currentVisualStates(evaluation)[0]
-    expect(pepitaState.position).toStrictEqual({ x: 1, y: -1 })
+    expect(pepitaState.position).toStrictEqual({ x: 1, y: 1 })
     flushEvents(evaluation, 101)
     const newPepitaState: VisualState = currentVisualStates(evaluation)[0]
     expect(newPepitaState.position).toStrictEqual({ x: 0, y: 0 })
