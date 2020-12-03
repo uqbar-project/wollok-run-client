@@ -30,6 +30,11 @@ describe('game', () => {
     })
   })
 
+  gameTest('a visual outside of the canvas should be drawn', 'gameTest', ['games/gameTest.wpgm'], (evaluation) => {
+    const visuals = currentVisualStates(evaluation)
+    expect(visuals.map(({ image }) => ({ image }))).toContainEqual({ image: 'out.png' })
+  })
+
   gameTest('soundStates', 'sounds', ['games/sounds.wpgm'], (evaluation) => {
     const soundState: SoundState = currentSoundStates(evaluation)[0]
     expect(soundState).toStrictEqual({
