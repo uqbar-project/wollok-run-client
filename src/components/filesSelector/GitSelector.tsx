@@ -63,7 +63,7 @@ const GitSelector = (props: SelectorProps) => {
       <form onSubmit={event => { event.preventDefault(); navigateToGame() }}>
         <div>
           <label>Pegá la URL del repositorio del juego a correr</label>
-          <input type='text' placeholder='https://github.com/wollok/pepitagame' onChange={event => setGitUrl(event.target.value)} />
+          <input type='text' placeholder='https://github.com/wollok/pepitagame' onChange={event => setGitUrl(event.target.value)} required />
         </div>
         <button type='submit'>Cargar Juego</button>
       </form>
