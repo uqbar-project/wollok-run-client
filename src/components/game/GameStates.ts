@@ -84,10 +84,10 @@ const getVisualPosition = (visual: RuntimeObject) => (evaluation: Evaluation) =>
   }
   const wx: RuntimeObject = evaluation.instance(position.get('x')!.id)
   wx.assertIsNumber()
-  const x: number = wx.innerValue
+  const x: number = Math.trunc(wx.innerValue)
   const wy: RuntimeObject = evaluation.instance(position.get('y')!.id)
   wy.assertIsNumber()
-  const y: number = wy.innerValue
+  const y: number = Math.trunc(wy.innerValue)
 
   return { x, y }
 }

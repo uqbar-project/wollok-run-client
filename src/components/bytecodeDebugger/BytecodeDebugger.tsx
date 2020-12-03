@@ -20,7 +20,7 @@ const layoutConfiguration = {
   global: {
     tabEnableClose: false,
     tabEnableRename: false,
-    tabSetEnableTabStrip:false,
+    tabSetEnableTabStrip: false,
   },
   borders: [
     {
@@ -52,7 +52,7 @@ const layoutConfiguration = {
 }
 
 const className = (originalName: string) => {
-  switch(originalName) {
+  switch (originalName) {
     case 'flexlayout__tab':
       return classNames(originalName, $.panel)
     case 'flexlayout__splitter':
@@ -69,7 +69,7 @@ const className = (originalName: string) => {
 }
 
 const componentForNode = (node: TabNode) => {
-  switch(node.getComponent()) {
+  switch (node.getComponent()) {
     case 'FrameStack': return <FrameStack />
     case 'Details': return <Details />
     case 'Contexts': return <ContextSearchList />
@@ -78,18 +78,18 @@ const componentForNode = (node: TabNode) => {
   }
 }
 
-const BytecodeDebugger = ({}: RouteComponentProps) => {
+const BytecodeDebugger = ({ }: RouteComponentProps) => {
   const [layout] = useState(LayoutModel.fromJson(layoutConfiguration))
   const [debugTarget, setDebugTarget] = useState<DebugTarget>()
 
-  if(!debugTarget) return (
-    <LoadScreen setDebugTarget={setDebugTarget}/>
+  if (!debugTarget) return (
+    <LoadScreen setDebugTarget={setDebugTarget} />
   )
 
   return (
     <LayoutContextProvider layout={layout}>
       <EvaluationContextProvider {...debugTarget}>
-        <Layout model={layout} factory={componentForNode} classNameMapper={className}/>
+        <Layout model={layout} factory={componentForNode} classNameMapper={className} />
       </EvaluationContextProvider>
     </LayoutContextProvider>
   )

@@ -8,10 +8,13 @@
   font-size: inherit;
   line-height: inherit;
   outline: none;
+  
 }
 
 html {
   font-size: $base-font-size;
+  background-color: $color-background-primary;
+  color:white;
 }
 
 #root > div {

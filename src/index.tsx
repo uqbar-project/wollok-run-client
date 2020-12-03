@@ -1,4 +1,4 @@
-import { Redirect, Router } from '@reach/router'
+import { Router } from '@reach/router'
 import whyDidYouRender from '@welldone-software/why-did-you-render'
 import 'rc-tooltip/assets/bootstrap_white.css'
 import React from 'react'
@@ -11,6 +11,7 @@ import * as serviceWorker from './serviceWorker'
 import BytecodeDebugger from './components/bytecodeDebugger/BytecodeDebugger'
 import { createMuiTheme } from '@material-ui/core/styles'
 import { ThemeProvider } from '@material-ui/core/styles'
+import { Home } from './components/Home/Home'
 
 const wollokTheme = createMuiTheme({
   palette: {
@@ -27,7 +28,7 @@ const Routes = () => (
       <Worksheet path='/worksheet' />
       <Game path='/game' />
       <BytecodeDebugger path='/debugger' />
-      <Redirect from='/' to='/worksheet' default noThrow />
+      <Home path='/' />
     </Router>
   </ThemeProvider>
 )

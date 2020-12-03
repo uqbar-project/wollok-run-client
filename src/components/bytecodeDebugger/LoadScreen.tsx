@@ -29,20 +29,18 @@ const LoadScreen = ({ setDebugTarget }: LoadScreenProps) => {
 
 
   return (
-    <div className={$.container}>
-      {!tests
-        ? <FilesSelector onFilesLoad={onFilesLoad} />
-        : (
-          <div>
-            {tests.length} tests found:
-            <ul>
-              {tests?.map(test => (
-                <li key={test.id}><RunIcon onClick={onTestSelected(test.id)} />{test.name}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-    </div>
+    !tests
+      ? <FilesSelector onFilesLoad={onFilesLoad} />
+      : (
+        <div className={$.container}>
+          {tests.length} tests found:
+          <ul>
+            {tests?.map(test => (
+              <li key={test.id}><RunIcon onClick={onTestSelected(test.id)} />{test.name}</li>
+            ))}
+          </ul>
+        </div>
+      )
   )
 }
 
