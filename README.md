@@ -53,6 +53,16 @@ npm start
 > set "REACT_APP_PROXY_URL=http://localhost:8787" &&  npm start
 > ```
 
+#Haciendo un Deploy para producción
+
+Para tener una version lista para deployar en su servidor querido es necesario ejecutar:
+
+```
+REACT_APP_PROXY_URL=https://game.wollok.org/content && npm run build
+```
+
+Eso va a generar una version estática en el directorio build.
+
 ## Alternativa usando Docker
 
 ### TL;DR
