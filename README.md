@@ -58,7 +58,7 @@ npm start
 Para tener una version lista para deployar en su servidor querido es necesario ejecutar:
 
 ```
-REACT_APP_PROXY_URL=https://game.wollok.org/content && npm run build
+REACT_APP_PROXY_URL=https://game.wollok.org/content npm run build
 ```
 
 Eso va a generar una version estática en el directorio build.
