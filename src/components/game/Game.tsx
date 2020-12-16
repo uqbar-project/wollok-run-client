@@ -17,7 +17,7 @@ export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
   const [game, setGame] = useState<GameProject>()
   const [evaluation, setEvaluation] = useState<Evaluation>()
-  const [showReadme, setShowReadme] = useState<boolean>(false)
+  const [showReadme, setShowReadme] = useState<boolean>(true)
   const handleDrawerOpen = () => {
     setShowReadme(!showReadme)
   }
@@ -40,7 +40,6 @@ const Game = (_: GameProps) => {
         <Sketch game={game} evaluation={evaluation} />
         <div><IconButton color='primary' onClick={handleDrawerOpen}> <MenuIcon /> </IconButton></div>
         {showReadme && (<ReactMarkdown source={game.description} className={$.description} />)}
-
       </div>
     </div>
 }
