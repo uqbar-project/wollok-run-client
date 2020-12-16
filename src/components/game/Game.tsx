@@ -18,7 +18,7 @@ const Game = (_: GameProps) => {
   const [game, setGame] = useState<GameProject>()
   const [evaluation, setEvaluation] = useState<Evaluation>()
   const [showReadme, setShowReadme] = useState<boolean>(true)
-  const handleDrawerOpen = () => {
+  const handleReadme = () => {
     setShowReadme(!showReadme)
   }
 
@@ -38,7 +38,7 @@ const Game = (_: GameProps) => {
     : <div className={$.container}>
       <div>
         <Sketch game={game} evaluation={evaluation} />
-        <div><IconButton color='primary' onClick={handleDrawerOpen}> <MenuIcon /> </IconButton></div>
+        <div><IconButton color='primary' onClick={handleReadme}> <MenuIcon /> </IconButton></div>
         {showReadme && (<ReactMarkdown source={game.description} className={$.description} />)}
       </div>
     </div>
