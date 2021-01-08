@@ -1,5 +1,4 @@
-import { Evaluation, interpret, WRENatives } from 'wollok-ts'
-import { RuntimeObject, TRUE_ID } from 'wollok-ts/dist/interpreter'
+import { Evaluation, RuntimeObject } from 'wollok-ts'
 import { Id } from 'wollok-ts'
 
 export const io = (evaluation: Evaluation): Id => evaluation.environment.getNodeByFQN('wollok.io.io').id
@@ -34,7 +33,7 @@ function getListFieldValueFrom(wObject: RuntimeObject, evaluation: Evaluation, f
 function getBooleanFieldValueFrom(wObject: RuntimeObject, evaluation: Evaluation, field: string): boolean {
   const fieldInst: RuntimeObject = getInstanceFieldFrom(wObject, evaluation, field)!
   //fieldInst.assertIsBoolean()
-  return fieldInst.id === TRUE_ID
+  return fieldInst === RuntimeObject.boolean(evaluation, true)
 }
 
 export function width(evaluation: Evaluation): number {
@@ -70,22 +69,22 @@ export function gameStop(evaluation: Evaluation): boolean {
 }
 
 export const flushEvents = (evaluation: Evaluation, ms: number): void => {
-  const { sendMessage } = interpret(evaluation.environment, WRENatives)
-  const time = evaluation.createInstance('wollok.lang.Number', ms)
-  sendMessage('flushEvents', mirror(evaluation), time)(evaluation)
+  const time = RuntimeObject.number(evaluation, ms)
+  evaluation.invoke('flushEvents', evaluation.instance(mirror(evaluation)), time)
+  evaluation.stepOut()
 }
 
 const getVisualPosition = (visual: RuntimeObject) => (evaluation: Evaluation) => {
   let position = visual.get('position')
   if (!position) {
-    const { sendMessage } = interpret(evaluation.environment, WRENatives)
-    sendMessage('position', visual.id)(evaluation)
-    position = evaluation.instance(evaluation.currentFrame()!.operandStack.pop()!)
+    evaluation.invoke('position', visual)
+    evaluation.stepOut()
+    position = evaluation.currentFrame!.operandStack.pop()!
   }
-  const wx: RuntimeObject = evaluation.instance(position.get('x')!.id)
+  const wx: RuntimeObject = position.get('x')!
   wx.assertIsNumber()
   const x: number = Math.trunc(wx.innerValue)
-  const wy: RuntimeObject = evaluation.instance(position.get('y')!.id)
+  const wy: RuntimeObject = position.get('y')!
   wy.assertIsNumber()
   const y: number = Math.trunc(wy.innerValue)
 
@@ -93,10 +92,10 @@ const getVisualPosition = (visual: RuntimeObject) => (evaluation: Evaluation) =>
 }
 
 const getVisualImage = (visual: RuntimeObject) => (evaluation: Evaluation): string => {
-  if (visual.module().lookupMethod('image', 0)) {
-    const { sendMessage } = interpret(evaluation.environment, WRENatives)
-    sendMessage('image', visual.id)(evaluation)
-    const wImage: RuntimeObject = evaluation.instance(evaluation.currentFrame()!.operandStack.pop()!)
+  const method = visual.module.lookupMethod('image', 0)
+  if (method) {
+    evaluation.invoke(method, visual)
+    const wImage: RuntimeObject = evaluation.currentFrame!.operandStack.pop()!
     wImage.assertIsString()
     return wImage.innerValue
   } else {

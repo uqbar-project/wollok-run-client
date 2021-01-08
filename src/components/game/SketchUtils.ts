@@ -1,4 +1,4 @@
-import { Evaluation, Id, interpret, WRENatives } from 'wollok-ts'
+import { Evaluation, Id, RuntimeObject } from 'wollok-ts'
 import { io } from './GameStates'
 
 export function wKeyCode(keyName: string, keyCode: number): string { //These keyCodes correspond to http://keycode.info/
@@ -20,12 +20,12 @@ export function wKeyCode(keyName: string, keyCode: number): string { //These key
 }
 
 export function buildKeyPressEvent(evaluation: Evaluation, keyCode: string): Id {
-  const eventType = evaluation.createInstance('wollok.lang.String', 'keypress')
-  const wKey = evaluation.createInstance('wollok.lang.String', keyCode)
-  return evaluation.createInstance('wollok.lang.List', [eventType, wKey])
+  const eventType = RuntimeObject.string(evaluation, 'keypress')
+  const wKey = RuntimeObject.string(evaluation, keyCode)
+  return RuntimeObject.list(evaluation, [eventType.id, wKey.id]).id
 }
 
 export function queueGameEvent(evaluation: Evaluation, eventId: string): void {
-  const { sendMessage } = interpret(evaluation.environment, WRENatives)
-  sendMessage('queueEvent', io(evaluation), eventId)(evaluation)
+  evaluation.invoke('queueEvent', evaluation.instance(io(evaluation)), evaluation.instance(eventId))
+  evaluation.stepOut()
 }
