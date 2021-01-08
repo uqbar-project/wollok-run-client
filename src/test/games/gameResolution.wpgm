@@ -1,0 +1,8 @@
+import wollok.game.*
+
+program mockGame {
+  game.width(12)
+  game.height(15)
+  game.cellSize(25) //Resolution should be (300,375)
+  game.start()
+}

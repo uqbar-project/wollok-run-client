@@ -63,7 +63,7 @@ const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
 
     function decoration(obj: RuntimeObject) {
       const { id, innerValue, module } = obj
-      const moduleName = module.fullyQualifiedName()
+      const moduleName: string = module.fullyQualifiedName()
 
       if (obj === RuntimeObject.null(evaluation!) || moduleName === 'wollok.lang.Number') return {
         type: 'literal',

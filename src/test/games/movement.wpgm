@@ -1,0 +1,14 @@
+import wollok.game.*
+
+object pepita{
+  var property position = game.at(0,0)
+  method image() = "pepita.png"
+}
+
+program mockGame {
+  game.width(10)
+  game.height(10)
+  game.addVisual(pepita)
+  keyboard.right().onPressDo{pepita.position(game.at(1,1))}
+  game.start()
+}

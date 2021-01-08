@@ -1,70 +1,27 @@
 import p5 from 'p5'
 import p5Types from 'p5'
-import React from 'react'
+import React, { useState } from 'react'
 import Sketch from 'react-p5'
-// import 'p5/lib/addons/p5.sound'
-import { Evaluation, Id, RuntimeObject } from 'wollok-ts'
-import { GameProject } from './Game'
+import 'p5/lib/addons/p5.sound'
+import { Evaluation, Id } from 'wollok-ts'
+import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
+import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, canvasResolution, gameStop, VisualMessage, ground, height, width, VisualState, currentVisualStates } from './GameStates'
+import { GameSound } from './GameSound'
+import { buildKeyPressEvent, queueGameEvent } from './SketchUtils'
+import { Button } from '@material-ui/core'
+import ReplayIcon from '@material-ui/icons/Replay'
+import { DrawableMessage, drawMessage } from './messages'
 
-type Cell = {
-  img: string
-  message?: any
-}
-type Board = Cell[][][]
+const defaultImgs = [
+  'ground.png',
+  'wko.png',
+  'speech.png',
+  'speech2.png',
+  'speech3.png',
+  'speech4.png',
+]
 
-const io = (evaluation: Evaluation) => evaluation.environment.getNodeByFQN('wollok.io.io').id
-
-export const gameInstance = (evaluation: Evaluation): RuntimeObject => {
-  return evaluation.instance(evaluation.environment.getNodeByFQN('wollok.game.game').id)
-}
-
-function gameInstanceField(evaluation: Evaluation, field: string): RuntimeObject {
-  const gameInst: RuntimeObject = gameInstance(evaluation)
-  return evaluation.instance(gameInst.get(field)!.id)
-}
-
-function numberGameFieldValue(evaluation: Evaluation, field: string): number {
-  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)
-  fieldInst.assertIsNumber()
-  return fieldInst.innerValue
-}
-
-function stringGameFieldValue(evaluation: Evaluation, field: string): string {
-  const fieldInst: RuntimeObject = gameInstanceField(evaluation, field)
-  fieldInst.assertIsString()
-  return fieldInst.innerValue
-}
-
-function width(evaluation: Evaluation): number {
-  return numberGameFieldValue(evaluation, 'width')
-}
-
-function height(evaluation: Evaluation): number {
-  return numberGameFieldValue(evaluation, 'height')
-}
-
-function cellSize(evaluation: Evaluation): number {
-  return numberGameFieldValue(evaluation, 'cellSize')
-}
-
-function ground(evaluation: Evaluation): string {
-  return stringGameFieldValue(evaluation, 'ground')
-}
-
-const emptyBoard = (evaluation: Evaluation): Board => {
-  const groundPath = ground(evaluation)
-  return Array.from(Array(height(evaluation)), () =>
-    Array.from(Array(width(evaluation)), () => groundPath ? [{ img: groundPath }] : [])
-  )
-}
-
-const flushEvents = (evaluation: Evaluation, ms: number): void => {
-  const time = RuntimeObject.number(evaluation, ms)
-  evaluation.invoke('flushEvents', evaluation.instance(io(evaluation)), time)
-  evaluation.stepOut()
-}
-
-function wKeyCode(key: string, keyCode: number) {
+function wKeyCode(key: string, keyCode: number): string {
   if (keyCode >= 48 && keyCode <= 57) return `Digit${key}`
   if (keyCode >= 65 && keyCode <= 90) return `Key${key.toUpperCase()}`
   if (keyCode === 18) return 'AltLeft'
@@ -79,52 +36,7 @@ function wKeyCode(key: string, keyCode: number) {
   if (keyCode === 191) return 'Slash'
   if (keyCode === 32) return 'Space'
   if (keyCode === 16) return 'Shift'
-  return undefined
-}
-
-// interface VisualState {
-//   position: {
-//     x: any,
-//     y: any
-//   },
-//   image: any,
-//   message?: any
-// }
-
-const currentVisualStates = (evaluation: Evaluation) => {
-
-  const wVisuals: RuntimeObject = gameInstanceField(evaluation, 'visuals')
-  wVisuals.assertIsCollection()
-  const visuals = wVisuals.innerValue
-  return visuals.map((id: Id) => {
-    const currentFrame = evaluation.frameStack.top!
-    let position = evaluation.instance(id).get('position')
-    if (!position) {
-      evaluation.invoke('position', evaluation.instance(id))
-      evaluation.stepOut()
-      position = evaluation.instance(currentFrame.operandStack.pop()!.id)
-    }
-    const wx: RuntimeObject = evaluation.instance(position.get('x')!.id)
-    wx.assertIsNumber()
-    const x = wx.innerValue
-    const wy: RuntimeObject = evaluation.instance(position.get('y')!.id)
-    wy.assertIsNumber()
-    const y = wy.innerValue
-
-    evaluation.invoke('image', evaluation.instance(id))
-    evaluation.stepOut()
-    const wImage: RuntimeObject = evaluation.instance(currentFrame.operandStack.pop()!.id)
-    wImage.assertIsString()
-    const image = wImage.innerValue
-    const actor = evaluation.instance(id)
-    const wMessage: RuntimeObject | undefined = actor.get('message')
-    const wMessageTime: RuntimeObject | undefined = actor.get('messageTime')
-    // wMessage?.assertIsString()
-    const text = wMessage ? wMessage.innerValue : undefined
-    const message = text ? { text, time: wMessageTime ? wMessageTime.innerValue : undefined } : undefined
-    return { position: { x, y }, image, message }
-  })
-
+  return '' //If an unknown key is pressed, a string should be returned
 }
 
 interface SketchProps {
@@ -132,89 +44,166 @@ interface SketchProps {
   evaluation: Evaluation
 }
 
-const SketchComponent = ({ game, evaluation }: SketchProps) => {
+const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
+  const [stop, setStop] = useState(false)
   const imgs: { [id: string]: p5.Image } = {}
-  let board: Board
-
+  let evaluation = e.copy()
 
   const draw = (sketch: p5Types) => {
-    if (!evaluation) return
     flushEvents(evaluation, currentTime(sketch))
-    updateBoard()
+    checkStop()
+    syncSounds()
+    playSounds()
     drawBoard(sketch)
   }
 
-  const canvasResolution = () => {
-    const cellPixelSize = cellSize(evaluation)
-
-    const pixelWidth = width(evaluation) * cellPixelSize
-    const pixelHeight = height(evaluation) * cellPixelSize
-
-    return {
-      x: pixelWidth,
-      y: pixelHeight,
-    }
-  }
-
   const setup = (sketch: p5Types, canvasParentRef: any) => {
-    const resolution = canvasResolution()
+    const resolution = canvasResolution(evaluation)
 
     sketch.createCanvas(resolution.x, resolution.y).parent(canvasParentRef)
     loadImages(sketch)
   }
 
   function loadImages(sketch: p5Types) {
-    game.imagePaths.forEach((path: string) => {
-      imgs[path.split('/').pop()!] = sketch.loadImage(game.assetSource + path)
+    defaultImgs.forEach((path: string) => {
+      imgs[path] = sketch.loadImage(DEFAULT_GAME_ASSETS_DIR + path)
+    })
+    game.images.forEach(({ possiblePaths, url }) => {
+      const loadedImage = sketch.loadImage(url)
+      possiblePaths.forEach((path: string) => imgs[path] = loadedImage)
     })
   }
 
-  function updateBoard() {
-    const current = JSON.stringify(board)
-    const next = emptyBoard(evaluation)
-    for (const { position: { x, y }, image, message } of currentVisualStates(evaluation)) {
-      next[y][x].push({ img: `${image}`, message })
+  function imageFromPath(path: string): p5.Image {
+    return imgs[path] ?? imgs['wko.png']
+  }
+
+  function drawFullBackgroundImage(sketch: p5) {
+    sketch.image(imageFromPath(boardGround(evaluation)!), 0, 0, sketch.width, sketch.height)
+  }
+
+  function drawGroundBackground(sketch: p5) {
+    const groundPath = ground(evaluation)
+    const gameWidth = width(evaluation)
+    const gameHeigth = height(evaluation)
+    let x: number
+    let y: number
+    for (x = 0; x < gameWidth; x++) {
+      for (y = 0; y < gameHeigth; y++) {
+        const position = { x, y }
+        drawVisual(sketch, { position, image: groundPath })
+      }
     }
-    if (JSON.stringify(next) !== current) board = next
   }
 
-  function drawBoard(sketch: p5) { // TODO: Draw by layer, not cell
-    const cellPixelSize = cellSize(evaluation)
+  function drawBackground(sketch: p5) {
+    const boardGroundPath = boardGround(evaluation)
+    if (boardGroundPath)
+      drawFullBackgroundImage(sketch)
+    else
+      drawGroundBackground(sketch)
+  }
 
-    board.forEach((row, _y) => {
-      const y = sketch.height - _y * cellPixelSize
-      row.forEach((cell, _x) => {
-        const x = _x * cellPixelSize
-        cell.forEach(({ img, message }) => {
-          const imageObject = imgs[img]
-          const yPosition = y - imageObject.height
-          sketch.image(imageObject, x, yPosition)
-          if (message && message.time > currentTime(sketch)) sketch.text(message.text, x, yPosition)
-        })
-      })
+  function checkStop() {
+    if (gameStop(evaluation)) {
+      setStop(true)
+    }
+  }
+
+  function restart() {
+    evaluation = e.copy()
+    setStop(false)
+  }
+
+  const loadedSounds: Map<Id, GameSound> = new Map()
+
+  function playSounds() {
+    [...loadedSounds.values()].forEach((sound: GameSound) => sound.playSound())
+  }
+
+  function syncSounds() {
+    removeUnusedLoadedSounds()
+    updateSounds()
+  }
+
+  function updateSounds() {
+    currentSoundStates(evaluation).forEach((soundState: SoundState) => {
+      if (!loadedSounds.has(soundState.id)) {
+        addSoundFromSoundState(soundState)
+      }
+
+      const loadedSound: GameSound = loadedSounds.get(soundState.id)!
+      loadedSound.update(soundState)
     })
+  }
+
+  function getSoundUrlFromFileName(fileName: string): string | undefined {
+    return game.sounds.find(({ possiblePaths }) => possiblePaths.includes(fileName))?.url
+  }
+
+  function addSoundFromSoundState(soundState: SoundState) {
+    loadedSounds.set(soundState.id, new GameSound(soundState, getSoundUrlFromFileName(soundState.file)!)) //TODO add soundfile not found exception
+  }
+
+  function removeUnusedLoadedSounds() {
+    const soundIdsBeingUsed: Id[] = currentSoundStates(evaluation).map((soundState: SoundState) => soundState.id)
+    const unusedSoundIds: Id[] = [...loadedSounds.keys()].filter((id: Id) => !soundIdsBeingUsed.includes(id))
+    unusedSoundIds.forEach((unusedId: Id) => {
+      loadedSounds.get(unusedId)?.stopSound()
+      loadedSounds.delete(unusedId)
+    })
+  }
+
+  function canvasPositionOfVisual(sketch: p5, visual: VisualState) {
+    const cellPixelSize = cellSize(evaluation)
+    const gamePosition = visual.position
+    const y = sketch.height - gamePosition.y * cellPixelSize
+    const xPosition = gamePosition.x * cellPixelSize
+    const imageObject: p5.Image = imageFromPath(visual.image)
+    const yPosition = y - imageObject.height
+    return { x: xPosition, y: yPosition }
+  }
+
+  function drawVisual(sketch: p5, visual: VisualState) {
+    const position = canvasPositionOfVisual(sketch, visual)
+    sketch.image(imageFromPath(visual.image), position.x, position.y)
+  }
+
+  function drawBoard(sketch: p5) {
+    const messagesToDraw: DrawableMessage[] = []
+    drawBackground(sketch)
+    currentVisualStates(evaluation).forEach(visual => {
+      drawVisual(sketch, visual)
+      const position = canvasPositionOfVisual(sketch, visual)
+      const message: VisualMessage | undefined = visual.message
+      if (message && message.time > currentTime(sketch)) messagesToDraw.push({ message: message.text, x: position.x, y: position.y })
+    })
+    messagesToDraw.forEach(drawMessage(sketch))
   }
 
   function currentTime(sketch: p5) { return sketch.millis() }
 
-  function queueGameEvent(eventId: string) {
-    evaluation.invoke('queueEvent', evaluation.instance( io(evaluation)), evaluation.instance(eventId))
-    evaluation.stepOut()
-  }
-
   function keyPressed(sketch: p5) {
-    const left = RuntimeObject.string(evaluation, 'keypress')
-    const keyPressedCode = RuntimeObject.string(evaluation, wKeyCode(sketch.key, sketch.keyCode) ?? '')
-    const anyKeyCode =  RuntimeObject.string(evaluation, 'ANY')
-    const keyPressed =  RuntimeObject.list(evaluation, [left.id, keyPressedCode.id])
-    const anyKeyPressed = RuntimeObject.list(evaluation, [left.id, anyKeyCode.id])
+    const keyPressedEvent = buildKeyPressEvent(evaluation, wKeyCode(sketch.key, sketch.keyCode))
+    const anyKeyPressedEvent = buildKeyPressEvent(evaluation, 'ANY')
 
-    queueGameEvent(keyPressed.id)
-    queueGameEvent(anyKeyPressed.id)
+    queueGameEvent(evaluation, keyPressedEvent)
+    queueGameEvent(evaluation, anyKeyPressedEvent)
+
     return false
   }
 
-  return <Sketch setup={setup as any} draw={draw as any} keyPressed={keyPressed as any} />
+  return <div>
+    {stop ?
+      <h1>Se terminó el juego</h1>
+      : <Sketch setup={setup as any} draw={draw as any} keyPressed={keyPressed as any} />}
+    <RestartButton restart={restart} />
+  </div>
 }
 
 export default SketchComponent
+
+type RestartProps = { restart: () => void }
+export function RestartButton(props: RestartProps) {
+  return <Button onClick={event => { event.preventDefault(); props.restart() }} variant="contained" color="primary" startIcon={<ReplayIcon />}>Reiniciar el juego</Button>
+}

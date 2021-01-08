@@ -1,0 +1,10 @@
+import wollok.game.*
+
+program mockGame {
+  game.width(10)
+  game.height(10)
+  const sound = game.sound("sound.mp3")
+  sound.volume(1)
+  game.start()
+  sound.play()
+}

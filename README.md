@@ -1,44 +1,95 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Wollok Web Client
 
-## Available Scripts
+Este es un proyecto _en construcción_ para desarrollar herramientas web del lenguaje [Wollok](https://www.wollok.org/). Usa la implementación de [Wollok-TS](https://github.com/uqbar-project/wollok-ts) como core del lenguaje.
 
-In the project directory, you can run:
+Actualmente cuenta con las siguientes implementaciones:
 
-### `npm start`
+- **Game** Una interfaz para correr juegos hechos con Wollok Game.
+- **Debugger** Una forma de correr tests y poder ejecutar _paso a paso_ viendo el estado de la WVM.
+- **Worksheet** Un pseudo IDE con un editor, consola y diagrama dinámico.
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Dónde ver el proyecto andando
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+El proyecto se encuentra deployado en `https://server.wollok.org` en donde se encuentra:
 
-### `npm test`
+- **Worksheet**: https://game.wollok.org/worksheet
+- **Debugger**: https://game.wollok.org/debugger
+- **Game**: Probar un Wollok Game desde la web: https://server.wollok.org/game  
+  - Por ejemplo: https://game.wollok.org/game?git=https://github.com/wollok/elJuegoDePepita
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `npm run build`
+## ¿Cómo levantar la app?
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+En primer lugar, asegurarse de tener instalado node >= 11.
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+Luego hay que bajar las dependencias con el comando:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```
+npm install
+```
 
-### `npm run eject`
+La app está desarrollada sobre [ReactJS](https://reactjs.org/) y , como buen proyecto `npm`, para levantarla hay que ejecutar el comando
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```
+npm start
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+> ¡Atención! Para usar Wollok Game y poder clonarse proyectos desde github es necesario levantar además un proxy por _CORS_.
+> Para eso, ejecutar desde otra consola
+>
+> ```
+> npm run cors
+> ```
+>
+> El server se levantará por default en la ruta `http://localhost:9999`
+>
+> Para configurar la ruta del proxy hay que cambiar la variable de entorno `REACT_APP_PROXY_URL`. Por ejemplo para levantar la app con una ruta de proxy customizada se puede hacer
+> 
+> ```
+> # Linux
+> REACT_APP_PROXY_URL=http://localhost:8787 npm start
+> 
+> # Windows
+> set "REACT_APP_PROXY_URL=http://localhost:8787" &&  npm start
+> ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Haciendo un Deploy para producción
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Para tener una version lista para deployar en su servidor querido es necesario ejecutar:
 
-## Learn More
+```
+REACT_APP_PROXY_URL=https://game.wollok.org/content npm run build
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Eso va a generar una version estática en el directorio build.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Alternativa usando Docker
+
+### TL;DR
+
+Simplemente ejecutar
+
+```
+./compose.sh dev up
+```
+
+Y eso pone en funcionamiento todos los servicios necesarios.
+
+Esta aplicación ha sido desarrollada usando
+
+- Docker version 19.03.11, build dd360c7
+- docker-compose version 1.25.5, build unknown
+
+### Quiero entender qué pasa
+
+Toda la configuración para levantar los servicios docker, está en los archivos `docker-compose*.yml`.
+El script `compose` es simplemente un helper para elegir los archivos adecuados, que siempre son dos (uno de base y otro específico del ambiente dev o prod según corresponda).
+
+Ejecutar
+
+```
+./compose.sh prod up
+```
+
+Va a levantar los mismos servicios pero en modo producción, corriendo el build de react-cra en modo optimizado y poniendo el build resultante en una imagen donde la sirve un nginx.
+Usando este comando es posible levantarlo localmente en las mismas exactas condiciones que se ejecutará en producción (aunque para desarrollar sería muy incómodo).
