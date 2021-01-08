@@ -3,8 +3,7 @@ import p5Types from 'p5'
 import React from 'react'
 import Sketch from 'react-p5'
 // import 'p5/lib/addons/p5.sound'
-import { Evaluation, Id, interpret, WRENatives } from 'wollok-ts'
-import { RuntimeObject } from 'wollok-ts/dist/interpreter'
+import { Evaluation, Id, RuntimeObject } from 'wollok-ts'
 import { GameProject } from './Game'
 
 type Cell = {
@@ -60,9 +59,9 @@ const emptyBoard = (evaluation: Evaluation): Board => {
 }
 
 const flushEvents = (evaluation: Evaluation, ms: number): void => {
-  const { sendMessage } = interpret(evaluation.environment, WRENatives)
-  const time = evaluation.createInstance('wollok.lang.Number', ms)
-  sendMessage('flushEvents', io(evaluation), time)(evaluation)
+  const time = RuntimeObject.number(evaluation, ms)
+  evaluation.invoke('flushEvents', evaluation.instance(io(evaluation)), time)
+  evaluation.stepOut()
 }
 
 function wKeyCode(key: string, keyCode: number) {
@@ -93,17 +92,17 @@ function wKeyCode(key: string, keyCode: number) {
 // }
 
 const currentVisualStates = (evaluation: Evaluation) => {
-  const { sendMessage } = interpret(evaluation.environment, WRENatives)
 
   const wVisuals: RuntimeObject = gameInstanceField(evaluation, 'visuals')
   wVisuals.assertIsCollection()
   const visuals = wVisuals.innerValue
   return visuals.map((id: Id) => {
-    const currentFrame = evaluation.currentFrame()!
+    const currentFrame = evaluation.frameStack.top!
     let position = evaluation.instance(id).get('position')
     if (!position) {
-      sendMessage('position', id)(evaluation)
-      position = evaluation.instance(currentFrame.operandStack.pop()!)
+      evaluation.invoke('position', evaluation.instance(id))
+      evaluation.stepOut()
+      position = evaluation.instance(currentFrame.operandStack.pop()!.id)
     }
     const wx: RuntimeObject = evaluation.instance(position.get('x')!.id)
     wx.assertIsNumber()
@@ -112,8 +111,9 @@ const currentVisualStates = (evaluation: Evaluation) => {
     wy.assertIsNumber()
     const y = wy.innerValue
 
-    sendMessage('image', id)(evaluation)
-    const wImage: RuntimeObject = evaluation.instance(currentFrame.operandStack.pop()!)
+    evaluation.invoke('image', evaluation.instance(id))
+    evaluation.stepOut()
+    const wImage: RuntimeObject = evaluation.instance(currentFrame.operandStack.pop()!.id)
     wImage.assertIsString()
     const image = wImage.innerValue
     const actor = evaluation.instance(id)
@@ -198,19 +198,19 @@ const SketchComponent = ({ game, evaluation }: SketchProps) => {
   function currentTime(sketch: p5) { return sketch.millis() }
 
   function queueGameEvent(eventId: string) {
-    const { sendMessage } = interpret(evaluation.environment, WRENatives)
-    sendMessage('queueEvent', io(evaluation), eventId)(evaluation)
+    evaluation.invoke('queueEvent', evaluation.instance( io(evaluation)), evaluation.instance(eventId))
+    evaluation.stepOut()
   }
 
   function keyPressed(sketch: p5) {
-    const left = evaluation.createInstance('wollok.lang.String', 'keypress')
-    const keyPressedCode = evaluation.createInstance('wollok.lang.String', wKeyCode(sketch.key, sketch.keyCode))
-    const anyKeyCode = evaluation.createInstance('wollok.lang.String', 'ANY')
-    const keyPressedId = evaluation.createInstance('wollok.lang.List', [left, keyPressedCode])
-    const anyKeyPressedId = evaluation.createInstance('wollok.lang.List', [left, anyKeyCode])
+    const left = RuntimeObject.string(evaluation, 'keypress')
+    const keyPressedCode = RuntimeObject.string(evaluation, wKeyCode(sketch.key, sketch.keyCode) ?? '')
+    const anyKeyCode =  RuntimeObject.string(evaluation, 'ANY')
+    const keyPressed =  RuntimeObject.list(evaluation, [left.id, keyPressedCode.id])
+    const anyKeyPressed = RuntimeObject.list(evaluation, [left.id, anyKeyCode.id])
 
-    queueGameEvent(keyPressedId)
-    queueGameEvent(anyKeyPressedId)
+    queueGameEvent(keyPressed.id)
+    queueGameEvent(anyKeyPressed.id)
     return false
   }
 

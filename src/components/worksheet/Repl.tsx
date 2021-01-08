@@ -2,8 +2,7 @@ import React, { KeyboardEvent, memo, useState } from 'react'
 import Slider from 'react-input-slider'
 import SimpleCodeEditor from 'react-simple-code-editor'
 import Splitter from 'react-splitter-layout'
-import { WRENatives, build, Environment, Evaluation, fill, interpret, link, List, parse, Sentence } from 'wollok-ts'
-import { RuntimeObject, VOID_ID } from 'wollok-ts/dist/interpreter'
+import { WRENatives, build, Environment, Evaluation, fill, link, List, parse, Sentence, RuntimeObject } from 'wollok-ts'
 import $ from './Repl.module.scss'
 
 
@@ -64,20 +63,21 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
       const newOutputs = environmentsPerLine.map(environment => {
         if (!environment) return undefined
 
-        const { buildEvaluation, stepAll, sendMessage } = interpret(environment, WRENatives)
-        const evaluation = buildEvaluation()
-        stepAll(evaluation)
+        const evaluation = Evaluation.create(environment, WRENatives)
 
-        sendMessage('apply', environment.getNodeByFQN<'Singleton'>('worksheet.main.repl').id)(evaluation)
-        const response = evaluation.currentFrame()!.popOperand()
+        evaluation.invoke('apply', evaluation.instance(environment.getNodeByFQN<'Singleton'>('worksheet.main.repl').id))
+        evaluation.stepOut()
+
+        const response = evaluation.frameStack.top!.operandStack.pop()
 
         let description: string
-        if (response !== VOID_ID) {
-          sendMessage('toString', response)(evaluation)
-          const wDescription: RuntimeObject = evaluation.instance(evaluation.currentFrame()!.popOperand())
+        if (response) {
+          evaluation.invoke('toString', response)
+          evaluation.stepOut()
+          const wDescription: RuntimeObject = evaluation.frameStack.top!.operandStack.pop()!
           wDescription.assertIsString()
           description = wDescription.innerValue
-        } else description = response
+        } else description = 'void'
 
         return { description, evaluation }
       })

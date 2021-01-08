@@ -3,8 +3,7 @@ import * as BrowserFS from 'browserfs'
 import * as git from 'isomorphic-git'
 import React, { memo, useEffect, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { buildEnvironment, Evaluation, interpret } from 'wollok-ts/dist'
-import { Natives } from 'wollok-ts/dist/interpreter'
+import { buildEnvironment, compile, Evaluation, Frame, Natives } from 'wollok-ts/dist'
 import wre from 'wollok-ts/dist/wre/wre.natives'
 import Spinner from '../Spinner'
 import $ from './Game.module.scss'
@@ -55,9 +54,11 @@ const Game = (props: GameProps) => {
       const environment = buildEnvironment(files)
       const programWollokFile = environment.getNodeByFQN<'Package'>(`${project.main}`)
       const mainWollokProgramName = programWollokFile.members[0].name
-      const { buildEvaluation, runProgram } = interpret(environment, natives)
-      const cleanEval = buildEvaluation()
-      runProgram(`${project.main}.${mainWollokProgramName}`, cleanEval)
+      const cleanEval = Evaluation.create(environment, natives)
+
+      const program = environment.getNodeByFQN(`${project.main}.${mainWollokProgramName}`)
+      cleanEval.pushFrame(new Frame(cleanEval.currentContext, compile(program)))
+
       setGame(project)
       setEvaluation(cleanEval)
     })

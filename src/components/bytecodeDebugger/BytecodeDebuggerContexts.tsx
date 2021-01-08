@@ -1,7 +1,7 @@
 import React, { createContext, useState, ReactNode, Dispatch } from 'react'
-import { Evaluation, interpret, List, Environment, Id as IdType, WRENatives } from 'wollok-ts'
-import { Frame, compile, ROOT_CONTEXT_ID } from 'wollok-ts/dist/interpreter'
+import { Evaluation, List, Environment, Id as IdType, WRENatives, Name, RuntimeObject, Frame, compile, Node, garbageCollect } from 'wollok-ts'
 import { Model as LayoutModel, Actions as LayoutActions } from 'flexlayout-react'
+import { INIT, PUSH } from 'wollok-ts/dist/interpreter/compiler'
 
 const { selectTab } = LayoutActions
 
@@ -13,8 +13,6 @@ const { selectTab } = LayoutActions
 interface LayoutState {
   instanceSearch: string
   setInstanceSearch: Dispatch<string>
-  contextSearch: string
-  setContextSearch: Dispatch<string>
 }
 
 export const LayoutContext = createContext<LayoutState>(undefined as any)
@@ -28,25 +26,15 @@ type LayoutContextProviderProps = {
 export const LayoutContextProvider = ({ children, layout }: LayoutContextProviderProps ) => {
 
   const [instanceSearch, updateInstanceSearch] = useState('')
-  const [contextSearch, updateContextSearch] = useState('')
 
   const setInstanceSearch = (search: string) => {
     updateInstanceSearch(search)
-    const instanceTab = layout.getBorderSet().getBorders()[1].getChildren()[1]
+    const instanceTab = layout.getBorderSet().getBorders()[1].getChildren()[0]
     if(!instanceTab.isVisible()) layout.doAction(selectTab(instanceTab.getId()))
   }
 
-  const setContextSearch = (search: string) => {
-    updateContextSearch(search)
-    const contextTab = layout.getBorderSet().getBorders()[1].getChildren()[0]
-    if(!contextTab.isVisible()) layout.doAction(selectTab(contextTab.getId()))
-  }
-
   return (
-    <LayoutContext.Provider value={{
-      instanceSearch, setInstanceSearch,
-      contextSearch, setContextSearch,
-    }}>
+    <LayoutContext.Provider value={{ instanceSearch, setInstanceSearch }}>
       {children}
     </LayoutContext.Provider>
   )
@@ -66,6 +54,7 @@ interface EvaluationState {
   stepEvaluation(): void
   stepThroughEvaluation(): void
   garbageCollect(): void
+  rootFrameName: Name
 }
 
 export const EvaluationContext = createContext<EvaluationState>(undefined as any)
@@ -78,72 +67,70 @@ type EvaluationContextProviderProps = {
 }
 
 export const EvaluationContextProvider = ({ environment, testId, children }: EvaluationContextProviderProps ) => {
-
-  const { buildEvaluation, step, stepAll, garbageCollect } = interpret(environment, WRENatives)
+  const test = environment.getNodeById<'Test'>(testId)
 
   const [currentEvaluationIndex, setCurrentEvaluationIndex] = useState(0)
   const [evaluationHistory, setEvaluationHistory] = useState(() => {
-    const evaluation = buildEvaluation()
+    const evaluation = Evaluation.create(environment, WRENatives)
 
-    stepAll(evaluation)
-    evaluation.popFrame()
-
-    const test = environment.getNodeById<'Test'>(testId)
-    const describe = test.parent()
-    let parentContext = ROOT_CONTEXT_ID
+    const describe: Node = test.parent()
+    let parentContext = evaluation.rootContext
     if (describe.is('Describe')) {
-      const describeInstanceId = evaluation.createInstance(describe.fullyQualifiedName())
+      const describeInstance = RuntimeObject.object(evaluation, describe as any)
 
-      evaluation.pushFrame(compile(evaluation.environment)(
-        ...describe.variables(),
-        ...describe.fixtures().flatMap(fixture => fixture.body.sentences),
-      ), describeInstanceId)
-      stepAll(evaluation)
-      parentContext = evaluation.currentFrame()!.context
-      evaluation.popFrame()
+      evaluation.pushFrame(new Frame(describeInstance, [
+        PUSH(describeInstance.id),
+        INIT([]),
+        ...describe.fixtures().flatMap(fixture => compile(fixture)),
+      ]))
+      evaluation.stepAll()
+      parentContext = describeInstance
     }
 
-    const instructions = compile(environment)(...test.body.sentences)
-    evaluation.pushFrame(instructions, evaluation.createContext(parentContext))
+    evaluation.frameStack.push(new Frame(parentContext, compile(test)))
 
     return [evaluation]
   })
   const currentEvaluation = evaluationHistory[currentEvaluationIndex]
-  const [selectedFrame, setSelectedFrame] = useState(currentEvaluation.currentFrame())
+  const [selectedFrame, setSelectedFrame] = useState(currentEvaluation.frameStack.top)
 
   const stepEvaluation = () => {
     const next = currentEvaluation.copy()
 
-    try { step(next) }
-    catch (error) { alert(error) }
+    try { next.stepIn() }
+    catch (error) {
+      console.log(error)
+      alert(error)
+    }
 
     setEvaluationHistory([...evaluationHistory.slice(0, currentEvaluationIndex + 1), next])
     setCurrentEvaluationIndex(currentEvaluationIndex + 1)
-    setSelectedFrame(next.currentFrame())
+    setSelectedFrame(next.frameStack.top)
   }
 
   const stepThroughEvaluation = () => {
     const skippedSteps: Evaluation[] = []
-    const startingDepth = currentEvaluation.listFrames().indexOf(selectedFrame!) + 1
+    const startingDepth = [...currentEvaluation.frameStack].indexOf(selectedFrame!) + 1
     let next = currentEvaluation
     do {
       next = next.copy()
       skippedSteps.push(next)
-      try { step(next) }
+      try { next.stepIn() }
       catch (error) {
+        console.log(error)
         alert(error)
         break
       }
-    } while (next.stackDepth() > startingDepth)
+    } while (next.frameStack.depth > startingDepth)
 
     setEvaluationHistory([...evaluationHistory.slice(0, currentEvaluationIndex + 1), ...skippedSteps])
     setCurrentEvaluationIndex(currentEvaluationIndex + skippedSteps.length)
-    setSelectedFrame(next.currentFrame())
+    setSelectedFrame(next.frameStack.top)
   }
 
   const updateCurrentEvaluationIndex = (index: number) => {
     setCurrentEvaluationIndex(index)
-    setSelectedFrame(evaluationHistory[index].currentFrame())
+    setSelectedFrame(evaluationHistory[index].frameStack.top)
   }
 
   const garbageCollectEvaluation = () => {
@@ -151,7 +138,7 @@ export const EvaluationContextProvider = ({ environment, testId, children }: Eva
     garbageCollect(next)
     setEvaluationHistory([...evaluationHistory.slice(0, currentEvaluationIndex + 1), next])
     setCurrentEvaluationIndex(currentEvaluationIndex + 1)
-    setSelectedFrame(next.currentFrame())
+    setSelectedFrame(next.frameStack.top)
   }
 
   return (
@@ -162,6 +149,7 @@ export const EvaluationContextProvider = ({ environment, testId, children }: Eva
       stepEvaluation, stepThroughEvaluation,
       garbageCollect: garbageCollectEvaluation,
       selectedFrame, setSelectedFrame,
+      rootFrameName: test.name,
     }}>
       {children}
     </EvaluationContext.Provider>

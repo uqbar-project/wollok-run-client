@@ -5,7 +5,6 @@ import 'flexlayout-react/style/dark.css'
 import $ from './BytecodeDebugger.module.scss'
 import Details from './Details'
 import classNames from 'classnames'
-import ContextSearchList from './ContextSearchList'
 import InstanceSearchList from './InstanceSearchList'
 import { EvaluationContextProvider, LayoutContextProvider } from './BytecodeDebuggerContexts'
 import FrameStack from './FrameStack'
@@ -30,7 +29,6 @@ const layoutConfiguration = {
     },
     {
       type: 'border', location: 'right', size: 400, children: [
-        { type: 'tab', name: 'Contexts', component: 'Contexts' },
         { type: 'tab', name: 'Instances', component: 'Instances' },
       ],
     },
@@ -72,7 +70,6 @@ const componentForNode = (node: TabNode) => {
   switch(node.getComponent()) {
     case 'FrameStack': return <FrameStack />
     case 'Details': return <Details />
-    case 'Contexts': return <ContextSearchList />
     case 'Instances': return <InstanceSearchList />
     default: return undefined
   }

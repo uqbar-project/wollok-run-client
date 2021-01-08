@@ -1,5 +1,4 @@
 import React, { ReactNode, memo } from 'react'
-import { List } from 'wollok-ts'
 import classNames from 'classnames'
 import $ from './Stack.module.scss'
 import { ScrollTarget } from './Utils'
@@ -14,13 +13,13 @@ export type Stackable = {
 
 
 export type StackProps = {
-  elements: List<Stackable>
+  stack?: Stackable[]
 }
 
-const Stack = ({ elements }: StackProps) => {
+const Stack = ({ stack = [] }: StackProps) => {
   return (
     <div className={$.container}>
-      {elements.map((element, index) => (
+      {stack.map((element, index) => (
         <ScrollTarget
           scrollIntoView={element.selected}
           key={index}

@@ -19,10 +19,11 @@
     "@types/uuid": "^3.4.9",
     "@use-it/event-listener": "^0.1.5",
     "@welldone-software/why-did-you-render": "^3.6.0",
+    "browserfs": "^1.4.3",
+    "cd": "^0.3.3",
     "classnames": "^2.2.6",
     "cytoscape": "^3.15.2",
     "flexlayout-react": "^0.4.6",
-    "browserfs": "^1.4.3",
     "isomorphic-git": "^0.70.8",
     "lz-string": "^1.4.4",
     "node-sass": "^4.14.1",
@@ -42,7 +43,7 @@
     "typescript": "^3.7.5",
     "use-interval": "^1.2.1",
     "uuid": "^3.4.0",
-    "wollok-ts": "^2.1.0"
+    "wollok-ts": "file:../wollok-ts"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -15,10 +15,10 @@ import Context from './Context'
 export type DetailsProp = { }
 
 const Details = ({ }: DetailsProp) => {
-  
+
   const { evaluation, stepThroughEvaluation, setCurrentEvaluationIndex, currentEvaluationIndex, evaluationHistory, stepEvaluation, selectedFrame, garbageCollect } = useContext(EvaluationContext)
 
-  const operandStack = selectedFrame?.operandStack?.map<Stackable>(operand => ({ label: <Id id={operand}/> })) ?? []
+  const operandStack = [...selectedFrame?.operandStack?.map<Stackable>(operand => ({ label: <Id id={operand?.id}/> })) ?? []]
 
   return (
     <div className={$.container}>
@@ -37,10 +37,10 @@ const Details = ({ }: DetailsProp) => {
       <div className={$.details}>
         <Section title='Instructions' contentClassName={$.instructions}>
           {selectedFrame?.instructions?.map((instruction, index) => (
-            <ScrollTarget key={index} scrollIntoView={selectedFrame.nextInstruction === index}>
+            <ScrollTarget key={index} scrollIntoView={selectedFrame.nextInstructionIndex === index}>
               <Instruction
                 instruction={instruction}
-                className={classNames($.instruction, { [$.highlighted]: selectedFrame.nextInstruction === index })}
+                className={classNames($.instruction, { [$.highlighted]: selectedFrame.nextInstructionIndex === index })}
               />
             </ScrollTarget>
           ))}
@@ -48,12 +48,14 @@ const Details = ({ }: DetailsProp) => {
 
         <div>
           <Section title='Operand Stack'>
-            <Stack elements={operandStack}/>
+            <Stack stack={operandStack}/>
           </Section>
           <Section title='Context Hierarchy'>
-            { contextHierarchy(evaluation, selectedFrame?.id).map(context =>
-              <Context key={context.id} context={context}/>
-            )}
+            {
+              contextHierarchy(evaluation, selectedFrame?.context).map(context =>
+                <Context key={context.id} context={context} highlighted={selectedFrame!.baseContext === context}/>
+              )
+            }
           </Section>
         </div>
       </div>

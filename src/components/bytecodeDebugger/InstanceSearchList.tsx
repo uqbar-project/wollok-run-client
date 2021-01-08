@@ -13,14 +13,13 @@ const InstanceSearchList = ({ }: InstanceSearchListProps) => {
   const { evaluation } = useContext(EvaluationContext)
   const { instanceSearch, setInstanceSearch } = useContext(LayoutContext)
 
-  const elements = evaluation.listInstances()
-  const content = elements
-    .filter(element => qualifiedId(element).includes(instanceSearch))
-    .map(element => <Instance instance={element} key={element.id}/>)
+  const content = evaluation.instances
+    .filter(instance => qualifiedId(instance).includes(instanceSearch))
+    .map(instance => <Instance instance={instance} key={instance.id}/>)
 
   return (
     <Section
-      title={`Instances (${content.length}/${elements.length})`}
+      title={`Instances (${content.length}/${evaluation.instances.length})`}
       titleDecoration={<SearchBar search={instanceSearch} setSearch={setInstanceSearch}/>}
       contentClassName={$.content}
     >

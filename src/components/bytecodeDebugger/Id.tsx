@@ -5,16 +5,15 @@ import { EvaluationContext, LayoutContext } from './BytecodeDebuggerContexts'
 import { Id as IdType } from 'wollok-ts'
 import { qualifiedId, shortId, CollapsibleName } from './Utils'
 
-export type IdProps = { id: IdType }
+export type IdProps = { id?: IdType }
 
 const Id = ({ id }: IdProps) => {
   const { evaluation } = useContext(EvaluationContext)
-  const { setContextSearch, setInstanceSearch } = useContext(LayoutContext)
-  const instance = evaluation.maybeInstance(id)
+  const { setInstanceSearch } = useContext(LayoutContext)
+  const instance = id && evaluation.instance(id)
 
   const onClick = () => {
     if(instance) setInstanceSearch(qualifiedId(instance))
-    else setContextSearch(shortId(id))
   }
 
   return (
