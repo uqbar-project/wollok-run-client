@@ -8,7 +8,7 @@ import Game from './components/game/Game'
 import Worksheet from './components/worksheet/Worksheet'
 import './index.scss'
 import * as serviceWorker from './serviceWorker'
-import BytecodeDebugger from './components/bytecodeDebugger/BytecodeDebugger'
+import Debugger from './components/debugger/Debugger'
 import { createMuiTheme } from '@material-ui/core/styles'
 import { ThemeProvider } from '@material-ui/core/styles'
 import { Home } from './components/Home/Home'
@@ -27,7 +27,7 @@ const Routes = () => (
     <Router>
       <Worksheet path='/worksheet' />
       <Game path='/game' />
-      <BytecodeDebugger path='/debugger' />
+      <Debugger path='/debugger' />
       <Home path='/' />
     </Router>
   </ThemeProvider>

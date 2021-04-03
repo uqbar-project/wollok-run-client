@@ -1,35 +1,36 @@
 import React, { memo, useState, Dispatch } from 'react'
-import { buildEnvironment, is, Id as IdType } from 'wollok-ts'
-import { Environment } from 'wollok-ts/dist'
+import { buildEnvironment, is, Id as IdType, Name, List, Test } from 'wollok-ts'
 import { FiPlayCircle as RunIcon } from 'react-icons/fi'
 import $ from './LoadScreen.module.scss'
 import FilesSelector, { File } from '../filesSelector/FilesSelector'
+import { DebuggerState } from './Debugger'
 
-
-export type DebugTarget = { environment: Environment, testId: IdType }
 
 export type LoadScreenProps = {
-  setDebugTarget: Dispatch<DebugTarget>
+  setDebuggerState: Dispatch<DebuggerState>
 }
 
-const LoadScreen = ({ setDebugTarget }: LoadScreenProps) => {
+const LoadScreen = ({ setDebuggerState }: LoadScreenProps) => {
 
-  const [environment, setEnvironment] = useState<Environment | undefined>(undefined)
+  const [files, setFiles] = useState<List<{name: Name, content: string}>>([])
 
-  const tests = environment?.descendants()?.filter(is('Test'))
-
-  const onFilesLoad = async (files: File[]) => {
-    const wollokFiles = files
+  const onFilesLoad = async (files: File[]) => setFiles(
+    files
       .filter(file => file.name.match(/\.(?:wlk|wtest|wpgm)$/))
       .map(({ name, content }) => ({ name, content: content.toString('utf8') }))
-    setEnvironment(buildEnvironment(wollokFiles))
-  }
+  )
 
-  const onTestSelected = (testId: IdType) => () => environment && setDebugTarget({ environment, testId })
+  const environment = buildEnvironment(files)
+  const tests = environment?.descendants()?.filter(is('Test'))
 
+  const onTestSelected = (testId: IdType) => () => setDebuggerState({
+    environment,
+    debuggedNode: environment.getNodeById<Test>(testId),
+    files,
+  })
 
   return (
-    !tests
+    !tests.length
       ? <FilesSelector onFilesLoad={onFilesLoad} />
       : (
         <div className={$.container}>

@@ -1,0 +1,72 @@
+@import "../../theme";
+
+:global(.rc-tree-treenode) {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  
+  span {
+    display: flex;
+    align-items: center;
+  }
+}
+
+:global(.rc-tree-indent-unit) {
+  margin-left: 1em;
+}
+
+:global(.rc-tree-treenode-selected) {
+  background-color: $color-background-editor-highlight;
+}
+
+
+.icon {
+  height: 1.25em;
+  width: 1.25em;
+  margin-right: 0.25em;
+}
+
+
+.iconPackage {
+  fill:$color-node-package;
+}
+
+.iconDescribe {
+  fill: $color-node-test;
+}
+
+.iconTest {
+  fill: $color-node-test;
+}
+
+.iconClass {
+  fill:$color-node-class;
+}
+
+.iconMixin {
+  fill:$color-node-mixin;
+}
+
+.iconSingleton {
+  fill:$color-node-singleton;
+}
+
+.iconMethod {
+  fill: $color-node-method;
+}
+
+.iconField {
+  fill: $color-node-field;
+}
+
+.iconBody {
+  fill: $color-font-main;
+}
+
+.iconSentence {
+  fill:$color-node-sentence;
+}
+
+.iconItem {
+  fill: $color-font-main;
+}
