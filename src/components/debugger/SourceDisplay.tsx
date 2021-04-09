@@ -3,18 +3,26 @@ import Editor from '../worksheet/Editor'
 import { DebuggerContext } from './Debugger'
 import $ from './SourceDisplay.module.scss'
 
-const SourceDisplay = () => {
-  const { debuggedNode, files } = useContext(DebuggerContext)
-  const code = files.find(({ name }) => name === debuggedNode.source?.file)?.content ?? 'Source not available'
-  const highlight = (code: string) => debuggedNode.source
-    ? `${code.slice(0, debuggedNode.source.start.offset)}<b id='current'>${code.slice(debuggedNode.source.start.offset, debuggedNode.source.end.offset)}</b>${code.slice(debuggedNode.source.end.offset)}`
+export type Props = {
+  fileName: string
+}
+
+const SourceDisplay = ({fileName}: Props) => {
+  const { executionDirector, files } = useContext(DebuggerContext)
+  const currentNode = executionDirector.evaluation.currentNode
+  const currentFileName = currentNode.source?.file
+  const code = files.find(({ name }) => name === fileName)?.content ?? `Source not available: ${currentFileName}`
+  const highlight = (code: string) => currentNode.source
+    ? `${code.slice(0, currentNode.source.start.offset)}<b id='current'>${code.slice(currentNode.source.start.offset, currentNode.source.end.offset)}</b>${code.slice(currentNode.source.end.offset)}`
     : code
 
   useEffect(() => {
     document.getElementById('current')?.scrollIntoView()
-  }, [debuggedNode])
+  }, [currentNode])
 
-  return <Editor code={code} className={$.editor} customHighlight={highlight} />
+  return (
+    <Editor code={code} className={$.editor} customHighlight={currentFileName === fileName ? highlight : undefined} />
+  )
 }
 
 export default SourceDisplay

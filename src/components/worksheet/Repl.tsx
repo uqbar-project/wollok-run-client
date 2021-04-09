@@ -2,7 +2,7 @@ import React, { KeyboardEvent, memo, useState } from 'react'
 import Slider from 'react-input-slider'
 import SimpleCodeEditor from 'react-simple-code-editor'
 import Splitter from 'react-splitter-layout'
-import { WRENatives, build, Environment, Evaluation, fill, link, List, parse, Sentence, RuntimeObject } from 'wollok-ts'
+import { WRENatives, Environment, Evaluation, link, List, parse, Sentence, RuntimeObject, Singleton, Method, Body, Return, Reference, Package } from 'wollok-ts'
 import $ from './Repl.module.scss'
 
 
@@ -44,40 +44,44 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
         const lineLastSentence = lineSentences[lineSentences.length - 1]
         const lineInitialSentences = lineSentences.slice(0, Math.max(lineSentences.length - 1, 0))
 
-        const closureLiteral = build.Closure({
-          sentences: [
-            ...previousLinesSentences,
-            ...lineInitialSentences,
-            ...lineLastSentence.is('Expression') ? [build.Return(lineLastSentence)] :
-            lineLastSentence.is('Assignment') ? [lineLastSentence, build.Return(lineLastSentence.variable)] :
-            lineLastSentence.is('Variable') ? [lineLastSentence, build.Return(build.Reference(lineLastSentence.name))] :
-            [lineLastSentence],
-          ],
+        const replModule = new Singleton({
+          name: 'repl', members: [new Method({
+            name: 'apply', body: new Body({
+              sentences: [
+                ...previousLinesSentences,
+                ...lineInitialSentences,
+                ...lineLastSentence.is('Expression') ? [new Return({ value: lineLastSentence })] :
+                lineLastSentence.is('Assignment') ? [lineLastSentence, new Return({ value: lineLastSentence.variable })] :
+                lineLastSentence.is('Variable') ? [lineLastSentence, new Return({ value: new Reference({ name: lineLastSentence.name }) })] :
+                [lineLastSentence],
+              ],
+            }),
+          })],
         })
 
-        const replModule = build.Singleton('repl', closureLiteral.value)()
-        const mainPackage = build.Package('worksheet')(build.Package('main')(replModule))
-        return link([fill(mainPackage)], baseEnvironment)
+        const mainPackage = new Package({ name: 'worksheet', members: [new Package({ name: 'main', members: [replModule] })] })
+        return link([mainPackage], baseEnvironment)
       })
 
       const newOutputs = environmentsPerLine.map(environment => {
         if (!environment) return undefined
 
-        const evaluation = Evaluation.create(environment, WRENatives)
+        const evaluation = Evaluation.build(environment, WRENatives)
 
-        evaluation.invoke('apply', evaluation.instance(environment.getNodeByFQN<'Singleton'>('worksheet.main.repl').id))
-        evaluation.stepOut()
+        function* evaluate() {
+          const response = yield* evaluation.invoke('apply', yield* evaluation.instantiate(environment!.getNodeByFQN<Singleton>('worksheet.main.repl')))
 
-        const response = evaluation.frameStack.top!.operandStack.pop()
+          if (response) {
+            const wDescription: RuntimeObject = (yield* evaluation.invoke('toString', response))!
+            wDescription.assertIsString()
+            return wDescription.innerValue
+          } else return 'void'
+        }
 
-        let description: string
-        if (response) {
-          evaluation.invoke('toString', response)
-          evaluation.stepOut()
-          const wDescription: RuntimeObject = evaluation.frameStack.top!.operandStack.pop()!
-          wDescription.assertIsString()
-          description = wDescription.innerValue
-        } else description = 'void'
+        const gen = evaluate()
+        let next = gen.next()
+        while(!next.done) next = gen.next()
+        const description =next.value
 
         return { description, evaluation }
       })

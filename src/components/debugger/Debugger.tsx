@@ -1,19 +1,38 @@
-import React, { createContext, useState } from 'react'
-import { Layout, Model as LayoutModel, TabNode } from 'flexlayout-react'
+import React, { createContext, Dispatch, useState } from 'react'
+import { Layout, Model as LayoutModel, TabNode, Actions,DockLocation } from 'flexlayout-react'
 import { RouteComponentProps } from '@reach/router'
 import 'flexlayout-react/style/dark.css'
 import $ from './Debugger.module.scss'
 import classNames from 'classnames'
 import LoadScreen from './LoadScreen'
-import { Environment, List, Name, Test } from 'wollok-ts'
+import { Context, Environment, Evaluation, ExecutionDirector, Id, List, Module, Name, Test, WRENatives } from 'wollok-ts'
 import SourceDisplay from './SourceDisplay'
 import ASTDisplay from './ASTDisplay'
+import Toolbar from './Toolbar'
 
-const layoutConfiguration = {
+
+const WREFiles = async (): Promise<List<SourceFile>> => {
+  const WRE = [
+    'wollok/lang.wlk',
+    'wollok/lib.wlk',
+    'wollok/mirror.wlk',
+    'wollok/vm.wlk',
+    'wollok/game.wlk'
+  ]
+
+  return Promise.all(WRE.map(async name => {
+    const file = await fetch(`${process.env.PUBLIC_URL}wre/${name}`)
+    return { name, content: await file.text() }
+  }))
+}
+
+
+
+const layoutConfiguration = (files: List<SourceFile>) => ({
   global: {
     tabEnableClose: false,
     tabEnableRename: false,
-    tabSetEnableTabStrip: false,
+    enableDeleteWhenEmpty: false,
   },
   borders: [
     {
@@ -34,18 +53,12 @@ const layoutConfiguration = {
   ],
   layout: {
     type: 'row', children: [
-      {
-        type: 'tabset', weight: 25, selected: 0, children: [
-        ],
-      },
-      {
-        type: 'tabset', weight: 75, selected: 0, children: [
-          { type: 'tab', component: 'SourceDisplay' },
-        ],
-      },
+      { type: 'tabset', children: files.map(file => (
+        { type:'tab', component:'SourceDisplay', name: file.name, id: file.name }
+      ))},
     ],
   },
-}
+})
 
 const classNameMapper = (originalName: string) => {
   switch (originalName) {
@@ -67,31 +80,54 @@ const classNameMapper = (originalName: string) => {
 const componentFactory = (node: TabNode) => {
   switch (node.getComponent()) {
     case 'Tools': return <div>Acá muestro las Tools</div>
-    case 'SourceDisplay': return <SourceDisplay />
+    case 'SourceDisplay': return <SourceDisplay fileName={node.getId()}/>
     case 'ASTDisplay': return <ASTDisplay/>
     default: return undefined
   }
 }
 
+
+export type SourceFile = { name: Name, content: string }
+
 export type DebuggerState = {
-  readonly environment: Environment
-  readonly debuggedNode: Test
-  readonly files: List<{name: Name, content: string}>
+  readonly files: List<SourceFile>
+  readonly executionDirector: ExecutionDirector
 }
 
-export const DebuggerContext = createContext<DebuggerState>(undefined as any)
+
+export const DebuggerContext = createContext<DebuggerState & {stateChanged: () => void }>(undefined as any)
+
 
 const Debugger = ({ }: RouteComponentProps) => {
   const [state, setState] = useState<DebuggerState>()
+  const stateChanged = () => setState({...state!})
+  
+  const handleTestSelection = async (files: List<SourceFile>, environment: Environment, test: Test) => {
+    const evaluation = Evaluation.build(environment, WRENatives)
+    const executionDirector = new ExecutionDirector(evaluation, evaluation.exec(test))
+    executionDirector.resume(node => node === test.body)
+    
+    setState({
+      executionDirector,
+      files: [
+        ... await WREFiles(),
+        ...files
+      ],
+    })
+  }
+  
+  if (!state) return <LoadScreen onTestSelected={handleTestSelection} />
+  
+  const layout = LayoutModel.fromJson(layoutConfiguration(state.files))
 
-  if (!state) return <LoadScreen setDebuggerState={setState} />
+  layout.doAction(Actions.selectTab(state.executionDirector.evaluation.currentNode.source?.file!))
 
   return (
-    <DebuggerContext.Provider value={state}>
+    <DebuggerContext.Provider value={{...state, stateChanged}}>
       <div className={$.Debugger}>
-        <div>Acá muestro la ToolBar</div>
+        <Toolbar/>
         <div className={$.content}>
-          <Layout model={LayoutModel.fromJson(layoutConfiguration)} factory={componentFactory} classNameMapper={classNameMapper} />
+          <Layout model={layout} factory={componentFactory} classNameMapper={classNameMapper} />
         </div>
       </div>
     </DebuggerContext.Provider>

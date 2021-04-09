@@ -1,6 +1,6 @@
 import cytoscape, { ElementDefinition, Stylesheet } from 'cytoscape'
 import React, { memo, useEffect, useRef } from 'react'
-import { Evaluation, Id, RuntimeObject } from 'wollok-ts/dist'
+import { Evaluation, Id, RuntimeObject } from 'wollok-ts'
 import $ from './ObjectDiagram.module.scss'
 
 const NODE_STYLES: Stylesheet[] = [
@@ -65,7 +65,7 @@ const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
       const { id, innerValue, module } = obj
       const moduleName: string = module.fullyQualifiedName()
 
-      if (obj === RuntimeObject.null(evaluation!) || moduleName === 'wollok.lang.Number') return {
+      if (obj.innerValue === null || moduleName === 'wollok.lang.Number') return {
         type: 'literal',
         label: `${innerValue}`,
       }
@@ -95,7 +95,7 @@ const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
       ]
     }
 
-    const elements: ElementDefinition[] = evaluation.instances
+    const elements: ElementDefinition[] = [...evaluation.allInstances()]
       .filter((obj) => {
         const name = obj.module.fullyQualifiedName()
         return name && name !== 'worksheet.main.repl' && !name.startsWith('wollok')
