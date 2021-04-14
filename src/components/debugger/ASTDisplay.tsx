@@ -1,22 +1,18 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import { Node } from 'wollok-ts'
 import { DebuggerContext } from './Debugger'
 import Tree, { TreeProps, TreeNodeProps } from 'rc-tree'
 import { VscSymbolOperator as SentenceIcon, VscTriangleRight as SwitcherCollapsedIcon, VscTriangleDown as SwitcherExpandedIcon, VscSymbolClass as EnvironmentIcon, VscSymbolInterface as ModuleIcon, VscSymbolNamespace as PackageIcon, VscCircleFilled as ItemIcon, VscBeaker as TestIcon, VscSymbolMethod as MethodIcon, VscSymbolField as FieldIcon } from 'react-icons/vsc'
 import $ from './ASTDisplay.module.scss'
 import classNames from 'classnames'
+import { Key } from 'rc-tree/lib/interface'
+import { nodeLabel } from './utils'
 
 
 function toASTData(node: Node): NonNullable<TreeProps['treeData']>[number] {
   return {
     key: node.id,
-    title: node.match({
-      Literal: node => `${node.kind}<${typeof node.value}> ${node.value && typeof node.value === 'object' ? '{}' : node.value}`,
-      Reference: node => `${node.kind}<${node.target().kind}> ${node.name}`,
-      Send: node => `${node.kind} ${node.message}/${node.args.length}`,
-      Entity: node => `${node.kind} ${node.name ?? ''}`,
-      Node: node => `${node.kind}`,
-    }),
+    title: nodeLabel(node),
     children: node.children().map(toASTData),
     icon: node.match({
       Environment(){ return <EnvironmentIcon className={classNames($.icon, $.iconPackage)} /> },
@@ -40,11 +36,13 @@ const switcherIcon = ({ expanded, isLeaf }: TreeNodeProps) => isLeaf ? undefined
 
 const ASTDisplay = () => {
   const { executionDirector } = useContext(DebuggerContext)
+  const [expanded, setExpanded] = useState<Key[]>([])
 
   return (
     <Tree
-      defaultExpandedKeys={executionDirector.evaluation.currentNode.ancestors().map(({ id }) => id)}
-      defaultSelectedKeys={[executionDirector.evaluation.currentNode.id]}
+      onExpand={setExpanded}
+      expandedKeys={[...expanded, ...executionDirector.evaluation.currentNode.ancestors().map(({ id }) => id)]}
+      selectedKeys={[executionDirector.evaluation.currentNode.id]}
       treeData={[toASTData(executionDirector.evaluation.environment)]}
       switcherIcon={switcherIcon}
     />

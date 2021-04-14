@@ -1,14 +1,16 @@
-import React, { createContext, Dispatch, useState } from 'react'
-import { Layout, Model as LayoutModel, TabNode, Actions,DockLocation } from 'flexlayout-react'
+import React, { createContext, useState } from 'react'
+import { Layout, Model as LayoutModel, TabNode, Actions } from 'flexlayout-react'
 import { RouteComponentProps } from '@reach/router'
 import 'flexlayout-react/style/dark.css'
 import $ from './Debugger.module.scss'
 import classNames from 'classnames'
 import LoadScreen from './LoadScreen'
-import { Context, Environment, Evaluation, ExecutionDirector, Id, List, Module, Name, Test, WRENatives } from 'wollok-ts'
+import { Environment, Evaluation, ExecutionDirector, List, Name, Test, WRENatives } from 'wollok-ts'
 import SourceDisplay from './SourceDisplay'
 import ASTDisplay from './ASTDisplay'
 import Toolbar from './Toolbar'
+import Inspect from './Inspect'
+import FrameStackDisplay from './FrameStackDisplay'
 
 
 const WREFiles = async (): Promise<List<SourceFile>> => {
@@ -17,7 +19,7 @@ const WREFiles = async (): Promise<List<SourceFile>> => {
     'wollok/lib.wlk',
     'wollok/mirror.wlk',
     'wollok/vm.wlk',
-    'wollok/game.wlk'
+    'wollok/game.wlk',
   ]
 
   return Promise.all(WRE.map(async name => {
@@ -25,7 +27,6 @@ const WREFiles = async (): Promise<List<SourceFile>> => {
     return { name, content: await file.text() }
   }))
 }
-
 
 
 const layoutConfiguration = (files: List<SourceFile>) => ({
@@ -37,11 +38,12 @@ const layoutConfiguration = (files: List<SourceFile>) => ({
   borders: [
     {
       type: 'border', location: 'left', size: 300, selected: 0, children: [
-        { type: 'tab', name: 'Tools', component: 'Tools' },
+        { type: 'tab', name: 'Frame Stack', component: 'FrameStackDisplay' },
+        { type: 'tab', name: 'Inspect', component: 'Inspect' },
       ],
     },
     {
-      type: 'border', location: 'right', size: 400, children: [
+      type: 'border', location: 'right', size: 400, selected: 0, children: [
         { type: 'tab', name: 'AST', component: 'ASTDisplay' },
       ],
     },
@@ -53,9 +55,11 @@ const layoutConfiguration = (files: List<SourceFile>) => ({
   ],
   layout: {
     type: 'row', children: [
-      { type: 'tabset', children: files.map(file => (
-        { type:'tab', component:'SourceDisplay', name: file.name, id: file.name }
-      ))},
+      {
+        type: 'tabset', children: files.map(file => (
+          { type:'tab', component:'SourceDisplay', name: file.name, id: file.name }
+        )),
+      },
     ],
   },
 })
@@ -79,7 +83,8 @@ const classNameMapper = (originalName: string) => {
 
 const componentFactory = (node: TabNode) => {
   switch (node.getComponent()) {
-    case 'Tools': return <div>Acá muestro las Tools</div>
+    case 'Inspect': return <Inspect />
+    case 'FrameStackDisplay': return <FrameStackDisplay/>
     case 'SourceDisplay': return <SourceDisplay fileName={node.getId()}/>
     case 'ASTDisplay': return <ASTDisplay/>
     default: return undefined
@@ -92,6 +97,7 @@ export type SourceFile = { name: Name, content: string }
 export type DebuggerState = {
   readonly files: List<SourceFile>
   readonly executionDirector: ExecutionDirector
+  restart(): void
 }
 
 
@@ -100,30 +106,31 @@ export const DebuggerContext = createContext<DebuggerState & {stateChanged: () =
 
 const Debugger = ({ }: RouteComponentProps) => {
   const [state, setState] = useState<DebuggerState>()
-  const stateChanged = () => setState({...state!})
-  
-  const handleTestSelection = async (files: List<SourceFile>, environment: Environment, test: Test) => {
+  const stateChanged = () => setState({ ...state! })
+
+  const handleTestSelection = async (files: List<SourceFile>, environment: Environment, test: Test): Promise<void> => {
     const evaluation = Evaluation.build(environment, WRENatives)
     const executionDirector = new ExecutionDirector(evaluation, evaluation.exec(test))
     executionDirector.resume(node => node === test.body)
-    
+
     setState({
       executionDirector,
       files: [
-        ... await WREFiles(),
-        ...files
+        ...files,
+        ...await WREFiles(),
       ],
+      restart: () => handleTestSelection(files, environment, test),
     })
   }
-  
+
   if (!state) return <LoadScreen onTestSelected={handleTestSelection} />
-  
+
   const layout = LayoutModel.fromJson(layoutConfiguration(state.files))
 
-  layout.doAction(Actions.selectTab(state.executionDirector.evaluation.currentNode.source?.file!))
+  layout.doAction(Actions.selectTab(state.executionDirector.evaluation.currentNode.sourceFileName()!))
 
   return (
-    <DebuggerContext.Provider value={{...state, stateChanged}}>
+    <DebuggerContext.Provider value={{ ...state, stateChanged }}>
       <div className={$.Debugger}>
         <Toolbar/>
         <div className={$.content}>

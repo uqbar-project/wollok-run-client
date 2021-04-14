@@ -19,7 +19,7 @@ const LoadScreen = ({ onTestSelected }: LoadScreenProps) => {
       .map(({ name, content }) => ({ name, content: content.toString('utf8') }))
   )
 
-  const onTestClick = (test: Test) => () => onTestSelected(files,environment, test)
+  const onTestClick = (test: Test) => () => onTestSelected(files, environment, test)
 
   const environment = buildEnvironment(files)
   const tests = environment?.descendants()?.filter(is('Test'))

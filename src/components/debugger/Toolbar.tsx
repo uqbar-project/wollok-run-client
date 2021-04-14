@@ -4,30 +4,35 @@ import { DebuggerContext } from './Debugger'
 import $ from './Toolbar.module.scss'
 
 const Toolbar = () => {
-  const { executionDirector, stateChanged } = useContext(DebuggerContext)
+  const { executionDirector, stateChanged, restart } = useContext(DebuggerContext)
 
   const stepIn = () => {
-    executionDirector.stepIn()
+    const result = executionDirector.stepIn()
+    if(result.done) alert('Evaluation finished!')
     stateChanged()
   }
-  
+
   const stepOver = () => {
-    executionDirector.stepOver()
+    const result = executionDirector.stepOver()
+    if(result.done) alert('Evaluation finished!')
     stateChanged()
   }
-  
+
   const stepOut = () => {
-    executionDirector.stepOut()
+    const result = executionDirector.stepOut()
+    if(result.done) alert('Evaluation finished!')
     stateChanged()
   }
-  
+
   const stepThrough = () => {
-    executionDirector.stepThrough()
+    const result = executionDirector.stepThrough()
+    if(result.done) alert('Evaluation finished!')
     stateChanged()
   }
-  
+
   const resume = () => {
-    executionDirector.resume()
+    const result = executionDirector.resume()
+    if(result.done) alert('Evaluation finished!')
     stateChanged()
   }
 
@@ -40,7 +45,7 @@ const Toolbar = () => {
       <button title="Step Through" onClick={stepThrough}><StepOverIcon/><VscArrowSmallDown/></button>
       <button title="Step Out" onClick={stepOut}><StepOutIcon/></button>
       <div className={$.separator}/>
-      <button title="Restart"><RestartIcon/></button>
+      <button title="Restart" onClick={restart}><RestartIcon/></button>
     </div>
   )
 }

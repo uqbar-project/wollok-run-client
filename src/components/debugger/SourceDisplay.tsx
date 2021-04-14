@@ -7,14 +7,13 @@ export type Props = {
   fileName: string
 }
 
-const SourceDisplay = ({fileName}: Props) => {
+const SourceDisplay = ({ fileName }: Props) => {
   const { executionDirector, files } = useContext(DebuggerContext)
   const currentNode = executionDirector.evaluation.currentNode
-  const currentFileName = currentNode.source?.file
+  const currentFileName = currentNode.sourceFileName()
   const code = files.find(({ name }) => name === fileName)?.content ?? `Source not available: ${currentFileName}`
-  const highlight = (code: string) => currentNode.source
-    ? `${code.slice(0, currentNode.source.start.offset)}<b id='current'>${code.slice(currentNode.source.start.offset, currentNode.source.end.offset)}</b>${code.slice(currentNode.source.end.offset)}`
-    : code
+  const highlight = (code: string) => currentNode.isSynthetic() ? code :
+    `${code.slice(0, currentNode.sourceMap!.start.offset)}<b id='current'>${code.slice(currentNode.sourceMap!.start.offset, currentNode.sourceMap!.end.offset)}</b>${code.slice(currentNode.sourceMap!.end.offset)}`
 
   useEffect(() => {
     document.getElementById('current')?.scrollIntoView()
