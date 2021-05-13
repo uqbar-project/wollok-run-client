@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { ExecutionDirector, RuntimeValue } from 'wollok-ts'
+import { ExecutionDirector } from 'wollok-ts'
 import { DebuggerContext } from './Debugger'
 import $ from './FrameStackDisplay.module.scss'
 import { nodeLabel } from './utils'

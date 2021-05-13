@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import React, { memo, MouseEventHandler } from 'react'
 import SimpleCodeEditor from 'react-simple-code-editor'
 import $ from './Editor.module.scss'
 
@@ -27,9 +27,10 @@ export type EditorProps = {
   onCodeChange?: (code: string) => void
   customHighlight?: (code: string) => string
   className?: string
+  onContextMenu?: MouseEventHandler<HTMLDivElement>
 }
 
-const Editor = ({ code, onCodeChange, customHighlight = code => code, className }: EditorProps) => {
+const Editor = ({ code, onCodeChange, customHighlight = code => code, className, onContextMenu }: EditorProps) => {
   const ignoreChanges = () => {}
 
   const highlight = (text: string) => [...KEYWORDS, ...VALUES, ...COMMENTS].reduce((current, { regex, style }) =>
@@ -47,6 +48,7 @@ const Editor = ({ code, onCodeChange, customHighlight = code => code, className 
       padding={4}
       readOnly={!onCodeChange}
       style={{ minHeight: '100%' }}
+      onContextMenu={onContextMenu}
     />
   )
 }

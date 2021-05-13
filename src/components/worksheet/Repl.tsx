@@ -26,9 +26,9 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
   const evaluate = () => {
     try {
       const allSentences = parse.Body.tryParse(`{${code.trim()}\n}`).sentences
-      const lines = Math.max(...allSentences.map(sentence => sentence.source!.start.line))
+      const lines = Math.max(...allSentences.map(sentence => sentence.sourceMap!.start.line))
       const sentencesByLine = allSentences.reduce((sentences, sentence) => {
-        const line = sentence.source!.start.line
+        const line = sentence.sourceMap!.start.line
         if (!sentences[line]) sentences[line] = []
         sentences[line].push(sentence as Sentence)
         return sentences
@@ -39,7 +39,7 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
         if (!lineSentences) return undefined
 
 
-        const nextLineIndex = allSentences.findIndex(({ source }) => source!.start.line > i)
+        const nextLineIndex = allSentences.findIndex(({ sourceMap }) => sourceMap!.start.line > i)
         const previousLinesSentences = allSentences.slice(0, nextLineIndex < 0 ? allSentences.length : nextLineIndex)
         const lineLastSentence = lineSentences[lineSentences.length - 1]
         const lineInitialSentences = lineSentences.slice(0, Math.max(lineSentences.length - 1, 0))

@@ -4,7 +4,6 @@ import 'rc-tooltip/assets/bootstrap_white.css'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import 'react-splitter-layout/lib/index.css'
-import Game from './components/game/Game'
 import Worksheet from './components/worksheet/Worksheet'
 import './index.scss'
 import * as serviceWorker from './serviceWorker'
@@ -26,7 +25,7 @@ const Routes = () => (
   <ThemeProvider theme={wollokTheme}>
     <Router>
       <Worksheet path='/worksheet' />
-      <Game path='/game' />
+      {/* <Game path='/game' /> */}
       <Debugger path='/debugger' />
       <Home path='/' />
     </Router>

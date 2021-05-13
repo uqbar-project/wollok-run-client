@@ -11,6 +11,8 @@ import ASTDisplay from './ASTDisplay'
 import Toolbar from './Toolbar'
 import Inspect from './Inspect'
 import FrameStackDisplay from './FrameStackDisplay'
+import BreakpointList from './BreakpointList'
+import ObjectDiagramDisplay from './ObjectDiagramDisplay'
 
 
 const WREFiles = async (): Promise<List<SourceFile>> => {
@@ -40,11 +42,13 @@ const layoutConfiguration = (files: List<SourceFile>) => ({
       type: 'border', location: 'left', size: 300, selected: 0, children: [
         { type: 'tab', name: 'Frame Stack', component: 'FrameStackDisplay' },
         { type: 'tab', name: 'Inspect', component: 'Inspect' },
+        { type: 'tab', name: 'Breakpoints', component: 'BreakpointList' },
       ],
     },
     {
       type: 'border', location: 'right', size: 400, selected: 0, children: [
         { type: 'tab', name: 'AST', component: 'ASTDisplay' },
+        { type: 'tab', name: 'Diagrama de Objetos', component: 'ObjectDiagramDisplay' },
       ],
     },
     {
@@ -85,8 +89,10 @@ const componentFactory = (node: TabNode) => {
   switch (node.getComponent()) {
     case 'Inspect': return <Inspect />
     case 'FrameStackDisplay': return <FrameStackDisplay/>
+    case 'BreakpointList': return <BreakpointList/>
     case 'SourceDisplay': return <SourceDisplay fileName={node.getId()}/>
     case 'ASTDisplay': return <ASTDisplay/>
+    case 'ObjectDiagramDisplay': return <ObjectDiagramDisplay />
     default: return undefined
   }
 }

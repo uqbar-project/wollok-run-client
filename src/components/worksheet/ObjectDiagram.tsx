@@ -29,6 +29,10 @@ const NODE_STYLES: Stylesheet[] = [
     style: { 'background-color': '#2e72d8' },
   },
   {
+    selector: 'label',
+    style:{ 'color': '#fff' },
+  },
+  {
     selector: 'node[type = "literal"]',
     style: {
       'background-opacity': 0,
@@ -80,7 +84,7 @@ const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
         label: module.name,
       }
 
-      return { label: `${module}#${id}` }
+      return { label: `${module.name}#${id.slice(31)}` }
     }
 
     function elementFromObject(obj: RuntimeObject, alreadyVisited: Id[] = []): ElementDefinition[] {
@@ -88,7 +92,7 @@ const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
       if (alreadyVisited.includes(id)) return []
       return [
         { data: { id, ...decoration(obj) } },
-        ...[...obj.locals.keys()].flatMap(name => [
+        ...[...obj.locals.keys()].filter(key => key !== 'self').flatMap(name => [
           { data: { id: `${id}_${obj.get(name)?.id}`, label: name, source: id, target: obj.get(name)?.id } },
           ...elementFromObject(obj.get(name)!, [...alreadyVisited, id]),
         ]),
@@ -107,6 +111,7 @@ const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
       name: 'cose',
       animate: false,
       nodeDimensionsIncludeLabels: true,
+      fit: false,
     }).run()
   }, [evaluation])
 
