@@ -4,7 +4,7 @@ export function nodeLabel(node: Node): string {
   return `[${node.kind}] ${node.match({
     Parameter: node => `${node.name}${node.isVarArg ? '...' : ''}`,
     Literal: node => `<${typeof node.value}> ${node.value && typeof node.value === 'object' ? '{}' : node.value}`,
-    Reference: node => `<${node.target().kind}> ${node.name}`,
+    Reference: node => `<${node.target()!.kind}> ${node.name}`,
     Send: node => `${node.message}/${node.args.length}`,
     Entity: node => `${node.name ?? ''}`,
     Method: node => `${node.name}/${node.parameters.length}`,
