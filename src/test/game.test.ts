@@ -1,10 +1,8 @@
 import fs from 'fs'
-import { buildEnvironment, interpret, Evaluation, Id } from 'wollok-ts/dist'
-import wre from 'wollok-ts/dist/wre/wre.natives'
+import { buildEnvironment, Evaluation, Id, WRENatives, ExecutionDirector, Execution, RuntimeValue, RuntimeObject } from 'wollok-ts';
 import { VisualState, currentSoundStates, SoundState, flushEvents, canvasResolution, currentVisualStates } from '../components/game/GameStates'
-import { RuntimeObject } from 'wollok-ts/dist/interpreter'
 import { wKeyCode, buildKeyPressEvent, queueGameEvent } from '../components/game/SketchUtils'
-import { buildGameProject, GameProject } from '../components/game/gameProject'
+import { buildGameProject, GameProject, getProgramIn } from '../components/game/gameProject';
 import { MessageDrawer, messageTextPosition } from '../components/game/messages'
 
 const readFiles = (files: string[]) => files.map(file => ({
@@ -13,16 +11,21 @@ const readFiles = (files: string[]) => files.map(file => ({
 }))
 
 describe('game', () => {
-  const gameTest = (testName: string, gameProgramFile: string, gameFiles: string[], cbTest: (evaluation: Evaluation) => void) => {
+  const gameTest = (testName: string, gameProgramFile: string, gameFiles: string[], cbTest: (evaluation: Evaluation) => Generator) => {
     const environment = buildEnvironment(readFiles(gameFiles))
-    const { buildEvaluation, runProgram } = interpret(environment, wre)
-    const evaluation = buildEvaluation()
-    runProgram(`games.${gameProgramFile}.mockGame`, evaluation)
-    it(testName, () => cbTest(evaluation))
+    const evaluation = Evaluation.build(environment, WRENatives)
+    const execution = new ExecutionDirector(evaluation, evaluation.exec(getProgramIn(`games.${gameProgramFile}`, environment)))
+    const result = execution.finish()
+    if (result.error) throw result.error //TODO: Revisar
+    it(testName, () => {
+      const execution = new ExecutionDirector(evaluation, function* () { yield* cbTest(evaluation); return undefined }() as Execution<RuntimeValue>)
+      const result = execution.finish()
+      if (result.error) throw result.error //TODO: Revisar
+    })
   }
 
-  gameTest('visualStates', 'pepita', ['games/pepita.wpgm'], (evaluation) => {
-    const pepitaState: VisualState = currentVisualStates(evaluation)[0]
+  gameTest('visualStates', 'pepita', ['games/pepita.wpgm'], function* (evaluation) {
+    const pepitaState: VisualState = (yield* currentVisualStates(evaluation))[0]
     expect(pepitaState).toStrictEqual({
       image: 'pepita.png',
       position: { x: 1, y: 1 },
@@ -30,12 +33,12 @@ describe('game', () => {
     })
   })
 
-  gameTest('a visual outside of the canvas should be drawn', 'gameTest', ['games/gameTest.wpgm'], (evaluation) => {
-    const visuals = currentVisualStates(evaluation)
+  gameTest('a visual outside of the canvas should be drawn', 'gameTest', ['games/gameTest.wpgm'], function* (evaluation) {
+    const visuals = yield* currentVisualStates(evaluation)
     expect(visuals.map(({ image }) => ({ image }))).toContainEqual({ image: 'out.png' })
   })
 
-  gameTest('soundStates', 'sounds', ['games/sounds.wpgm'], (evaluation) => {
+  gameTest('soundStates', 'sounds', ['games/sounds.wpgm'], function* (evaluation) {
     const soundState: SoundState = currentSoundStates(evaluation)[0]
     expect(soundState).toStrictEqual({
       id: soundState.id,
@@ -46,30 +49,27 @@ describe('game', () => {
     })
   })
 
-  gameTest('flushEvents', 'pepita', ['games/pepita.wpgm'], (evaluation) => {
-    const pepitaState: VisualState = currentVisualStates(evaluation)[0]
+  gameTest('flushEvents', 'pepita', ['games/pepita.wpgm'], function* (evaluation) {
+    const pepitaState: VisualState = (yield* currentVisualStates(evaluation))[0]
     expect(pepitaState.position).toStrictEqual({ x: 1, y: 1 })
-    flushEvents(evaluation, 101)
-    const newPepitaState: VisualState = currentVisualStates(evaluation)[0]
+    yield* flushEvents(evaluation, 101)
+    const newPepitaState: VisualState = (yield* currentVisualStates(evaluation))[0]
     expect(newPepitaState.position).toStrictEqual({ x: 0, y: 0 })
   })
 
-  gameTest('canvasResolution', 'gameResolution', ['games/gameResolution.wpgm'], (evaluation) => {
+  gameTest('canvasResolution', 'gameResolution', ['games/gameResolution.wpgm'], function* (evaluation) {
     const resolution = canvasResolution(evaluation)
-
     expect(resolution).toStrictEqual({
       x: 300,
       y: 375,
     })
   })
 
-  gameTest('buildKeyPressEvent', 'pepita', ['games/pepita.wpgm'], (evaluation) => {
+  gameTest('buildKeyPressEvent', 'pepita', ['games/pepita.wpgm'], function* (evaluation) {
     const keyCode = wKeyCode('1', 49)
-    const wKeyPressEventId: Id = buildKeyPressEvent(evaluation, keyCode)
-    const wKeyPressEvent: RuntimeObject = evaluation.instance(wKeyPressEventId)
+    const wKeyPressEvent: RuntimeObject = yield* buildKeyPressEvent(evaluation, keyCode)
     wKeyPressEvent.assertIsCollection()
-    const keyPressEvent: string[] = wKeyPressEvent.innerValue.map((id: Id) => {
-      const wString: RuntimeObject = evaluation.instance(id)
+    const keyPressEvent: string[] = wKeyPressEvent.innerValue.map((wString: RuntimeObject) => {
       wString.assertIsString()
       return wString.innerValue
     })
@@ -77,14 +77,14 @@ describe('game', () => {
 
   })
 
-  gameTest('When a key is pressed, the event associated with the key should happen', 'movement', ['games/movement.wpgm'], (evaluation) => {
+  gameTest('When a key is pressed, the event associated with the key should happen', 'movement', ['games/movement.wpgm'], function* (evaluation) {
     const keyCode = wKeyCode('ArrowRight', 39)
-    const keyPressEvent: Id = buildKeyPressEvent(evaluation, keyCode)
-    const firstPepitaPosition = currentVisualStates(evaluation)[0].position
+    const keyPressEvent = yield* buildKeyPressEvent(evaluation, keyCode)
+    const firstPepitaPosition = (yield* currentVisualStates(evaluation))[0].position
     expect(firstPepitaPosition).toStrictEqual({ x: 0, y: 0 })
-    queueGameEvent(evaluation, keyPressEvent)
-    flushEvents(evaluation, 1)
-    const finalPepitaPosition = currentVisualStates(evaluation)[0].position
+    yield* queueGameEvent(evaluation, keyPressEvent)
+    yield* flushEvents(evaluation, 1)
+    const finalPepitaPosition = (yield* currentVisualStates(evaluation))[0].position
     expect(finalPepitaPosition).toStrictEqual({ x: 1, y: 1 })
   })
 })
