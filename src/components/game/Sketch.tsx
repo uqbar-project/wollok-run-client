@@ -3,7 +3,7 @@ import p5Types from 'p5'
 import React, { useState } from 'react'
 import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
-import { Evaluation, Id, ExecutionDirector, Execution, RuntimeValue } from 'wollok-ts'
+import { Evaluation, Id, ExecutionDirector, Execution, RuntimeValue, RuntimeObject, Context, List } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, canvasResolution, gameStop, VisualMessage, ground, height, width, VisualState, currentVisualStates } from './GameStates'
 import { GameSound } from './GameSound'
@@ -172,7 +172,27 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     sketch.image(imageFromPath(visual.image), position.x, position.y)
   }
 
+  setInterval(() => {
+    const measures = performance.getEntriesByType('measure')
+    performance.clearMeasures()
+
+    const drawMeasures = measures.filter(measure => measure.name === 'draw-start-to-end')
+    const totalDrawTime = drawMeasures.reduce((sum, measure) => sum + measure.duration, 0)
+
+    const keyMeasures = measures.filter(measure => measure.name === 'key-start-to-end')
+    const totalKeyTime = keyMeasures.reduce((sum, measure) => sum + measure.duration, 0)
+
+    const instances = evaluation.allInstances()
+    console.log(`
+      FPS: ${drawMeasures.length}
+      ART: ${Math.round(drawMeasures.length ? totalDrawTime / drawMeasures.length : 0)}ms (${(totalDrawTime / 1000).toFixed(2)}%)
+      AKT: ${Math.round(keyMeasures.length ? totalKeyTime / keyMeasures.length : 0)}ms (${(totalKeyTime / 1000).toFixed(2)}%)
+      Instances: ${instances.size}
+    `)
+  }, 1000)
+
   function* drawBoard(sketch: p5) {
+    window.performance.mark('draw-start')
     const messagesToDraw: DrawableMessage[] = []
     drawBackground(sketch)
     const visuals = yield* currentVisualStates(evaluation)
@@ -183,16 +203,23 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
       if (message && message.time > currentTime(sketch)) messagesToDraw.push({ message: message.text, x: position.x, y: position.y })
     }
     messagesToDraw.forEach(drawMessage(sketch))
+    window.performance.mark('draw-end')
+
+    window.performance.measure('draw-start-to-end', 'draw-start', 'draw-end')
+
     return undefined
   }
 
   function currentTime(sketch: p5) { return sketch.millis() }
 
   function keyPressed(sketch: p5) {
+    window.performance.mark('key-start')
     const { result: keyPressedEvent } = run(buildKeyPressEvent(evaluation, wKeyCode(sketch.key, sketch.keyCode)))
     const { result: anyKeyPressedEvent } = run(buildKeyPressEvent(evaluation, 'ANY'))
     run(queueGameEvent(evaluation, keyPressedEvent))
     run(queueGameEvent(evaluation, anyKeyPressedEvent))
+    window.performance.mark('key-end')
+    window.performance.measure('key-start-to-end', 'key-start', 'key-end')
     return false
   }
 
@@ -203,6 +230,8 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     <RestartButton restart={restart} />
   </div>
 }
+
+SketchComponent.whyDidYouRender = true
 
 export default SketchComponent
 
