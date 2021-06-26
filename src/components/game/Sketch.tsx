@@ -69,9 +69,9 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     const instances = evaluation.allInstances()
     console.log(`
       FPS: ${drawMeasures.length}
-      Average Update Time: ${Math.round(updateMeasures.length ? totalUpdateTime / updateMeasures.length : 0)}ms (${(totalUpdateTime / 1000).toFixed(2)}%)
-      Average Draw Time: ${Math.round(drawMeasures.length ? totalDrawTime / drawMeasures.length : 0)}ms (${(totalDrawTime / 1000).toFixed(2)}%)
-      Average Key Time: ${Math.round(keyMeasures.length ? totalKeyTime / keyMeasures.length : 0)}ms (${(totalKeyTime / 1000).toFixed(2)}%)
+      Average Update Time: ${Math.round(updateMeasures.length ? totalUpdateTime / updateMeasures.length : 0)}ms (${(totalUpdateTime / 1000 * 100).toFixed(2)}%)
+      Average Draw Time: ${Math.round(drawMeasures.length ? totalDrawTime / drawMeasures.length : 0)}ms (${(totalDrawTime / 1000 * 100).toFixed(2)}%)
+      Average Key Time: ${Math.round(keyMeasures.length ? totalKeyTime / keyMeasures.length : 0)}ms (${(totalKeyTime / 1000 * 100).toFixed(2)}%)
       Instances: ${instances.size}
     `)
   }, 1000)
@@ -90,7 +90,6 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
 
     window.performance.measure('update-start-to-end', 'update-start', 'update-end')
     window.performance.measure('draw-start-to-end', 'draw-start', 'draw-end')
-
   }
 
   const setup = (sketch: p5Types, canvasParentRef: any) => {
