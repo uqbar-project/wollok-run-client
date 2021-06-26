@@ -1,11 +1,10 @@
 import p5 from 'p5'
-import p5Types from 'p5'
 import React, { useState } from 'react'
 import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
-import { Evaluation, Id, ExecutionDirector, Execution, RuntimeValue, RuntimeObject, Context, List } from 'wollok-ts'
+import { Evaluation, Id, ExecutionDirector } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
-import { flushEvents, boardGround, cellSize, currentSoundStates, SoundState, canvasResolution, gameStop, VisualMessage, ground, height, width, VisualState, currentVisualStates } from './GameStates'
+import { flushEvents, boardGround, cellSize, currentSoundStates, canvasResolution, gameStop, ground, height, width, currentVisualStates } from './GameStates'
 import { GameSound } from './GameSound'
 import { buildKeyPressEvent, queueGameEvent } from './SketchUtils'
 import { Button } from '@material-ui/core'
@@ -44,201 +43,185 @@ interface SketchProps {
   evaluation: Evaluation
 }
 
-const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
-  const [stop, setStop] = useState(false)
-  const imgs: { [id: string]: p5.Image } = {}
-  let evaluation = e.copy()
+// ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+// GAME CYCLE
+// ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
-  function run(execution: Execution<RuntimeValue>) {
-    return new ExecutionDirector(evaluation, execution).finish() as any
+function* step(sketch: p5, game: GameProject, evaluation: Evaluation, sounds: Map<Id, GameSound>, images: Map<Id, p5.Image>) {
+  window.performance.mark('update-start')
+  yield* flushEvents(evaluation, sketch.millis())
+  updateSound(game, evaluation, sounds)
+  window.performance.mark('update-end')
+
+  window.performance.mark('draw-start')
+  yield* render(evaluation, sketch, images)
+  window.performance.mark('draw-end')
+
+  window.performance.measure('update-start-to-end', 'update-start', 'update-end')
+  window.performance.measure('draw-start-to-end', 'draw-start', 'draw-end')
+
+  return undefined
+}
+
+function updateSound(game: GameProject, evaluation: Evaluation, sounds: Map<Id, GameSound>) {
+  const soundStates = currentSoundStates(evaluation)
+
+  for(const [id, sound] of sounds.entries()) {
+    if(!soundStates.some(sound => sound.id === id)) {
+      sound.stopSound()
+      sounds.delete(id)
+    } else {
+      sound.playSound()
+    }
   }
+
+  soundStates.forEach(soundState => {
+    let sound = sounds.get(soundState.id)
+    if (!sound) {
+      const soundPath = game.sounds.find(({ possiblePaths }) => possiblePaths.includes(soundState.file))?.url
+      if(soundPath) { // TODO: add soundfile not found exception
+        sound = new GameSound(soundState, soundPath)
+        sounds.set(soundState.id, sound)
+      }
+    }
+
+    sound?.update(soundState)
+  })
+}
+
+function* render(evaluation: Evaluation, sketch: p5, images: Map<string, p5.Image>) {
+  const image = (path: string): p5.Image => images.get(path) ?? images.get('wko.png')!
+
+  window.performance.mark('draw-background-start')
+  const boardGroundPath = boardGround(evaluation)
+  if (boardGroundPath) sketch.image(image(boardGroundPath), 0, 0, sketch.width, sketch.height)
+  else {
+    const groundImage = image(ground(evaluation))
+    const gameWidth = width(evaluation)
+    const gameHeigth = height(evaluation)
+    for (let x = 0; x < gameWidth; x++)
+      for (let y = 0; y < gameHeigth; y++)
+        sketch.image(groundImage, x, y)
+  }
+  window.performance.mark('draw-background-end')
+
+  window.performance.mark('draw-visuals-start')
+  const cellPixelSize = cellSize(evaluation)
+  const messagesToDraw: DrawableMessage[] = []
+  for (const visual of yield* currentVisualStates(evaluation)) {
+    const imageObject = image(visual.image)
+    const x = visual.position.x * cellPixelSize
+    const y = sketch.height - visual.position.y * cellPixelSize - imageObject.height
+    sketch.image(imageObject, x, y)
+
+    if (visual.message && visual.message.time > sketch.millis()) messagesToDraw.push({ message: visual.message.text, x, y })
+  }
+  window.performance.mark('draw-visuals-end')
+
+  window.performance.mark('draw-messages-start')
+  messagesToDraw.forEach(drawMessage(sketch))
+  window.performance.mark('draw-messages-end')
+
+  window.performance.measure('draw-background-start-to-end', 'draw-background-start', 'draw-background-end')
+  window.performance.measure('draw-visuals-start-to-end', 'draw-visuals-start', 'draw-visuals-end')
+  window.performance.measure('draw-messages-start-to-end', 'draw-messages-start', 'draw-messages-end')
+
+  return undefined
+}
+
+// ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+// COMPONENTS
+// ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+const SketchComponent = ({ game, evaluation: initialEvaluation }: SketchProps) => {
+  const [stop, setStop] = useState(false)
+  const images = new Map<string, p5.Image>()
+  const sounds = new Map<Id, GameSound>()
+  let evaluation = initialEvaluation.copy()
 
   setInterval(() => {
     const measures = performance.getEntriesByType('measure')
     performance.clearMeasures()
 
-    const drawMeasures = measures.filter(measure => measure.name === 'draw-start-to-end')
-    const totalDrawTime = drawMeasures.reduce((sum, measure) => sum + measure.duration, 0)
+    const updateMeasures = measures.filter(measure => measure.name === 'update-start-to-end')
+    const totalUpdateTime = updateMeasures.reduce((sum, measure) => sum + measure.duration, 0)
 
     const keyMeasures = measures.filter(measure => measure.name === 'key-start-to-end')
     const totalKeyTime = keyMeasures.reduce((sum, measure) => sum + measure.duration, 0)
 
-    const updateMeasures = measures.filter(measure => measure.name === 'update-start-to-end')
-    const totalUpdateTime = updateMeasures.reduce((sum, measure) => sum + measure.duration, 0)
+    const drawMeasures = measures.filter(measure => measure.name === 'draw-start-to-end')
+    const totalDrawTime = drawMeasures.reduce((sum, measure) => sum + measure.duration, 0)
+
+    const drawBackgroundMeasures = measures.filter(measure => measure.name === 'draw-background-start-to-end')
+    const totalDrawBackgroundTime = drawBackgroundMeasures.reduce((sum, measure) => sum + measure.duration, 0)
+
+    const listVisualsMeasures = measures.filter(measure => measure.name === 'list-visuals-start-to-end')
+    const totalListVisualsTime = listVisualsMeasures.reduce((sum, measure) => sum + measure.duration, 0)
+
+    const drawVisualsMeasures = measures.filter(measure => measure.name === 'draw-visuals-start-to-end')
+    const totalDrawVisualsTime = drawVisualsMeasures.reduce((sum, measure) => sum + measure.duration, 0)
+
+    const drawMessagesMeasures = measures.filter(measure => measure.name === 'draw-messages-start-to-end')
+    const totalDrawMessagesTime = drawMessagesMeasures.reduce((sum, measure) => sum + measure.duration, 0)
+
 
     const instances = evaluation.allInstances()
     console.log(`
       FPS: ${drawMeasures.length}
-      Average Update Time: ${Math.round(updateMeasures.length ? totalUpdateTime / updateMeasures.length : 0)}ms (${(totalUpdateTime / 1000 * 100).toFixed(2)}%)
       Average Draw Time: ${Math.round(drawMeasures.length ? totalDrawTime / drawMeasures.length : 0)}ms (${(totalDrawTime / 1000 * 100).toFixed(2)}%)
+        - Background: ${Math.round(drawBackgroundMeasures.length ? totalDrawBackgroundTime / drawBackgroundMeasures.length : 0)}ms (${(totalDrawBackgroundTime / totalDrawTime * 100).toFixed(2)}%)
+        - List Visuals: ${Math.round(listVisualsMeasures.length ? totalListVisualsTime / listVisualsMeasures.length : 0)}ms (${(totalListVisualsTime / totalDrawTime * 100).toFixed(2)}%)
+        - Visuals: ${Math.round(drawVisualsMeasures.length ? totalDrawVisualsTime / drawVisualsMeasures.length : 0)}ms (${(totalDrawVisualsTime / totalDrawTime * 100).toFixed(2)}%)
+        - Messages: ${Math.round(drawMessagesMeasures.length ? totalDrawMessagesTime / drawMessagesMeasures.length : 0)}ms (${(totalDrawMessagesTime / totalDrawTime * 100).toFixed(2)}%)
+      Average Update Time: ${Math.round(updateMeasures.length ? totalUpdateTime / updateMeasures.length : 0)}ms (${(totalUpdateTime / 1000 * 100).toFixed(2)}%)
       Average Key Time: ${Math.round(keyMeasures.length ? totalKeyTime / keyMeasures.length : 0)}ms (${(totalKeyTime / 1000 * 100).toFixed(2)}%)
       Instances: ${instances.size}
     `)
   }, 1000)
 
-  function draw(sketch: p5Types) {
-    window.performance.mark('update-start')
-    run(flushEvents(evaluation, currentTime(sketch)))
-    checkStop()
-    syncSounds()
-    playSounds()
-    window.performance.mark('update-end')
-
-    window.performance.mark('draw-start')
-    run(drawBoard(sketch))
-    window.performance.mark('draw-end')
-
-    window.performance.measure('update-start-to-end', 'update-start', 'update-end')
-    window.performance.measure('draw-start-to-end', 'draw-start', 'draw-end')
-  }
-
-  const setup = (sketch: p5Types, canvasParentRef: any) => {
+  function setup(sketch: p5, canvasParentRef: Element) {
     const resolution = canvasResolution(evaluation)
     sketch.createCanvas(resolution.x, resolution.y).parent(canvasParentRef)
-    loadImages(sketch)
+
+    defaultImgs.forEach(path => images.set(path, sketch.loadImage(DEFAULT_GAME_ASSETS_DIR + path)))
+
+    game.images.forEach(({ possiblePaths, url }) =>
+      possiblePaths.forEach(path =>
+        images.set(path, sketch.loadImage(url))
+      )
+    )
   }
 
-  function loadImages(sketch: p5Types) {
-    defaultImgs.forEach((path: string) => {
-      imgs[path] = sketch.loadImage(DEFAULT_GAME_ASSETS_DIR + path)
-    })
-    game.images.forEach(({ possiblePaths, url }) => {
-      const loadedImage = sketch.loadImage(url)
-      possiblePaths.forEach((path: string) => imgs[path] = loadedImage)
-    })
+  function draw(sketch: p5) {
+    if (gameStop(evaluation)) setStop(true)
+    else new ExecutionDirector(evaluation, step(sketch, game, evaluation, sounds, images)).finish()
   }
 
-  function imageFromPath(path: string): p5.Image {
-    return imgs[path] ?? imgs['wko.png']
-  }
+  function keyPressed(sketch: p5) {
+    new ExecutionDirector(evaluation, function* () {
+      window.performance.mark('key-start')
+      yield* queueGameEvent(evaluation, yield* buildKeyPressEvent(evaluation, wKeyCode(sketch.key, sketch.keyCode)))
+      yield* queueGameEvent(evaluation, yield* buildKeyPressEvent(evaluation, 'ANY'))
+      window.performance.mark('key-end')
+      window.performance.measure('key-start-to-end', 'key-start', 'key-end')
+      return undefined
+    }()).finish()
 
-  function drawFullBackgroundImage(sketch: p5) {
-    sketch.image(imageFromPath(boardGround(evaluation)!), 0, 0, sketch.width, sketch.height)
-  }
-
-  function drawGroundBackground(sketch: p5) {
-    const groundPath = ground(evaluation)
-    const gameWidth = width(evaluation)
-    const gameHeigth = height(evaluation)
-    let x: number
-    let y: number
-    for (x = 0; x < gameWidth; x++) {
-      for (y = 0; y < gameHeigth; y++) {
-        const position = { x, y }
-        drawVisual(sketch, { position, image: groundPath })
-      }
-    }
-  }
-
-  function drawBackground(sketch: p5) {
-    const boardGroundPath = boardGround(evaluation)
-    if (boardGroundPath)
-      drawFullBackgroundImage(sketch)
-    else
-      drawGroundBackground(sketch)
-  }
-
-  function checkStop() {
-    if (gameStop(evaluation)) {
-      setStop(true)
-    }
+    return false
   }
 
   function restart() {
-    evaluation = e.copy()
+    evaluation = initialEvaluation.copy()
     setStop(false)
-  }
-
-  const loadedSounds: Map<Id, GameSound> = new Map()
-
-  function playSounds() {
-    [...loadedSounds.values()].forEach((sound: GameSound) => sound.playSound())
-  }
-
-  function syncSounds() {
-    removeUnusedLoadedSounds()
-    updateSounds()
-  }
-
-  function updateSounds() {
-    currentSoundStates(evaluation).forEach((soundState: SoundState) => {
-      if (!loadedSounds.has(soundState.id)) {
-        addSoundFromSoundState(soundState)
-      }
-
-      const loadedSound: GameSound = loadedSounds.get(soundState.id)!
-      loadedSound.update(soundState)
-    })
-  }
-
-  function getSoundUrlFromFileName(fileName: string): string | undefined {
-    return game.sounds.find(({ possiblePaths }) => possiblePaths.includes(fileName))?.url
-  }
-
-  function addSoundFromSoundState(soundState: SoundState) {
-    loadedSounds.set(soundState.id, new GameSound(soundState, getSoundUrlFromFileName(soundState.file)!)) //TODO add soundfile not found exception
-  }
-
-  function removeUnusedLoadedSounds() {
-    const soundIdsBeingUsed: Id[] = currentSoundStates(evaluation).map((soundState: SoundState) => soundState.id)
-    const unusedSoundIds: Id[] = [...loadedSounds.keys()].filter((id: Id) => !soundIdsBeingUsed.includes(id))
-    unusedSoundIds.forEach((unusedId: Id) => {
-      loadedSounds.get(unusedId)?.stopSound()
-      loadedSounds.delete(unusedId)
-    })
-  }
-
-  function canvasPositionOfVisual(sketch: p5, visual: VisualState) {
-    const cellPixelSize = cellSize(evaluation)
-    const gamePosition = visual.position
-    const y = sketch.height - gamePosition.y * cellPixelSize
-    const xPosition = gamePosition.x * cellPixelSize
-    const imageObject: p5.Image = imageFromPath(visual.image)
-    const yPosition = y - imageObject.height
-    return { x: xPosition, y: yPosition }
-  }
-
-  function drawVisual(sketch: p5, visual: VisualState) {
-    const position = canvasPositionOfVisual(sketch, visual)
-    sketch.image(imageFromPath(visual.image), position.x, position.y)
-  }
-
-  function* drawBoard(sketch: p5) {
-    const messagesToDraw: DrawableMessage[] = []
-    drawBackground(sketch)
-    const visuals = yield* currentVisualStates(evaluation)
-    for (const visual of visuals) {
-      drawVisual(sketch, visual)
-      const position = canvasPositionOfVisual(sketch, visual)
-      const message: VisualMessage | undefined = visual.message
-      if (message && message.time > currentTime(sketch)) messagesToDraw.push({ message: message.text, x: position.x, y: position.y })
-    }
-    messagesToDraw.forEach(drawMessage(sketch))
-    return undefined
-  }
-
-  function currentTime(sketch: p5) { return sketch.millis() }
-
-  function keyPressed(sketch: p5) {
-    window.performance.mark('key-start')
-    const { result: keyPressedEvent } = run(buildKeyPressEvent(evaluation, wKeyCode(sketch.key, sketch.keyCode)))
-    const { result: anyKeyPressedEvent } = run(buildKeyPressEvent(evaluation, 'ANY'))
-    run(queueGameEvent(evaluation, keyPressedEvent))
-    run(queueGameEvent(evaluation, anyKeyPressedEvent))
-    window.performance.mark('key-end')
-    window.performance.measure('key-start-to-end', 'key-start', 'key-end')
-    return false
   }
 
   return <div>
     {stop ?
       <h1>Se terminó el juego</h1>
-      : <Sketch setup={setup as any} draw={draw as any} keyPressed={keyPressed as any} />}
+      : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
     <RestartButton restart={restart} />
   </div>
 }
-
-SketchComponent.whyDidYouRender = true
 
 export default SketchComponent
 

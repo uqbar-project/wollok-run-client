@@ -1,4 +1,4 @@
-import { Evaluation, RuntimeObject, Id, Execution } from 'wollok-ts'
+import { Evaluation, RuntimeObject, Id, Execution, RuntimeValue } from 'wollok-ts'
 
 const findByFQN = (fqn: string) => (evaluation: Evaluation) => {
   for (const obj of evaluation.allInstances()) {
@@ -82,7 +82,7 @@ export function gameStop(evaluation: Evaluation): boolean {
   return !getBooleanFieldValueFrom(game(evaluation), evaluation, 'running')
 }
 
-export function* flushEvents(evaluation: Evaluation, ms: number) {
+export function* flushEvents(evaluation: Evaluation, ms: number): Execution<RuntimeValue> {
   const time = yield* evaluation.reify(ms)
   return yield* evaluation.invoke('flushEvents', mirror(evaluation), time)
 }
