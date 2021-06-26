@@ -1,5 +1,5 @@
 import p5 from 'p5'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id, ExecutionDirector } from 'wollok-ts'
@@ -92,7 +92,6 @@ function updateSound(game: GameProject, evaluation: Evaluation, sounds: Map<Id, 
 function* render(evaluation: Evaluation, sketch: p5, images: Map<string, p5.Image>) {
   const image = (path: string): p5.Image => images.get(path) ?? images.get('wko.png')!
 
-  window.performance.mark('draw-background-start')
   const boardGroundPath = boardGround(evaluation)
   if (boardGroundPath) sketch.image(image(boardGroundPath), 0, 0, sketch.width, sketch.height)
   else {
@@ -103,9 +102,7 @@ function* render(evaluation: Evaluation, sketch: p5, images: Map<string, p5.Imag
       for (let y = 0; y < gameHeigth; y++)
         sketch.image(groundImage, x, y)
   }
-  window.performance.mark('draw-background-end')
 
-  window.performance.mark('draw-visuals-start')
   const cellPixelSize = cellSize(evaluation)
   const messagesToDraw: DrawableMessage[] = []
   for (const visual of yield* currentVisualStates(evaluation)) {
@@ -116,16 +113,8 @@ function* render(evaluation: Evaluation, sketch: p5, images: Map<string, p5.Imag
 
     if (visual.message && visual.message.time > sketch.millis()) messagesToDraw.push({ message: visual.message.text, x, y })
   }
-  window.performance.mark('draw-visuals-end')
 
-  window.performance.mark('draw-messages-start')
   messagesToDraw.forEach(drawMessage(sketch))
-  window.performance.mark('draw-messages-end')
-
-  window.performance.measure('draw-background-start-to-end', 'draw-background-start', 'draw-background-end')
-  window.performance.measure('draw-visuals-start-to-end', 'draw-visuals-start', 'draw-visuals-end')
-  window.performance.measure('draw-messages-start-to-end', 'draw-messages-start', 'draw-messages-end')
-
   return undefined
 }
 
@@ -139,45 +128,29 @@ const SketchComponent = ({ game, evaluation: initialEvaluation }: SketchProps) =
   const sounds = new Map<Id, GameSound>()
   let evaluation = initialEvaluation.copy()
 
-  setInterval(() => {
-    const measures = performance.getEntriesByType('measure')
-    performance.clearMeasures()
+  useEffect(() => {
+    setInterval(() => {
+      const measures = performance.getEntriesByType('measure')
+      performance.clearMeasures()
 
-    const updateMeasures = measures.filter(measure => measure.name === 'update-start-to-end')
-    const totalUpdateTime = updateMeasures.reduce((sum, measure) => sum + measure.duration, 0)
+      function inform(measureName: string) {
+        const selectedMeasures = measures.filter(measure => measure.name === measureName)
+        const totalTime = selectedMeasures.reduce((sum, measure) => sum + measure.duration, 0)
+        const averageDuration =selectedMeasures.length ? totalTime / selectedMeasures.length : 0
+        const durationPercentage = totalTime * 100 / 1000
+        return `${ Math.round(averageDuration)}ms (${durationPercentage.toFixed(2)}%)`
+      }
 
-    const keyMeasures = measures.filter(measure => measure.name === 'key-start-to-end')
-    const totalKeyTime = keyMeasures.reduce((sum, measure) => sum + measure.duration, 0)
-
-    const drawMeasures = measures.filter(measure => measure.name === 'draw-start-to-end')
-    const totalDrawTime = drawMeasures.reduce((sum, measure) => sum + measure.duration, 0)
-
-    const drawBackgroundMeasures = measures.filter(measure => measure.name === 'draw-background-start-to-end')
-    const totalDrawBackgroundTime = drawBackgroundMeasures.reduce((sum, measure) => sum + measure.duration, 0)
-
-    const listVisualsMeasures = measures.filter(measure => measure.name === 'list-visuals-start-to-end')
-    const totalListVisualsTime = listVisualsMeasures.reduce((sum, measure) => sum + measure.duration, 0)
-
-    const drawVisualsMeasures = measures.filter(measure => measure.name === 'draw-visuals-start-to-end')
-    const totalDrawVisualsTime = drawVisualsMeasures.reduce((sum, measure) => sum + measure.duration, 0)
-
-    const drawMessagesMeasures = measures.filter(measure => measure.name === 'draw-messages-start-to-end')
-    const totalDrawMessagesTime = drawMessagesMeasures.reduce((sum, measure) => sum + measure.duration, 0)
-
-
-    const instances = evaluation.allInstances()
-    console.log(`
-      FPS: ${drawMeasures.length}
-      Average Draw Time: ${Math.round(drawMeasures.length ? totalDrawTime / drawMeasures.length : 0)}ms (${(totalDrawTime / 1000 * 100).toFixed(2)}%)
-        - Background: ${Math.round(drawBackgroundMeasures.length ? totalDrawBackgroundTime / drawBackgroundMeasures.length : 0)}ms (${(totalDrawBackgroundTime / totalDrawTime * 100).toFixed(2)}%)
-        - List Visuals: ${Math.round(listVisualsMeasures.length ? totalListVisualsTime / listVisualsMeasures.length : 0)}ms (${(totalListVisualsTime / totalDrawTime * 100).toFixed(2)}%)
-        - Visuals: ${Math.round(drawVisualsMeasures.length ? totalDrawVisualsTime / drawVisualsMeasures.length : 0)}ms (${(totalDrawVisualsTime / totalDrawTime * 100).toFixed(2)}%)
-        - Messages: ${Math.round(drawMessagesMeasures.length ? totalDrawMessagesTime / drawMessagesMeasures.length : 0)}ms (${(totalDrawMessagesTime / totalDrawTime * 100).toFixed(2)}%)
-      Average Update Time: ${Math.round(updateMeasures.length ? totalUpdateTime / updateMeasures.length : 0)}ms (${(totalUpdateTime / 1000 * 100).toFixed(2)}%)
-      Average Key Time: ${Math.round(keyMeasures.length ? totalKeyTime / keyMeasures.length : 0)}ms (${(totalKeyTime / 1000 * 100).toFixed(2)}%)
-      Instances: ${instances.size}
-    `)
-  }, 1000)
+      const instances = evaluation.allInstances()
+      console.log(`
+        FPS: ${measures.filter(measure => measure.name === 'draw-start-to-end').length}
+        Average Draw Time: ${inform('draw-start-to-end')}
+        Average Update Time: ${inform('update-start-to-end')}
+        Average Key Time: ${inform('key-start-to-end')}
+        Instances: ${instances.size}
+      `)
+    }, 1000)
+  }, [evaluation])
 
   function setup(sketch: p5, canvasParentRef: Element) {
     const resolution = canvasResolution(evaluation)
