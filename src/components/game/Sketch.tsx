@@ -53,12 +53,44 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     return new ExecutionDirector(evaluation, execution).finish() as any
   }
 
+  setInterval(() => {
+    const measures = performance.getEntriesByType('measure')
+    performance.clearMeasures()
+
+    const drawMeasures = measures.filter(measure => measure.name === 'draw-start-to-end')
+    const totalDrawTime = drawMeasures.reduce((sum, measure) => sum + measure.duration, 0)
+
+    const keyMeasures = measures.filter(measure => measure.name === 'key-start-to-end')
+    const totalKeyTime = keyMeasures.reduce((sum, measure) => sum + measure.duration, 0)
+
+    const updateMeasures = measures.filter(measure => measure.name === 'update-start-to-end')
+    const totalUpdateTime = updateMeasures.reduce((sum, measure) => sum + measure.duration, 0)
+
+    const instances = evaluation.allInstances()
+    console.log(`
+      FPS: ${drawMeasures.length}
+      Average Update Time: ${Math.round(updateMeasures.length ? totalUpdateTime / updateMeasures.length : 0)}ms (${(totalUpdateTime / 1000).toFixed(2)}%)
+      Average Draw Time: ${Math.round(drawMeasures.length ? totalDrawTime / drawMeasures.length : 0)}ms (${(totalDrawTime / 1000).toFixed(2)}%)
+      Average Key Time: ${Math.round(keyMeasures.length ? totalKeyTime / keyMeasures.length : 0)}ms (${(totalKeyTime / 1000).toFixed(2)}%)
+      Instances: ${instances.size}
+    `)
+  }, 1000)
+
   function draw(sketch: p5Types) {
+    window.performance.mark('update-start')
     run(flushEvents(evaluation, currentTime(sketch)))
     checkStop()
     syncSounds()
     playSounds()
+    window.performance.mark('update-end')
+
+    window.performance.mark('draw-start')
     run(drawBoard(sketch))
+    window.performance.mark('draw-end')
+
+    window.performance.measure('update-start-to-end', 'update-start', 'update-end')
+    window.performance.measure('draw-start-to-end', 'draw-start', 'draw-end')
+
   }
 
   const setup = (sketch: p5Types, canvasParentRef: any) => {
@@ -172,27 +204,7 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
     sketch.image(imageFromPath(visual.image), position.x, position.y)
   }
 
-  setInterval(() => {
-    const measures = performance.getEntriesByType('measure')
-    performance.clearMeasures()
-
-    const drawMeasures = measures.filter(measure => measure.name === 'draw-start-to-end')
-    const totalDrawTime = drawMeasures.reduce((sum, measure) => sum + measure.duration, 0)
-
-    const keyMeasures = measures.filter(measure => measure.name === 'key-start-to-end')
-    const totalKeyTime = keyMeasures.reduce((sum, measure) => sum + measure.duration, 0)
-
-    const instances = evaluation.allInstances()
-    console.log(`
-      FPS: ${drawMeasures.length}
-      ART: ${Math.round(drawMeasures.length ? totalDrawTime / drawMeasures.length : 0)}ms (${(totalDrawTime / 1000).toFixed(2)}%)
-      AKT: ${Math.round(keyMeasures.length ? totalKeyTime / keyMeasures.length : 0)}ms (${(totalKeyTime / 1000).toFixed(2)}%)
-      Instances: ${instances.size}
-    `)
-  }, 1000)
-
   function* drawBoard(sketch: p5) {
-    window.performance.mark('draw-start')
     const messagesToDraw: DrawableMessage[] = []
     drawBackground(sketch)
     const visuals = yield* currentVisualStates(evaluation)
@@ -203,10 +215,6 @@ const SketchComponent = ({ game, evaluation: e }: SketchProps) => {
       if (message && message.time > currentTime(sketch)) messagesToDraw.push({ message: message.text, x: position.x, y: position.y })
     }
     messagesToDraw.forEach(drawMessage(sketch))
-    window.performance.mark('draw-end')
-
-    window.performance.measure('draw-start-to-end', 'draw-start', 'draw-end')
-
     return undefined
   }
 
