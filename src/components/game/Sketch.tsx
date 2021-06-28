@@ -4,7 +4,7 @@ import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id, ExecutionDirector } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
-import { flushEvents, boardGround, cellSize, currentSoundStates, canvasResolution, gameStop, ground, height, width, currentVisualStates } from './GameStates'
+import { boardGround, cellSize, getNumberFieldValueFrom, getVisualImage, getVisualMessage, currentSoundStates, canvasResolution, gameStop, ground, height, width, visuals, findByFQN } from './GameStates'
 import { GameSound } from './GameSound'
 import { buildKeyPressEvent, queueGameEvent } from './SketchUtils'
 import { Button } from '@material-ui/core'
@@ -49,7 +49,9 @@ interface SketchProps {
 
 function* step(sketch: p5, game: GameProject, evaluation: Evaluation, sounds: Map<Id, GameSound>, images: Map<Id, p5.Image>) {
   window.performance.mark('update-start')
-  yield* flushEvents(evaluation, sketch.millis())
+  const time = yield* evaluation.reify(sketch.millis())
+  const mirror = findByFQN('wollok.gameMirror.gameMirror')(evaluation)
+  yield* evaluation.invoke('flushEvents', mirror, time)
   updateSound(game, evaluation, sounds)
   window.performance.mark('update-end')
 
@@ -105,13 +107,18 @@ function* render(evaluation: Evaluation, sketch: p5, images: Map<string, p5.Imag
 
   const cellPixelSize = cellSize(evaluation)
   const messagesToDraw: DrawableMessage[] = []
-  for (const visual of yield* currentVisualStates(evaluation)) {
-    const imageObject = image(visual.image)
-    const x = visual.position.x * cellPixelSize
-    const y = sketch.height - visual.position.y * cellPixelSize - imageObject.height
+
+
+  for (const visual of visuals(evaluation)) {
+    const imageObject = image(yield* getVisualImage(visual)(evaluation))
+    const position = visual.get('position') ?? (yield* evaluation.invoke('position', visual))!
+    const x = Math.trunc(getNumberFieldValueFrom(position, evaluation, 'x')) * cellPixelSize
+    const y = sketch.height - Math.trunc(getNumberFieldValueFrom(position, evaluation, 'y')) * cellPixelSize - imageObject.height
+
     sketch.image(imageObject, x, y)
 
-    if (visual.message && visual.message.time > sketch.millis()) messagesToDraw.push({ message: visual.message.text, x, y })
+    const message = getVisualMessage(visual)
+    if (message && message.time > sketch.millis()) messagesToDraw.push({ message: message.text, x, y })
   }
 
   messagesToDraw.forEach(drawMessage(sketch))
