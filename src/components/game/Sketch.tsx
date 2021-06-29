@@ -113,10 +113,11 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
   else {
     const groundImage = image(game.get('ground')!.innerString!)
     const gameWidth = round(game.get('width')!.innerNumber!)
-    const gameHeigth = round(game.get('height')!.innerNumber!)
+    const gameHeight = round(game.get('height')!.innerNumber!)
+
     for (let x = 0; x < gameWidth; x++)
-      for (let y = 0; y < gameHeigth; y++)
-        sketch.image(groundImage, x, y)
+      for (let y = 0; y < gameHeight; y++)
+        sketch.image(groundImage, x * cellPixelSize, y * cellPixelSize)
   }
 
   const messagesToDraw: DrawableMessage[] = []
@@ -135,7 +136,6 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
   }
 
   messagesToDraw.forEach(drawMessage(sketch))
-  return undefined
 }
 
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
