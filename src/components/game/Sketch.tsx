@@ -4,12 +4,13 @@ import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id, ExecutionDirector } from 'wollok-ts'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
-import { boardGround, cellSize, getNumberFieldValueFrom, getVisualImage, getVisualMessage, currentSoundStates, canvasResolution, gameStop, ground, height, width, visuals, findByFQN } from './GameStates'
-import { GameSound } from './GameSound'
+import { GameSound, SoundState, SoundStatus } from './GameSound'
 import { buildKeyPressEvent, queueGameEvent } from './SketchUtils'
 import { Button } from '@material-ui/core'
 import ReplayIcon from '@material-ui/icons/Replay'
 import { DrawableMessage, drawMessage } from './messages'
+
+const { round } = Math
 
 const defaultImgs = [
   'ground.png',
@@ -39,7 +40,7 @@ function wKeyCode(key: string, keyCode: number): string {
 }
 
 interface SketchProps {
-  game: GameProject
+  gameProject: GameProject
   evaluation: Evaluation
 }
 
@@ -50,7 +51,7 @@ interface SketchProps {
 function* step(sketch: p5, game: GameProject, evaluation: Evaluation, sounds: Map<Id, GameSound>, images: Map<Id, p5.Image>) {
   window.performance.mark('update-start')
   const time = yield* evaluation.reify(sketch.millis())
-  const mirror = findByFQN('wollok.gameMirror.gameMirror')(evaluation)
+  const mirror = evaluation.object('wollok.gameMirror.gameMirror')
   yield* evaluation.invoke('flushEvents', mirror, time)
   updateSound(game, evaluation, sounds)
   window.performance.mark('update-end')
@@ -66,10 +67,10 @@ function* step(sketch: p5, game: GameProject, evaluation: Evaluation, sounds: Ma
 }
 
 function updateSound(game: GameProject, evaluation: Evaluation, sounds: Map<Id, GameSound>) {
-  const soundStates = currentSoundStates(evaluation)
+  const soundInstances = evaluation.object('wollok.game.game').get('sounds')?.innerCollection ?? []
 
   for(const [id, sound] of sounds.entries()) {
-    if(!soundStates.some(sound => sound.id === id)) {
+    if(!soundInstances.some(sound => sound.id === id)) {
       sound.stopSound()
       sounds.delete(id)
     } else {
@@ -77,7 +78,15 @@ function updateSound(game: GameProject, evaluation: Evaluation, sounds: Map<Id, 
     }
   }
 
-  soundStates.forEach(soundState => {
+  soundInstances.forEach(soundInstance => {
+    const soundState: SoundState = {
+      id: soundInstance.id,
+      file: soundInstance.get('file')!.innerString!,
+      status: soundInstance.get('status')!.innerString! as SoundStatus,
+      volume: soundInstance.get('volume')!.innerNumber!,
+      loop: soundInstance.get('loop')!.innerBoolean!,
+    }
+
     let sound = sounds.get(soundState.id)
     if (!sound) {
       const soundPath = game.sounds.find(({ possiblePaths }) => possiblePaths.includes(soundState.file))?.url
@@ -92,33 +101,34 @@ function updateSound(game: GameProject, evaluation: Evaluation, sounds: Map<Id, 
 }
 
 function* render(evaluation: Evaluation, sketch: p5, images: Map<string, p5.Image>) {
-  const image = (path: string): p5.Image => images.get(path) ?? images.get('wko.png')!
+  const image = (path?: string): p5.Image => (path && images.get(path)) || images.get('wko.png')!
+  const game = evaluation.object('wollok.game.game')
+  const cellPixelSize = game.get('cellSize')!.innerNumber!
+  const boardGroundPath = game.get('boardGround')?.innerString
 
-  const boardGroundPath = boardGround(evaluation)
   if (boardGroundPath) sketch.image(image(boardGroundPath), 0, 0, sketch.width, sketch.height)
   else {
-    const groundImage = image(ground(evaluation))
-    const gameWidth = width(evaluation)
-    const gameHeigth = height(evaluation)
+    const groundImage = image(game.get('ground')!.innerString!)
+    const gameWidth = round(game.get('width')!.innerNumber!)
+    const gameHeigth = round(game.get('height')!.innerNumber!)
     for (let x = 0; x < gameWidth; x++)
       for (let y = 0; y < gameHeigth; y++)
         sketch.image(groundImage, x, y)
   }
 
-  const cellPixelSize = cellSize(evaluation)
   const messagesToDraw: DrawableMessage[] = []
-
-
-  for (const visual of visuals(evaluation)) {
-    const imageObject = image(yield* getVisualImage(visual)(evaluation))
+  for (const visual of game.get('visuals')?.innerCollection ?? []) {
+    const imageMethod = visual.module.lookupMethod('image', 0)
+    const imageObject = image(imageMethod && (yield* evaluation.invoke(imageMethod, visual))!.innerString)
     const position = visual.get('position') ?? (yield* evaluation.invoke('position', visual))!
-    const x = Math.trunc(getNumberFieldValueFrom(position, evaluation, 'x')) * cellPixelSize
-    const y = sketch.height - Math.trunc(getNumberFieldValueFrom(position, evaluation, 'y')) * cellPixelSize - imageObject.height
+    const x = Math.trunc(position.get('x')!.innerNumber!) * cellPixelSize
+    const y = sketch.height - Math.trunc(position.get('y')!.innerNumber!) * cellPixelSize - imageObject.height
 
     sketch.image(imageObject, x, y)
 
-    const message = getVisualMessage(visual)
-    if (message && message.time > sketch.millis()) messagesToDraw.push({ message: message.text, x, y })
+    const message = visual.get('message')
+    if (message && visual.get('messageTime')!.innerNumber! > sketch.millis())
+      messagesToDraw.push({ message: message.innerString!, x, y })
   }
 
   messagesToDraw.forEach(drawMessage(sketch))
@@ -129,7 +139,7 @@ function* render(evaluation: Evaluation, sketch: p5, images: Map<string, p5.Imag
 // COMPONENTS
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
-const SketchComponent = ({ game, evaluation: initialEvaluation }: SketchProps) => {
+const SketchComponent = ({ gameProject, evaluation: initialEvaluation }: SketchProps) => {
   const [stop, setStop] = useState(false)
   const images = new Map<string, p5.Image>()
   const sounds = new Map<Id, GameSound>()
@@ -160,12 +170,16 @@ const SketchComponent = ({ game, evaluation: initialEvaluation }: SketchProps) =
   }, [evaluation])
 
   function setup(sketch: p5, canvasParentRef: Element) {
-    const resolution = canvasResolution(evaluation)
-    sketch.createCanvas(resolution.x, resolution.y).parent(canvasParentRef)
+    const game = evaluation.object('wollok.game.game')
+    const cellPixelSize = game.get('cellSize')!.innerNumber!
+    const width = round(game.get('width')!.innerNumber!) * cellPixelSize
+    const height = round(game.get('height')!.innerNumber!) * cellPixelSize
+
+    sketch.createCanvas(width, height).parent(canvasParentRef)
 
     defaultImgs.forEach(path => images.set(path, sketch.loadImage(DEFAULT_GAME_ASSETS_DIR + path)))
 
-    game.images.forEach(({ possiblePaths, url }) =>
+    gameProject.images.forEach(({ possiblePaths, url }) =>
       possiblePaths.forEach(path =>
         images.set(path, sketch.loadImage(url))
       )
@@ -173,8 +187,8 @@ const SketchComponent = ({ game, evaluation: initialEvaluation }: SketchProps) =
   }
 
   function draw(sketch: p5) {
-    if (gameStop(evaluation)) setStop(true)
-    else new ExecutionDirector(evaluation, step(sketch, game, evaluation, sounds, images)).finish()
+    if (!evaluation.object('wollok.game.game').get('running')!.innerBoolean!) setStop(true)
+    else new ExecutionDirector(evaluation, function* () { yield* step(sketch, gameProject, evaluation, sounds, images) }).finish()
   }
 
   function keyPressed(sketch: p5) {
@@ -184,8 +198,7 @@ const SketchComponent = ({ game, evaluation: initialEvaluation }: SketchProps) =
       yield* queueGameEvent(evaluation, yield* buildKeyPressEvent(evaluation, 'ANY'))
       window.performance.mark('key-end')
       window.performance.measure('key-start-to-end', 'key-start', 'key-end')
-      return undefined
-    }()).finish()
+    }).finish()
 
     return false
   }

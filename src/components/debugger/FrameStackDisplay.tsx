@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { ExecutionDirector } from 'wollok-ts'
 import { DebuggerContext } from './Debugger'
 import $ from './FrameStackDisplay.module.scss'
 import { nodeLabel } from './utils'
@@ -28,9 +29,9 @@ const FrameStackDisplay = () => {
               <div className={$.stack}>
                 {[...context.locals.keys()].map(local => {
                   const value = context.get(local)
-                  const stringValue = executionDirector
-                    .fork(function * (evaluation) {
-                      return value && (yield* evaluation.invoke('toString', value))
+                  const stringValue = new ExecutionDirector(executionDirector.evaluation.copy(),
+                    function* () {
+                      return value && (yield* this.invoke('toString', value))
                     })
                     .finish()
 

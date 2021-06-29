@@ -1,5 +1,5 @@
 import React, { FocusEvent, useContext, useEffect, useState, useCallback, KeyboardEvent } from 'react'
-import { parse, RuntimeObject } from 'wollok-ts'
+import { ExecutionDirector, parse, RuntimeObject } from 'wollok-ts'
 import { LocalScope } from 'wollok-ts/dist/linker'
 import { VscAdd as AddIcon } from 'react-icons/vsc'
 import $ from './Inspect.module.scss'
@@ -22,10 +22,10 @@ const Inspect = () => {
         Object.assign(node, { scope: new LocalScope(parent?.scope ?? executionDirector.evaluation.currentNode.scope) })
       })
 
-      const result = executionDirector
-        .fork(function * (evaluation) {
-          const resultInstance = yield* evaluation.exec(expression)
-          return resultInstance && (yield* evaluation.invoke('toString', resultInstance))
+      const result = new ExecutionDirector(executionDirector.evaluation.copy(),
+        function * () {
+          const resultInstance = yield* this.exec(expression)
+          return resultInstance && (yield* this.invoke('toString', resultInstance))
         })
         .finish()
 

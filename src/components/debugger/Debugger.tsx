@@ -116,7 +116,7 @@ const Debugger = ({ }: RouteComponentProps) => {
 
   const handleTestSelection = async (files: List<SourceFile>, environment: Environment, test: Test): Promise<void> => {
     const evaluation = Evaluation.build(environment, WRENatives)
-    const executionDirector = new ExecutionDirector(evaluation, evaluation.exec(test))
+    const executionDirector = new ExecutionDirector(evaluation, function*() { yield* this.exec(test) })
     executionDirector.resume(node => node === test.body)
 
     setState({

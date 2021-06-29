@@ -1,5 +1,4 @@
 import { Evaluation, Execution, RuntimeObject, RuntimeValue } from 'wollok-ts'
-import { findByFQN } from './GameStates'
 
 export function wKeyCode(keyName: string, keyCode: number): string { //These keyCodes correspond to http://keycode.info/
   if (keyCode >= 48 && keyCode <= 57) return `Digit${keyName}` //Numbers (non numpad)
@@ -22,9 +21,9 @@ export function wKeyCode(keyName: string, keyCode: number): string { //These key
 export function* buildKeyPressEvent(evaluation: Evaluation, keyCode: string): Execution<RuntimeObject> {
   const eventType = yield* evaluation.reify('keypress')
   const wKey = yield* evaluation.reify(keyCode)
-  return yield* evaluation.list([eventType, wKey])
+  return yield* evaluation.list(eventType, wKey)
 }
 
 export function queueGameEvent(evaluation: Evaluation, event: RuntimeObject): Execution<RuntimeValue> {
-  return evaluation.invoke('queueEvent', findByFQN('wollok.io.io')(evaluation), event)
+  return evaluation.invoke('queueEvent', evaluation.object('wollok.io.io'), event)
 }

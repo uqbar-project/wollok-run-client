@@ -6,7 +6,6 @@ import FilesSelector, { File } from '../filesSelector/FilesSelector'
 import Sketch from './Sketch'
 import $ from './Game.module.scss'
 import { GameProject, buildGameProject, getProgramIn } from './gameProject'
-import { game as gameInstance } from './GameStates'
 
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
@@ -17,21 +16,21 @@ const Game = (_: GameProps) => {
     const project = buildGameProject(files)
     const environment = buildEnvironment(project.sources)
     const cleanEval = Evaluation.build(environment, WRENatives)
-    const execution = new ExecutionDirector(cleanEval, cleanEval.exec(getProgramIn(project.main, environment)))
+    const execution = new ExecutionDirector(cleanEval, function*(){ yield* this.exec(getProgramIn(project.main, environment)) })
     const result = execution.finish()
     if (result.error) throw result.error //TODO: Revisar
     setGame(project)
     setEvaluation(cleanEval)
   }
 
-  const title = evaluation ? gameInstance(evaluation)?.get('title')?.innerValue : ''
+  const title = evaluation ? evaluation.object('wollok.game.game')?.get('title')?.innerValue : ''
 
   return !evaluation || !game
     ? <FilesSelector onFilesLoad={loadGame} />
     : <div className={$.container}>
       <h1>{title}</h1>
       <div>
-        <Sketch game={game} evaluation={evaluation} />
+        <Sketch gameProject={game} evaluation={evaluation} />
         <ReactMarkdown source={game.description} className={$.description} />
       </div>
     </div>
