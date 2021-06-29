@@ -2,10 +2,11 @@ import p5 from 'p5'
 import React, { useEffect, useState } from 'react'
 import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
-import { Evaluation, Id, ExecutionDirector } from 'wollok-ts'
+import { Evaluation, Id } from 'wollok-ts'
+import { Interpreter } from 'wollok-ts/dist/interpreter/runtimeModel'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
-import { buildKeyPressEvent, queueGameEvent } from './SketchUtils'
+import { buildKeyPressEvent } from './SketchUtils'
 import { Button } from '@material-ui/core'
 import ReplayIcon from '@material-ui/icons/Replay'
 import { DrawableMessage, drawMessage } from './messages'
@@ -48,16 +49,18 @@ interface SketchProps {
 // GAME CYCLE
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
-function* step(sketch: p5, game: GameProject, evaluation: Evaluation, sounds: Map<Id, GameSound>, images: Map<Id, p5.Image>) {
+function step(sketch: p5, game: GameProject, interpreter: Interpreter, sounds: Map<Id, GameSound>, images: Map<Id, p5.Image>) {
   window.performance.mark('update-start')
-  const time = yield* evaluation.reify(sketch.millis())
-  const mirror = evaluation.object('wollok.gameMirror.gameMirror')
-  yield* evaluation.invoke('flushEvents', mirror, time)
-  updateSound(game, evaluation, sounds)
+  interpreter.invoke(
+    'flushEvents',
+    interpreter.object('wollok.gameMirror.gameMirror'),
+    interpreter.reify(sketch.millis()),
+  )
+  updateSound(game, interpreter, sounds)
   window.performance.mark('update-end')
 
   window.performance.mark('draw-start')
-  yield* render(evaluation, sketch, images)
+  render(interpreter, sketch, images)
   window.performance.mark('draw-end')
 
   window.performance.measure('update-start-to-end', 'update-start', 'update-end')
@@ -66,8 +69,8 @@ function* step(sketch: p5, game: GameProject, evaluation: Evaluation, sounds: Ma
   return undefined
 }
 
-function updateSound(game: GameProject, evaluation: Evaluation, sounds: Map<Id, GameSound>) {
-  const soundInstances = evaluation.object('wollok.game.game').get('sounds')?.innerCollection ?? []
+function updateSound(game: GameProject, interpreter: Interpreter, sounds: Map<Id, GameSound>) {
+  const soundInstances = interpreter.object('wollok.game.game').get('sounds')?.innerCollection ?? []
 
   for(const [id, sound] of sounds.entries()) {
     if(!soundInstances.some(sound => sound.id === id)) {
@@ -100,9 +103,9 @@ function updateSound(game: GameProject, evaluation: Evaluation, sounds: Map<Id, 
   })
 }
 
-function* render(evaluation: Evaluation, sketch: p5, images: Map<string, p5.Image>) {
+function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Image>) {
   const image = (path?: string): p5.Image => (path && images.get(path)) || images.get('wko.png')!
-  const game = evaluation.object('wollok.game.game')
+  const game = interpreter.object('wollok.game.game')
   const cellPixelSize = game.get('cellSize')!.innerNumber!
   const boardGroundPath = game.get('boardGround')?.innerString
 
@@ -119,8 +122,8 @@ function* render(evaluation: Evaluation, sketch: p5, images: Map<string, p5.Imag
   const messagesToDraw: DrawableMessage[] = []
   for (const visual of game.get('visuals')?.innerCollection ?? []) {
     const imageMethod = visual.module.lookupMethod('image', 0)
-    const imageObject = image(imageMethod && (yield* evaluation.invoke(imageMethod, visual))!.innerString)
-    const position = visual.get('position') ?? (yield* evaluation.invoke('position', visual))!
+    const imageObject = image(imageMethod && interpreter.invoke(imageMethod, visual)!.innerString)
+    const position = visual.get('position') ?? interpreter.invoke('position', visual)!
     const x = Math.trunc(position.get('x')!.innerNumber!) * cellPixelSize
     const y = sketch.height - Math.trunc(position.get('y')!.innerNumber!) * cellPixelSize - imageObject.height
 
@@ -143,7 +146,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation }: SketchP
   const [stop, setStop] = useState(false)
   const images = new Map<string, p5.Image>()
   const sounds = new Map<Id, GameSound>()
-  let evaluation = initialEvaluation.copy()
+  let interpreter = new Interpreter(initialEvaluation.copy())
 
   useEffect(() => {
     setInterval(() => {
@@ -158,7 +161,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation }: SketchP
         return `${ Math.round(averageDuration)}ms (${durationPercentage.toFixed(2)}%)`
       }
 
-      const instances = evaluation.allInstances()
+      const instances = interpreter.evaluation.allInstances()
       console.log(`
         FPS: ${measures.filter(measure => measure.name === 'draw-start-to-end').length}
         Average Draw Time: ${inform('draw-start-to-end')}
@@ -167,10 +170,10 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation }: SketchP
         Instances: ${instances.size}
       `)
     }, 1000)
-  }, [evaluation])
+  }, [interpreter])
 
   function setup(sketch: p5, canvasParentRef: Element) {
-    const game = evaluation.object('wollok.game.game')
+    const game = interpreter.object('wollok.game.game')
     const cellPixelSize = game.get('cellSize')!.innerNumber!
     const width = round(game.get('width')!.innerNumber!) * cellPixelSize
     const height = round(game.get('height')!.innerNumber!) * cellPixelSize
@@ -187,24 +190,23 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation }: SketchP
   }
 
   function draw(sketch: p5) {
-    if (!evaluation.object('wollok.game.game').get('running')!.innerBoolean!) setStop(true)
-    else new ExecutionDirector(evaluation, function* () { yield* step(sketch, gameProject, evaluation, sounds, images) }).finish()
+    if (!interpreter.object('wollok.game.game').get('running')!.innerBoolean!) setStop(true)
+    else step(sketch, gameProject, interpreter, sounds, images)
   }
 
   function keyPressed(sketch: p5) {
-    new ExecutionDirector(evaluation, function* () {
-      window.performance.mark('key-start')
-      yield* queueGameEvent(evaluation, yield* buildKeyPressEvent(evaluation, wKeyCode(sketch.key, sketch.keyCode)))
-      yield* queueGameEvent(evaluation, yield* buildKeyPressEvent(evaluation, 'ANY'))
-      window.performance.mark('key-end')
-      window.performance.measure('key-start-to-end', 'key-start', 'key-end')
-    }).finish()
+    window.performance.mark('key-start')
+    const io = interpreter.object('wollok.io.io')
+    interpreter.invoke('queueEvent', io, buildKeyPressEvent(interpreter, wKeyCode(sketch.key, sketch.keyCode)))
+    interpreter.invoke('queueEvent', io, buildKeyPressEvent(interpreter, 'ANY'))
+    window.performance.mark('key-end')
+    window.performance.measure('key-start-to-end', 'key-start', 'key-end')
 
     return false
   }
 
   function restart() {
-    evaluation = initialEvaluation.copy()
+    interpreter = new Interpreter(initialEvaluation.copy())
     setStop(false)
   }
 
