@@ -1,4 +1,5 @@
-import { Interpreter, RuntimeObject } from 'wollok-ts'
+import { RuntimeObject } from 'wollok-ts'
+import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 
 export function wKeyCode(keyName: string, keyCode: number): string { //These keyCodes correspond to http://keycode.info/
   if (keyCode >= 48 && keyCode <= 57) return `Digit${keyName}` //Numbers (non numpad)

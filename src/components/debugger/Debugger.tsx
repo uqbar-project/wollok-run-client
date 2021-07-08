@@ -5,7 +5,7 @@ import 'flexlayout-react/style/dark.css'
 import $ from './Debugger.module.scss'
 import classNames from 'classnames'
 import LoadScreen from './LoadScreen'
-import { Environment, Evaluation, ExecutionDirector, List, Name, Test, WRENatives } from 'wollok-ts'
+import { Environment, Evaluation, List, Name, Test, WRENatives } from 'wollok-ts'
 import SourceDisplay from './SourceDisplay'
 import ASTDisplay from './ASTDisplay'
 import Toolbar from './Toolbar'
@@ -13,6 +13,7 @@ import Inspect from './Inspect'
 import FrameStackDisplay from './FrameStackDisplay'
 import BreakpointList from './BreakpointList'
 import ObjectDiagramDisplay from './ObjectDiagramDisplay'
+import { DirectedInterpreter, ExecutionDirector } from 'wollok-ts/dist/interpreter/interpreter'
 
 
 const WREFiles = async (): Promise<List<SourceFile>> => {
@@ -102,7 +103,8 @@ export type SourceFile = { name: Name, content: string }
 
 export type DebuggerState = {
   readonly files: List<SourceFile>
-  readonly executionDirector: ExecutionDirector
+  readonly executionDirector: ExecutionDirector<void>
+  readonly interpreter: DirectedInterpreter
   restart(): void
 }
 
@@ -116,11 +118,13 @@ const Debugger = ({ }: RouteComponentProps) => {
 
   const handleTestSelection = async (files: List<SourceFile>, environment: Environment, test: Test): Promise<void> => {
     const evaluation = Evaluation.build(environment, WRENatives)
-    const executionDirector = new ExecutionDirector(evaluation, function*() { yield* this.exec(test) })
+    const interpreter = new DirectedInterpreter(evaluation)
+    const executionDirector = interpreter.exec(test)
     executionDirector.resume(node => node === test.body)
 
     setState({
       executionDirector,
+      interpreter,
       files: [
         ...files,
         ...await WREFiles(),
@@ -133,7 +137,7 @@ const Debugger = ({ }: RouteComponentProps) => {
 
   const layout = LayoutModel.fromJson(layoutConfiguration(state.files))
 
-  layout.doAction(Actions.selectTab(state.executionDirector.evaluation.currentNode.sourceFileName()!))
+  layout.doAction(Actions.selectTab(state.interpreter.evaluation.currentNode.sourceFileName()!))
 
   return (
     <DebuggerContext.Provider value={{ ...state, stateChanged }}>

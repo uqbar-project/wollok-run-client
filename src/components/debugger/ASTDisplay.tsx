@@ -35,15 +35,15 @@ const switcherIcon = ({ expanded, isLeaf }: TreeNodeProps) => isLeaf ? undefined
 
 
 const ASTDisplay = () => {
-  const { executionDirector } = useContext(DebuggerContext)
+  const { interpreter } = useContext(DebuggerContext)
   const [expanded, setExpanded] = useState<Key[]>([])
 
   return (
     <Tree
       onExpand={setExpanded}
-      expandedKeys={[...expanded, ...executionDirector.evaluation.currentNode.ancestors().map(({ id }) => id)]}
-      selectedKeys={[executionDirector.evaluation.currentNode.id]}
-      treeData={[toASTData(executionDirector.evaluation.environment)]}
+      expandedKeys={[...expanded, ...interpreter.evaluation.currentNode.ancestors().map(({ id }) => id)]}
+      selectedKeys={[interpreter.evaluation.currentNode.id]}
+      treeData={[toASTData(interpreter.evaluation.environment)]}
       switcherIcon={switcherIcon}
     />
   )

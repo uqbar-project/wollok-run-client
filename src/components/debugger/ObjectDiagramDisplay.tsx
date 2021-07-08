@@ -4,10 +4,10 @@ import { DebuggerContext } from './Debugger'
 
 const ObjectDiagramDisplay = () => {
 
-  const { executionDirector } = useContext(DebuggerContext)
+  const { interpreter } = useContext(DebuggerContext)
 
   return (
-    <ObjectDiagram evaluation={executionDirector.evaluation}/>
+    <ObjectDiagram evaluation={interpreter.evaluation}/>
   )
 }
 

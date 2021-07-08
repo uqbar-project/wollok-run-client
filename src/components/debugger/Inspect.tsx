@@ -1,12 +1,12 @@
 import React, { FocusEvent, useContext, useEffect, useState, useCallback, KeyboardEvent } from 'react'
-import { ExecutionDirector, parse, RuntimeObject } from 'wollok-ts'
+import { parse, RuntimeObject } from 'wollok-ts'
 import { LocalScope } from 'wollok-ts/dist/linker'
 import { VscAdd as AddIcon } from 'react-icons/vsc'
 import $ from './Inspect.module.scss'
 import { DebuggerContext } from './Debugger'
 
 const Inspect = () => {
-  const { executionDirector } = useContext(DebuggerContext)
+  const { interpreter } = useContext(DebuggerContext)
   const [expressions, setExpressions] = useState<{text: string, result?: string}[]>([])
 
   const addExpression = () => setExpressions([...expressions, { text: '' }])
@@ -19,15 +19,14 @@ const Inspect = () => {
       const expression = parse.Expression.tryParse(expressionText)
       expression.forEach((node, parent) => {
         if(parent) node.cache.set('parent()', parent)
-        Object.assign(node, { scope: new LocalScope(parent?.scope ?? executionDirector.evaluation.currentNode.scope) })
+        Object.assign(node, { scope: new LocalScope(parent?.scope ?? interpreter.evaluation.currentNode.scope) })
       })
 
-      const result = new ExecutionDirector(executionDirector.evaluation.copy(),
+      const result = interpreter.fork().do(
         function * () {
           const resultInstance = yield* this.exec(expression)
-          return resultInstance && (yield* this.invoke('toString', resultInstance))
-        })
-        .finish()
+          return resultInstance && (yield* this.send('toString', resultInstance))
+        }).finish()
 
       if(result.error) throw result.error
       if(result.result) {
@@ -43,13 +42,13 @@ const Inspect = () => {
 
     expressions[expressionIndex] = { text: expressionText, result: expressionResult }
     setExpressions([...expressions])
-  }, [expressions, setExpressions, executionDirector])
+  }, [expressions, interpreter])
 
 
   useEffect(() => {
     expressions.forEach(({ text }, index) => updateExpression(text, index))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [executionDirector.evaluation.frameStack.length])
+  }, [interpreter.evaluation.frameStack.length])
 
 
   return (

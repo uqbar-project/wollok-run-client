@@ -4,7 +4,7 @@ import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id } from 'wollok-ts'
 import validate from 'wollok-ts/dist/validator'
-import { Interpreter } from 'wollok-ts/dist/interpreter/runtimeModel'
+import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
 import { buildKeyPressEvent } from './SketchUtils'
@@ -52,7 +52,7 @@ interface SketchProps {
 
 function step(sketch: p5, game: GameProject, interpreter: Interpreter, sounds: Map<Id, GameSound>, images: Map<Id, p5.Image>) {
   window.performance.mark('update-start')
-  interpreter.invoke(
+  interpreter.send(
     'flushEvents',
     interpreter.object('wollok.gameMirror.gameMirror'),
     interpreter.reify(sketch.millis()),
@@ -125,7 +125,7 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
   for (const visual of game.get('visuals')?.innerCollection ?? []) {
     const imageMethod = visual.module.lookupMethod('image', 0)
     const imageObject = image(imageMethod && interpreter.invoke(imageMethod, visual)!.innerString)
-    const position = visual.get('position') ?? interpreter.invoke('position', visual)!
+    const position = visual.get('position') ?? interpreter.send('position', visual)!
     const x = Math.trunc(position.get('x')!.innerNumber!) * cellPixelSize
     const y = sketch.height - Math.trunc(position.get('y')!.innerNumber!) * cellPixelSize - imageObject.height
 
@@ -153,7 +153,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation }: SketchP
     const problems = validate(initialEvaluation.environment)
     if(problems.length) {
       console.error(`FOUND ${problems.length} PROBLEMS IN LOADED GAME!`, problems)
-    } else console.info("NO PROBLEMS FOUND IN LOADED GAME!")
+    } else console.info('NO PROBLEMS FOUND IN LOADED GAME!')
   }, [initialEvaluation])
 
   useEffect(() => {
@@ -205,8 +205,8 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation }: SketchP
   function keyPressed(sketch: p5) {
     window.performance.mark('key-start')
     const io = interpreter.object('wollok.io.io')
-    interpreter.invoke('queueEvent', io, buildKeyPressEvent(interpreter, wKeyCode(sketch.key, sketch.keyCode)))
-    interpreter.invoke('queueEvent', io, buildKeyPressEvent(interpreter, 'ANY'))
+    interpreter.send('queueEvent', io, buildKeyPressEvent(interpreter, wKeyCode(sketch.key, sketch.keyCode)))
+    interpreter.send('queueEvent', io, buildKeyPressEvent(interpreter, 'ANY'))
     window.performance.mark('key-end')
     window.performance.measure('key-start-to-end', 'key-start', 'key-end')
 

@@ -934,7 +934,7 @@ class Collection {
 */
 object collection {
   method list(elements...) = elements
-  method set(elements...) = if(elements.isEmpty()) [].asSet() else elements.asSet()
+  method set(elements...) = elements.asSet()
 }
 
 /**

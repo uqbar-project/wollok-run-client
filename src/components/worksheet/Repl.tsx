@@ -69,10 +69,10 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
         const evaluation = Evaluation.build(environment, WRENatives)
 
         function* evaluate() {
-          const response = yield* evaluation.invoke('apply', yield* evaluation.instantiate(environment!.getNodeByFQN<Singleton>('worksheet.main.repl')))
+          const response = yield* evaluation.send('apply', yield* evaluation.instantiate('worksheet.main.repl'))
 
           if (response) {
-            const wDescription: RuntimeObject = (yield* evaluation.invoke('toString', response))!
+            const wDescription: RuntimeObject = (yield* evaluation.send('toString', response))!
             wDescription.assertIsString()
             return wDescription.innerValue
           } else return 'void'

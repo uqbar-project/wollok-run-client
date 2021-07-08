@@ -1,7 +1,8 @@
 import { RouteComponentProps } from '@reach/router'
 import React, { memo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { buildEnvironment, Evaluation, WRENatives, ExecutionDirector } from 'wollok-ts'
+import { buildEnvironment, Evaluation, WRENatives } from 'wollok-ts'
+import interpret from 'wollok-ts/dist/interpreter/interpreter'
 import FilesSelector, { File } from '../filesSelector/FilesSelector'
 import Sketch from './Sketch'
 import $ from './Game.module.scss'
@@ -15,12 +16,10 @@ const Game = (_: GameProps) => {
   const loadGame = (files: File[]) => {
     const project = buildGameProject(files)
     const environment = buildEnvironment(project.sources)
-    const cleanEval = Evaluation.build(environment, WRENatives)
-    const execution = new ExecutionDirector(cleanEval, function*(){ yield* this.exec(getProgramIn(project.main, environment)) })
-    const result = execution.finish()
-    if (result.error) throw result.error //TODO: Revisar
+    const interpreter = interpret(environment, WRENatives)
+    interpreter.exec(getProgramIn(project.main, environment))
     setGame(project)
-    setEvaluation(cleanEval)
+    setEvaluation(interpreter.evaluation)
   }
 
   const title = evaluation ? evaluation.object('wollok.game.game')?.get('title')?.innerValue : ''
