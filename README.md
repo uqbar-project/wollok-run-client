@@ -20,7 +20,7 @@ El proyecto se encuentra deployado en `https://server.wollok.org` en donde se en
 
 ## ¿Cómo levantar la app?
 
-En primer lugar, asegurarse de tener instalado node >= 11.
+En primer lugar, asegurarse de tener instalado node `>= 11 && < 15`.
 
 Luego hay que bajar las dependencias con el comando:
 

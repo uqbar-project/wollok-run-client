@@ -1,0 +1,65 @@
+@import '../../theme';
+
+.FrameStackDisplay {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+
+  h2:not(:first-child) {
+    margin-top: $size-margin-xlarge;
+  }
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  
+  &>div {
+    display: flex;
+    flex: 1 1 auto;
+    
+    &:nth-child(odd) {
+      background-color: $color-background-tertiary;
+    }
+    
+    &:nth-child(even) {
+      background-color: $color-background-quaternary;
+    }
+  }
+}
+
+.context {
+  h4 {
+    margin-bottom: $size-margin-large;
+  }
+
+  &:not(:first-child) {
+    margin-top: $size-margin-xlarge;
+  }
+}
+
+.local {
+  display: flex;
+  width: 100%;
+  
+  &:nth-child(odd) {
+    background-color: $color-background-tertiary;
+  }
+  
+  &:nth-child(even) {
+    background-color: $color-background-quaternary;
+  }
+  
+  & > * {
+    display: flex;
+    width: 50%;
+    padding: $size-margin-small;
+    background-color: transparent;
+    border: none;
+    overflow-wrap: anywhere;
+
+    &:nth-child(1) {
+      border-right: 1px dashed $color-background-pentary;
+    }
+  }
+}
