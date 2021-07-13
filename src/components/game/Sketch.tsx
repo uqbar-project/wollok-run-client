@@ -7,7 +7,7 @@ import validate from 'wollok-ts/dist/validator'
 import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
-import { buildKeyPressEvent } from './SketchUtils'
+import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent } from './SketchUtils'
 import { Button } from '@material-ui/core'
 import ReplayIcon from '@material-ui/icons/Replay'
 import { DrawableMessage, drawMessage } from './messages'
@@ -52,11 +52,7 @@ interface SketchProps {
 
 function step(sketch: p5, game: GameProject, interpreter: Interpreter, sounds: Map<Id, GameSound>, images: Map<Id, p5.Image>) {
   window.performance.mark('update-start')
-  interpreter.send(
-    'flushEvents',
-    interpreter.object('wollok.gameMirror.gameMirror'),
-    interpreter.reify(sketch.millis()),
-  )
+  flushEvents(interpreter, sketch.millis())
   updateSound(game, interpreter, sounds)
   window.performance.mark('update-end')
 
@@ -73,8 +69,8 @@ function step(sketch: p5, game: GameProject, interpreter: Interpreter, sounds: M
 function updateSound(game: GameProject, interpreter: Interpreter, sounds: Map<Id, GameSound>) {
   const soundInstances = interpreter.object('wollok.game.game').get('sounds')?.innerCollection ?? []
 
-  for(const [id, sound] of sounds.entries()) {
-    if(!soundInstances.some(sound => sound.id === id)) {
+  for (const [id, sound] of sounds.entries()) {
+    if (!soundInstances.some(sound => sound.id === id)) {
       sound.stopSound()
       sounds.delete(id)
     } else {
@@ -94,7 +90,7 @@ function updateSound(game: GameProject, interpreter: Interpreter, sounds: Map<Id
     let sound = sounds.get(soundState.id)
     if (!sound) {
       const soundPath = game.sounds.find(({ possiblePaths }) => possiblePaths.includes(soundState.file))?.url
-      if(soundPath) { // TODO: add soundfile not found exception
+      if (soundPath) { // TODO: add soundfile not found exception
         sound = new GameSound(soundState, soundPath)
         sounds.set(soundState.id, sound)
       }
@@ -123,17 +119,15 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 
   const messagesToDraw: DrawableMessage[] = []
   for (const visual of game.get('visuals')?.innerCollection ?? []) {
-    const imageMethod = visual.module.lookupMethod('image', 0)
-    const imageObject = image(imageMethod && interpreter.invoke(imageMethod, visual)!.innerString)
-    const position = visual.get('position') ?? interpreter.send('position', visual)!
-    const x = Math.trunc(position.get('x')!.innerNumber!) * cellPixelSize
-    const y = sketch.height - Math.trunc(position.get('y')!.innerNumber!) * cellPixelSize - imageObject.height
+    const { image: stateImage, position, message } = visualState(interpreter, visual)
+    const imageObject = image(stateImage)
+    const x = Math.trunc(position.x) * cellPixelSize
+    const y = sketch.height - Math.trunc(position.y) * cellPixelSize - imageObject.height
 
     sketch.image(imageObject, x, y)
 
-    const message = visual.get('message')
     if (message && visual.get('messageTime')!.innerNumber! > sketch.millis())
-      messagesToDraw.push({ message: message.innerString!, x, y })
+      messagesToDraw.push({ message, x, y })
   }
 
   messagesToDraw.forEach(drawMessage(sketch))
@@ -150,8 +144,9 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation }: SketchP
   let interpreter = new Interpreter(initialEvaluation.copy())
 
   useEffect(() => {
+    // TODO: Move out of sketch
     const problems = validate(initialEvaluation.environment)
-    if(problems.length) {
+    if (problems.length) {
       console.error(`FOUND ${problems.length} PROBLEMS IN LOADED GAME!`, problems)
     } else console.info('NO PROBLEMS FOUND IN LOADED GAME!')
   }, [initialEvaluation])
@@ -164,9 +159,9 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation }: SketchP
       function inform(measureName: string) {
         const selectedMeasures = measures.filter(measure => measure.name === measureName)
         const totalTime = selectedMeasures.reduce((sum, measure) => sum + measure.duration, 0)
-        const averageDuration =selectedMeasures.length ? totalTime / selectedMeasures.length : 0
+        const averageDuration = selectedMeasures.length ? totalTime / selectedMeasures.length : 0
         const durationPercentage = totalTime * 100 / 1000
-        return `${ Math.round(averageDuration)}ms (${durationPercentage.toFixed(2)}%)`
+        return `${Math.round(averageDuration)}ms (${durationPercentage.toFixed(2)}%)`
       }
 
       const instances = interpreter.evaluation.allInstances()
@@ -181,11 +176,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation }: SketchP
   }, [interpreter])
 
   function setup(sketch: p5, canvasParentRef: Element) {
-    const game = interpreter.object('wollok.game.game')
-    const cellPixelSize = game.get('cellSize')!.innerNumber!
-    const width = round(game.get('width')!.innerNumber!) * cellPixelSize
-    const height = round(game.get('height')!.innerNumber!) * cellPixelSize
-
+    const { width, height } = canvasResolution(interpreter)
     sketch.createCanvas(width, height).parent(canvasParentRef)
 
     defaultImgs.forEach(path => images.set(path, sketch.loadImage(DEFAULT_GAME_ASSETS_DIR + path)))
@@ -204,9 +195,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation }: SketchP
 
   function keyPressed(sketch: p5) {
     window.performance.mark('key-start')
-    const io = interpreter.object('wollok.io.io')
-    interpreter.send('queueEvent', io, buildKeyPressEvent(interpreter, wKeyCode(sketch.key, sketch.keyCode)))
-    interpreter.send('queueEvent', io, buildKeyPressEvent(interpreter, 'ANY'))
+    queueEvent(interpreter, buildKeyPressEvent(interpreter, wKeyCode(sketch.key, sketch.keyCode)), buildKeyPressEvent(interpreter, 'ANY'))
     window.performance.mark('key-end')
     window.performance.measure('key-start-to-end', 'key-start', 'key-end')
 

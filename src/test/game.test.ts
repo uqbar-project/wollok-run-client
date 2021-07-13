@@ -1,8 +1,8 @@
 import fs from 'fs'
-import { buildEnvironment, Evaluation, Id, WRENatives, ExecutionDirector, Execution, RuntimeValue, RuntimeObject } from 'wollok-ts';
-import { VisualState, currentSoundStates, SoundState, flushEvents, canvasResolution, currentVisualStates } from '../components/game/GameStates'
-import { wKeyCode, buildKeyPressEvent, queueGameEvent } from '../components/game/SketchUtils'
-import { buildGameProject, GameProject, getProgramIn } from '../components/game/gameProject';
+import { buildEnvironment, WRENatives } from 'wollok-ts'
+import interpret, { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
+import { visualState, flushEvents, canvasResolution, wKeyCode, buildKeyPressEvent, queueEvent } from '../components/game/SketchUtils';
+import { buildGameProject, GameProject, getProgramIn } from '../components/game/gameProject'
 import { MessageDrawer, messageTextPosition } from '../components/game/messages'
 
 const readFiles = (files: string[]) => files.map(file => ({
@@ -10,81 +10,62 @@ const readFiles = (files: string[]) => files.map(file => ({
   content: fs.readFileSync(`src/test/${file}`, 'utf8'),
 }))
 
-describe('game', () => {
-  const gameTest = (testName: string, gameProgramFile: string, gameFiles: string[], cbTest: (evaluation: Evaluation) => Generator) => {
-    const environment = buildEnvironment(readFiles(gameFiles))
-    const evaluation = Evaluation.build(environment, WRENatives)
-    const execution = new ExecutionDirector(evaluation, evaluation.exec(getProgramIn(`games.${gameProgramFile}`, environment)))
-    const result = execution.finish()
-    if (result.error) throw result.error //TODO: Revisar
-    it(testName, () => {
-      const execution = new ExecutionDirector(evaluation, function* () { yield* cbTest(evaluation); return undefined }() as Execution<RuntimeValue>)
-      const result = execution.finish()
-      if (result.error) throw result.error //TODO: Revisar
-    })
-  }
+const gameTest = (testName: string, gameProgramFile: string, gameFiles: string[], cbTest: (interpreter: Interpreter) => void) => {
+  const environment = buildEnvironment(readFiles(gameFiles))
+  const interpreter = interpret(environment, WRENatives)
+  interpreter.exec(getProgramIn(`games.${gameProgramFile}`, environment))
+  test(testName, () => cbTest(interpreter))
+}
 
-  gameTest('visualStates', 'pepita', ['games/pepita.wpgm'], function* (evaluation) {
-    const pepitaState: VisualState = (yield* currentVisualStates(evaluation))[0]
-    expect(pepitaState).toStrictEqual({
+const getVisualState = (interpreter: Interpreter, index = 0) => {
+  const game = interpreter.object('wollok.game.game')
+  const visual = game.get('visuals')!.innerCollection![index]
+  const state = visualState(interpreter, visual)
+  return state
+}
+
+describe('game', () => {
+
+  gameTest('visualStates', 'pepita', ['games/pepita.wpgm'], function (interpreter) {
+    expect(getVisualState(interpreter)).toStrictEqual({
       image: 'pepita.png',
       position: { x: 1, y: 1 },
       message: undefined,
     })
   })
 
-  gameTest('a visual outside of the canvas should be drawn', 'gameTest', ['games/gameTest.wpgm'], function* (evaluation) {
-    const visuals = yield* currentVisualStates(evaluation)
-    expect(visuals.map(({ image }) => ({ image }))).toContainEqual({ image: 'out.png' })
+  gameTest('a visual outside of the canvas should be drawn', 'gameTest', ['games/gameTest.wpgm'], function (interpreter) {
+    expect(getVisualState(interpreter, 1)).toMatchObject({ image: 'out.png' })
   })
 
-  gameTest('soundStates', 'sounds', ['games/sounds.wpgm'], function* (evaluation) {
-    const soundState: SoundState = currentSoundStates(evaluation)[0]
-    expect(soundState).toStrictEqual({
-      id: soundState.id,
-      file: 'sound.mp3',
-      status: 'played',
-      volume: 1,
-      loop: false,
+  gameTest('flushEvents', 'pepita', ['games/pepita.wpgm'], function (interpreter) {
+    expect(getVisualState(interpreter).position).toStrictEqual({ x: 1, y: 1 })
+    flushEvents(interpreter, 101)
+    expect(getVisualState(interpreter).position).toStrictEqual({ x: 0, y: 0 })
+  })
+
+  gameTest('canvasResolution', 'gameResolution', ['games/gameResolution.wpgm'], function (interpreter) {
+    expect(canvasResolution(interpreter)).toStrictEqual({
+      width: 300,
+      height: 375,
     })
   })
 
-  gameTest('flushEvents', 'pepita', ['games/pepita.wpgm'], function* (evaluation) {
-    const pepitaState: VisualState = (yield* currentVisualStates(evaluation))[0]
-    expect(pepitaState.position).toStrictEqual({ x: 1, y: 1 })
-    yield* flushEvents(evaluation, 101)
-    const newPepitaState: VisualState = (yield* currentVisualStates(evaluation))[0]
-    expect(newPepitaState.position).toStrictEqual({ x: 0, y: 0 })
-  })
-
-  gameTest('canvasResolution', 'gameResolution', ['games/gameResolution.wpgm'], function* (evaluation) {
-    const resolution = canvasResolution(evaluation)
-    expect(resolution).toStrictEqual({
-      x: 300,
-      y: 375,
-    })
-  })
-
-  gameTest('buildKeyPressEvent', 'pepita', ['games/pepita.wpgm'], function* (evaluation) {
+  gameTest('buildKeyPressEvent', 'pepita', ['games/pepita.wpgm'], function (interpreter) {
     const keyCode = wKeyCode('1', 49)
-    const wKeyPressEvent: RuntimeObject = yield* buildKeyPressEvent(evaluation, keyCode)
-    wKeyPressEvent.assertIsCollection()
-    const keyPressEvent: string[] = wKeyPressEvent.innerValue.map((wString: RuntimeObject) => {
-      wString.assertIsString()
-      return wString.innerValue
-    })
+    const wKeyPressEvent = buildKeyPressEvent(interpreter, keyCode)
+    const keyPressEvent = wKeyPressEvent.innerCollection!.map((obj) => obj.innerString)
     expect(keyPressEvent).toStrictEqual(['keypress', 'Digit1'])
-
   })
 
-  gameTest('When a key is pressed, the event associated with the key should happen', 'movement', ['games/movement.wpgm'], function* (evaluation) {
+  gameTest('When a key is pressed, the event associated with the key should happen', 'movement', ['games/movement.wpgm'], function (interpreter) {
     const keyCode = wKeyCode('ArrowRight', 39)
-    const keyPressEvent = yield* buildKeyPressEvent(evaluation, keyCode)
-    const firstPepitaPosition = (yield* currentVisualStates(evaluation))[0].position
+    const wKeyPressEvent = buildKeyPressEvent(interpreter, keyCode)
+    const firstPepitaPosition = getVisualState(interpreter).position
     expect(firstPepitaPosition).toStrictEqual({ x: 0, y: 0 })
-    yield* queueGameEvent(evaluation, keyPressEvent)
-    yield* flushEvents(evaluation, 1)
-    const finalPepitaPosition = (yield* currentVisualStates(evaluation))[0].position
+    queueEvent(interpreter, wKeyPressEvent)
+    flushEvents(interpreter, 1)
+    const finalPepitaPosition = getVisualState(interpreter).position
     expect(finalPepitaPosition).toStrictEqual({ x: 1, y: 1 })
   })
 })
@@ -161,11 +142,24 @@ describe('GameSound', () => {
     loop: false,
   }
 
+  gameTest('soundStates', 'sounds', ['games/sounds.wpgm'], function* (evaluation) {
+    const soundState: SoundState = currentSoundStates(evaluation)[0]
+    expect(soundState).toStrictEqual({
+      id: soundState.id,
+      file: 'sound.mp3',
+      status: 'played',
+      volume: 1,
+      loop: false,
+    })
+  })
+
+
   test('sound', () => {
     const sound: GameSound = new GameSound(soundState, 'games/sound.mp3')
     jest.spyOn(sound, 'isLoaded').mockReturnValueOnce(false).mockReturnValueOnce(true)
     expect(sound.canBePlayed(soundState)).toBeFalsy()
     expect(sound.canBePlayed(soundState)).toBeTruthy()
   })
+
 })
 */
