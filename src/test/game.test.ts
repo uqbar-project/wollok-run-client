@@ -68,6 +68,17 @@ describe('game', () => {
     const finalPepitaPosition = getVisualState(interpreter).position
     expect(finalPepitaPosition).toStrictEqual({ x: 1, y: 1 })
   })
+
+  gameTest('Method position should have a higher priority than the atribute position', 
+  'positionPrecedence', 
+  ['games/positionPrecedence.wpgm'],
+  function (interpreter) {
+      expect(getVisualState(interpreter)).toStrictEqual({
+      image: 'pepita.png',
+      position: { x: 3, y: 3 },
+      message: undefined,
+    })
+  })
 })
 
 describe('buildGameProject', () => {
@@ -130,6 +141,8 @@ describe('messages', () => {
     expect(messageTextPosition(drawer, message).x).toBeGreaterThan(message.x)
   })
 })
+
+
 
 /*
 describe('GameSound', () => {
