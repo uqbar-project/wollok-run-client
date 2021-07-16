@@ -55,8 +55,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "cors": "cors-proxy start",
-    "postinstall": "rm -rf public/wre && mkdir -p public/wre/wollok && cp -r node_modules/wollok-ts/dist/wre/wollok/* public/wre/wollok"
+    "cors": "cors-proxy start"
   },
   "eslintConfig": {
     "extends": "react-app"
