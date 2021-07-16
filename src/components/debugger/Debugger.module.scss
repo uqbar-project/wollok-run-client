@@ -1,5 +1,16 @@
 @import "../../_theme.scss";
 
+.Debugger {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.content {
+  flex-grow: 1;
+  position: relative;
+}
+
 .panel {
   font: $font-main;
   color: $color-font-main;

@@ -9,7 +9,7 @@ const loadLocalFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (e
     .map(file => new Promise<File>((resolve) => {
       const reader = new FileReader()
       reader.onload = () => resolve({
-        name: file.webkitRelativePath,
+        name: (file as any).webkitRelativePath,
         content: new Buffer(reader.result as ArrayBuffer),
       })
       reader.readAsArrayBuffer(file)
@@ -21,7 +21,7 @@ const loadLocalFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (e
 const LocalSelector = (props: SelectorProps) => {
   return <div className={$.selector}>
     <label>Cargá un proyecto Wollok desde tu máquina (° ͜ʖ °)</label>
-    <input className={$.loadButton} type='file' webkitdirectory='' multiple onChange={loadLocalFiles(props)} />
+    <input className={$.loadButton} type='file' {...{ webkitdirectory:'' }} multiple onChange={loadLocalFiles(props)} />
   </div>
 }
 

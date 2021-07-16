@@ -4,14 +4,13 @@ import 'rc-tooltip/assets/bootstrap_white.css'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import 'react-splitter-layout/lib/index.css'
-import Game from './components/game/Game'
 import Worksheet from './components/worksheet/Worksheet'
 import './index.scss'
 import * as serviceWorker from './serviceWorker'
-import BytecodeDebugger from './components/bytecodeDebugger/BytecodeDebugger'
-import { createMuiTheme } from '@material-ui/core/styles'
-import { ThemeProvider } from '@material-ui/core/styles'
+import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles'
 import { Home } from './components/Home/Home'
+import Debugger from './components/debugger/Debugger'
+import Game from './components/game/Game'
 
 const wollokTheme = createMuiTheme({
   palette: {
@@ -25,10 +24,10 @@ if (process.env.NODE_ENV !== 'production') whyDidYouRender(React, { trackHooks: 
 const Routes = () => (
   <ThemeProvider theme={wollokTheme}>
     <Router>
-      <Worksheet path='/worksheet' />
-      <Game path='/game' />
-      <BytecodeDebugger path='/debugger' />
       <Home path='/' />
+      <Game path='/game' />
+      <Debugger path='/debugger' />
+      <Worksheet path='/worksheet' />
     </Router>
   </ThemeProvider>
 )
