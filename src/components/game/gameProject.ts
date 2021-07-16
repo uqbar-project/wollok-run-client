@@ -1,5 +1,5 @@
 import { File } from '../filesSelector/FilesSelector'
-import { Environment } from 'wollok-ts/dist'
+import { Environment, Node, Package } from 'wollok-ts'
 import parse, { Attributes } from 'xml-parser'
 
 // TODO: Move to more general place
@@ -29,11 +29,11 @@ export interface GameProject {
   sounds: MediaFile[];
 }
 
-export const mainProgram = ({ main }: GameProject, environment: Environment): string => {
-  const programWollokFile = environment.getNodeByFQN<'Package'>(main)
+export const getProgramIn = (packageFQN: string, environment: Environment): Node => {
+  const programWollokFile = environment.getNodeByFQN<Package>(packageFQN)
   const wollokProgram = programWollokFile.members.find(entity => entity.is('Program'))
   if (!wollokProgram) throw new Error('Program not found')
-  return `${main}.${wollokProgram.name}`
+  return wollokProgram
 }
 
 export const buildGameProject = (allFiles: File[]): GameProject => {

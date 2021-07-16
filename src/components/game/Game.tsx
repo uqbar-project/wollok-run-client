@@ -1,16 +1,12 @@
 import { RouteComponentProps } from '@reach/router'
 import React, { memo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { buildEnvironment, Evaluation, interpret } from 'wollok-ts/dist'
-import { Natives } from 'wollok-ts/dist/interpreter'
-import wre from 'wollok-ts/dist/wre/wre.natives'
+import { buildEnvironment, Evaluation, WRENatives } from 'wollok-ts'
+import interpret from 'wollok-ts/dist/interpreter/interpreter'
 import FilesSelector, { File } from '../filesSelector/FilesSelector'
 import Sketch from './Sketch'
 import $ from './Game.module.scss'
-import { gameInstance } from './GameStates'
-import { GameProject, buildGameProject, mainProgram } from './gameProject'
-
-const natives = wre as Natives
+import { GameProject, buildGameProject, getProgramIn } from './gameProject'
 
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
@@ -20,21 +16,20 @@ const Game = (_: GameProps) => {
   const loadGame = (files: File[]) => {
     const project = buildGameProject(files)
     const environment = buildEnvironment(project.sources)
-    const { buildEvaluation, runProgram } = interpret(environment, natives)
-    const cleanEval = buildEvaluation()
-    runProgram(mainProgram(project, environment), cleanEval)
+    const interpreter = interpret(environment, WRENatives)
+    interpreter.exec(getProgramIn(project.main, environment))
     setGame(project)
-    setEvaluation(cleanEval)
+    setEvaluation(interpreter.evaluation)
   }
 
-  const title = evaluation ? evaluation.instance(gameInstance(evaluation).get('title')!.id).innerValue : ''
+  const title = evaluation ? evaluation.object('wollok.game.game')?.get('title')?.innerValue : ''
 
   return !evaluation || !game
     ? <FilesSelector onFilesLoad={loadGame} />
     : <div className={$.container}>
       <h1>{title}</h1>
       <div>
-        <Sketch game={game} evaluation={evaluation} />
+        <Sketch gameProject={game} evaluation={evaluation} />
         <ReactMarkdown source={game.description} className={$.description} />
       </div>
     </div>

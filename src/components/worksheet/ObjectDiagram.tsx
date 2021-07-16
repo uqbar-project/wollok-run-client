@@ -1,11 +1,7 @@
 import cytoscape, { ElementDefinition, Stylesheet } from 'cytoscape'
 import React, { memo, useEffect, useRef } from 'react'
-import { Evaluation, Id } from 'wollok-ts/dist'
-import { NULL_ID, RuntimeObject } from 'wollok-ts/dist/interpreter'
+import { Evaluation, Id, RuntimeObject } from 'wollok-ts'
 import $ from './ObjectDiagram.module.scss'
-
-const { values, keys } = Object
-
 
 const NODE_STYLES: Stylesheet[] = [
   {
@@ -31,6 +27,10 @@ const NODE_STYLES: Stylesheet[] = [
   {
     selector: 'node[type = "object"]',
     style: { 'background-color': '#2e72d8' },
+  },
+  {
+    selector: 'label',
+    style:{ 'color': '#fff' },
   },
   {
     selector: 'node[type = "literal"]',
@@ -66,11 +66,10 @@ const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
     if (!evaluation) return
 
     function decoration(obj: RuntimeObject) {
-      const { id, innerValue } = obj
-      const moduleNode = obj.module()
-      const moduleName = moduleNode.fullyQualifiedName()
+      const { id, innerValue, module } = obj
+      const moduleName: string = module.fullyQualifiedName()
 
-      if (id === NULL_ID || moduleName === 'wollok.lang.Number') return {
+      if (obj.innerValue === null || moduleName === 'wollok.lang.Number') return {
         type: 'literal',
         label: `${innerValue}`,
       }
@@ -80,30 +79,29 @@ const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
         label: `"${innerValue}"`,
       }
 
-      if (moduleNode.is('Singleton') && moduleNode.name) return {
+      if (module.is('Singleton') && module.name) return {
         type: 'object',
-        label: moduleNode.name,
+        label: module.name,
       }
 
-      return { label: `${module}#${id}` }
+      return { label: `${module.name}#${id.slice(31)}` }
     }
 
     function elementFromObject(obj: RuntimeObject, alreadyVisited: Id[] = []): ElementDefinition[] {
       const { id } = obj
-      const fields = obj.context().locals
       if (alreadyVisited.includes(id)) return []
       return [
         { data: { id, ...decoration(obj) } },
-        ...keys(fields).flatMap(name => [
-          { data: { id: `${id}_${fields.get(name)}`, label: name, source: id, target: fields.get(name) } },
-          ...elementFromObject(evaluation!.instance(fields.get(name)!), [...alreadyVisited, id]),
+        ...[...obj.locals.keys()].filter(key => key !== 'self').flatMap(name => [
+          { data: { id: `${id}_${obj.get(name)?.id}`, label: name, source: id, target: obj.get(name)?.id } },
+          ...elementFromObject(obj.get(name)!, [...alreadyVisited, id]),
         ]),
       ]
     }
 
-    const elements: ElementDefinition[] = values(evaluation.listInstances())
+    const elements: ElementDefinition[] = [...evaluation.allInstances()]
       .filter((obj) => {
-        const name = obj.module().fullyQualifiedName()
+        const name = obj.module.fullyQualifiedName()
         return name && name !== 'worksheet.main.repl' && !name.startsWith('wollok')
       })
       .flatMap(obj => elementFromObject(obj))
@@ -113,6 +111,7 @@ const ObjectDiagram = ({ evaluation }: ObjectDiagramProps) => {
       name: 'cose',
       animate: false,
       nodeDimensionsIncludeLabels: true,
+      fit: false,
     }).run()
   }, [evaluation])
 

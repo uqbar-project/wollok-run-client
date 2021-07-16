@@ -1,7 +1,15 @@
-import { SoundState } from './GameStates'
 import { SoundFile } from 'p5'
 import 'p5/lib/addons/p5.sound'
+import { Id } from 'wollok-ts'
 
+export type SoundStatus = 'played' | 'paused' | 'stopped'
+export interface SoundState {
+  id: Id;
+  file: string;
+  status: SoundStatus;
+  volume: number;
+  loop: boolean;
+}
 
 export class GameSound {
   private lastSoundState: SoundState
@@ -36,17 +44,14 @@ export class GameSound {
       this.started = true
 
       switch (this.lastSoundState.status) {
-        case 'played': {
+        case 'played':
           this.soundFile.play()
           break
-        }
-        case 'paused': {
+        case 'paused':
           this.soundFile.pause()
           break
-        }
-        case 'stopped': {
+        case 'stopped':
           this.soundFile.stop()
-        }
       }
     }
 

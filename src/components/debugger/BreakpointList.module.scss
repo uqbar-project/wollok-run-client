@@ -1,0 +1,27 @@
+@import '../../theme';
+
+.BreakpointList {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.breakpoint {
+  display: flex;
+  
+  &:nth-child(odd) {
+    background-color: $color-background-tertiary;
+  }
+  
+  &:nth-child(even) {
+    background-color: $color-background-quaternary;
+  }
+
+  svg {
+    fill: $color-background-danger;
+    min-width: 2rem;
+    min-height: 2rem;
+    margin: $size-margin-small;
+    cursor: pointer;
+  }
+}

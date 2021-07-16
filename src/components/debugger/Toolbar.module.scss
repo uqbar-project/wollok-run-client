@@ -1,0 +1,43 @@
+@import "../../theme";
+
+.Toolbar {
+  display: flex;
+  padding: $size-margin-large;
+
+  button {
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid $color-background-quaternary;
+    margin: 0 $size-margin-small;
+    background-color: transparent;
+    color: $color-font-main;
+
+    &:hover {
+      background-color: $color-background-tertiary;
+    }
+
+    &:active {
+      background-color: $color-background-quaternary;
+    }
+
+    svg:nth-of-type(2) {
+      width: 1.25rem;
+      height: 1.25rem;
+      position: relative;
+      top: -15px;
+      left: 6px;
+      z-index: 1000;
+    }
+  }
+  
+  svg {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.separator {
+  border-left: 1px solid $color-background-quaternary;
+  margin-left: $size-margin-large;
+  padding-left: $size-margin-large;
+}
