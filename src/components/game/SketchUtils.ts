@@ -35,10 +35,8 @@ export interface VisualState {
 }
 
 export function visualState(interpreter: Interpreter, visual: RuntimeObject): VisualState {
-  const imageMethod = visual.module.lookupMethod('image', 0)
-  const image = imageMethod && interpreter.invoke(imageMethod, visual)!.innerString
-  const positionMethod = visual.module.lookupMethod('position', 0)
-  const position = (positionMethod && interpreter.invoke(positionMethod, visual))!
+  const image = interpreter.send('image', visual)!.innerString
+  const position = interpreter.send('position', visual)!
   const x = position.get('x')!.innerNumber!
   const y = position.get('y')!.innerNumber!
   const message = visual.get('message')?.innerString
