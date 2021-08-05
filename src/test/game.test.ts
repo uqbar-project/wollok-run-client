@@ -34,6 +34,10 @@ describe('game', () => {
     })
   })
 
+  gameTest('visualState should round a visuals position', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
+    expect(getVisualState(interpreter).position).toStrictEqual({ x: 1, y: 2 })
+  })
+
   gameTest('a visual outside of the canvas should be drawn', 'gameTest', ['games/gameTest.wpgm'], function (interpreter) {
     expect(getVisualState(interpreter, 1)).toMatchObject({ image: 'out.png' })
   })

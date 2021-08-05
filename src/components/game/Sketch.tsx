@@ -121,8 +121,8 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
   for (const visual of game.get('visuals')?.innerCollection ?? []) {
     const { image: stateImage, position, message } = visualState(interpreter, visual)
     const imageObject = image(stateImage)
-    const x = Math.trunc(position.x) * cellPixelSize
-    const y = sketch.height - Math.trunc(position.y) * cellPixelSize - imageObject.height
+    const x = position.x * cellPixelSize
+    const y = sketch.height - position.y * cellPixelSize - imageObject.height
 
     sketch.image(imageObject, x, y)
 

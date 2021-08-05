@@ -1,0 +1,12 @@
+import wollok.game.*
+
+object myVisual{
+  var property position = game.at(1.2, 1.8)
+  
+  method image() = "noImage.png"
+}
+
+program mockGame {
+  game.addVisual(myVisual)
+  game.start()
+}
