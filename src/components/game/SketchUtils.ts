@@ -32,16 +32,23 @@ export interface VisualState {
   image?: string;
   position: { x: number; y: number };
   message?: string;
+  text?: string;
+  textColor?: string;
 }
 
 export function visualState(interpreter: Interpreter, visual: RuntimeObject): VisualState {
-  const image = interpreter.send('image', visual)!.innerString
+  const imageMethod = visual.module.lookupMethod('image', 0)
+  const image = imageMethod && interpreter.invoke(imageMethod, visual)!.innerString
   const position = interpreter.send('position', visual)!
   const roundedPosition = interpreter.send('round', position)!
   const x = roundedPosition.get('x')!.innerNumber!
   const y = roundedPosition.get('y')!.innerNumber!
   const message = visual.get('message')?.innerString
-  return { image, position: { x, y }, message }
+  const textMethod = visual.module.lookupMethod('text', 0)
+  const text = textMethod && interpreter.invoke(textMethod, visual)!.innerString
+  const textColorMethod = visual.module.lookupMethod('textColor', 0)
+  const textColor = textColorMethod && interpreter.invoke(textColorMethod, visual)!.innerString
+  return { image, position: { x, y }, message, text, textColor }
 }
 
 export function flushEvents(interpreter: Interpreter, ms: number): void {

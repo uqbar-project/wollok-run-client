@@ -25,19 +25,6 @@ const getVisualState = (interpreter: Interpreter, index = 0) => {
 }
 
 describe('game', () => {
-
-  gameTest('visualStates', 'pepita', ['games/pepita.wpgm'], function (interpreter) {
-    expect(getVisualState(interpreter)).toStrictEqual({
-      image: 'pepita.png',
-      position: { x: 1, y: 1 },
-      message: undefined,
-    })
-  })
-
-  gameTest('visualState should round a visuals position', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
-    expect(getVisualState(interpreter).position).toStrictEqual({ x: 1, y: 2 })
-  })
-
   gameTest('a visual outside of the canvas should be drawn', 'gameTest', ['games/gameTest.wpgm'], function (interpreter) {
     expect(getVisualState(interpreter, 1)).toMatchObject({ image: 'out.png' })
   })
@@ -132,6 +119,34 @@ describe('messages', () => {
     const message = { message: 'hola', x: 0, y: 200 }
     expect(messageTextPosition(drawer, message).y).toBeLessThan(message.y)
     expect(messageTextPosition(drawer, message).x).toBeGreaterThan(message.x)
+  })
+})
+
+describe('VisualState', () => {
+  gameTest('visualStates', 'pepita', ['games/pepita.wpgm'], function (interpreter) {
+    expect(getVisualState(interpreter)).toStrictEqual({
+      image: 'pepita.png',
+      position: { x: 1, y: 1 },
+      message: undefined,
+      text: undefined,
+      textColor: undefined
+    })
+  })
+
+  gameTest('visualState should round a visuals position', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
+    expect(getVisualState(interpreter).position).toStrictEqual({ x: 1, y: 2 })
+  })
+
+  gameTest('image can be undefined', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
+    expect(getVisualState(interpreter, 1).image).toBeUndefined()
+  })
+
+  gameTest('text can be undefined', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
+    expect(getVisualState(interpreter, 1).text).toBeUndefined()
+  })
+
+  gameTest('textColor can be undefined', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
+    expect(getVisualState(interpreter, 1).textColor).toBeUndefined()
   })
 })
 

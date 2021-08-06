@@ -11,6 +11,7 @@ import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEv
 import { Button } from '@material-ui/core'
 import ReplayIcon from '@material-ui/icons/Replay'
 import { DrawableMessage, drawMessage } from './messages'
+import { CenterFocusStrong } from '@material-ui/icons'
 
 const { round } = Math
 
@@ -119,15 +120,24 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 
   const messagesToDraw: DrawableMessage[] = []
   for (const visual of game.get('visuals')?.innerCollection ?? []) {
-    const { image: stateImage, position, message } = visualState(interpreter, visual)
-    const imageObject = image(stateImage)
-    const x = position.x * cellPixelSize
-    const y = sketch.height - position.y * cellPixelSize - imageObject.height
-
-    sketch.image(imageObject, x, y)
-
-    if (message && visual.get('messageTime')!.innerNumber! > sketch.millis())
+    const { image: stateImage, position, message, text, textColor } = visualState(interpreter, visual)
+    const imageObject =  stateImage === undefined ? stateImage : image(stateImage)
+    if (imageObject !== undefined) {
+      const x = position.x * cellPixelSize
+      const y = sketch.height - position.y * cellPixelSize - imageObject.height
+      sketch.image(imageObject, x, y)
+      if (message && visual.get('messageTime')!.innerNumber! > sketch.millis())
       messagesToDraw.push({ message, x, y })
+    }
+    if (text !== undefined) {
+      const x = position.x * cellPixelSize
+      const y = sketch.height - position.y * cellPixelSize - cellPixelSize/2
+      sketch.textSize(14)
+      sketch.textStyle('bold')
+      sketch.textAlign('left')
+      sketch.fill(textColor || 'blue')
+      sketch.text(text, x, y)
+    }
   }
 
   messagesToDraw.forEach(drawMessage(sketch))
