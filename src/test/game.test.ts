@@ -103,6 +103,12 @@ describe('messages', () => {
     textWidth: (text: string) => 5.5 * text.length,
     rect: () => { },
     text: () => { },
+    fill: () => { },
+    textAlign: () => { },
+    textSize: () => { },
+    textStyle: () => { },
+    stroke: () => { },
+    noStroke: () => { },
   }
 
   test('when a message is horizontally out of canvas, it should be inverted', () => {
@@ -133,19 +139,31 @@ describe('VisualState', () => {
     })
   })
 
+  gameTest('complete visual', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
+    expect(getVisualState(interpreter, 2)).toStrictEqual({
+      image: 'anImage.png',
+      position: { x: 0, y: 0 },
+      message: undefined,
+      text: 'Sample text',
+      textColor: 'FF0000FF'
+    })
+  }
+
+  )
+
   gameTest('visualState should round a visuals position', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
     expect(getVisualState(interpreter).position).toStrictEqual({ x: 1, y: 2 })
   })
 
-  gameTest('image can be undefined', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
+  gameTest('image is optional', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
     expect(getVisualState(interpreter, 1).image).toBeUndefined()
   })
 
-  gameTest('text can be undefined', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
+  gameTest('text is optional', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
     expect(getVisualState(interpreter, 1).text).toBeUndefined()
   })
 
-  gameTest('textColor can be undefined', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
+  gameTest('textColor is optional', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
     expect(getVisualState(interpreter, 1).textColor).toBeUndefined()
   })
 })

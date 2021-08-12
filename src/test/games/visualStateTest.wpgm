@@ -10,8 +10,20 @@ object positionableVisual {
   var property position = game.at(1.2, 1.8)
 }
 
+object completeVisual {
+
+  method position() = game.at(0, 0)
+
+  method image() = "anImage.png"
+
+  method text() = "Sample text"
+
+  method textColor() = "FF0000FF"
+}
+
 program mockGame {
   game.addVisual(myVisual)
   game.addVisual(positionableVisual)
+  game.addVisual(completeVisual)
   game.start()
 }
