@@ -7,7 +7,7 @@ import validate from 'wollok-ts/dist/validator'
 import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
-import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent } from './SketchUtils'
+import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, VisualState } from './SketchUtils'
 import { Button } from '@material-ui/core'
 import ReplayIcon from '@material-ui/icons/Replay'
 import { DrawableMessage, drawMessage } from './messages'
@@ -40,6 +40,17 @@ function wKeyCode(key: string, keyCode: number): string {
   if (keyCode === 32) return 'Space'
   if (keyCode === 16) return 'Shift'
   return '' //If an unknown key is pressed, a string should be returned
+}
+
+function textConfig(sketch: p5, textColor: undefined | string) {
+  const defaultTextColor = 'blue'
+  const grey = '#1c1c1c'
+  sketch.textSize(14)
+  sketch.textStyle('bold')
+  sketch.textAlign('center')
+  sketch.stroke(grey)
+  const color = textColor && '#' + textColor
+  sketch.fill(color || defaultTextColor)
 }
 
 interface SketchProps {
@@ -122,22 +133,17 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
   for (const visual of game.get('visuals')?.innerCollection ?? []) {
     const { image: stateImage, position, message, text, textColor } = visualState(interpreter, visual)
     const imageObject =  stateImage === undefined ? stateImage : image(stateImage)
-    if (imageObject !== undefined) {
+    if (imageObject) {
       const x = position.x * cellPixelSize
       const y = sketch.height - position.y * cellPixelSize - imageObject.height
       sketch.image(imageObject, x, y)
       if (message && visual.get('messageTime')!.innerNumber! > sketch.millis())
       messagesToDraw.push({ message, x, y })
     }
-    if (text !== undefined) {
+    if (text) {
       const x = (position.x + 0.5) * cellPixelSize
       const y = sketch.height - position.y * cellPixelSize - cellPixelSize/2
-      sketch.textSize(14)
-      sketch.textStyle('bold')
-      sketch.textAlign('center')
-      const color = textColor && '#' + textColor
-      sketch.stroke('#1c1c1c')
-      sketch.fill(color || 'blue')
+      textConfig(sketch, textColor)
       sketch.text(text, x, y)
     }
   }
