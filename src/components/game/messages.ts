@@ -10,6 +10,12 @@ export interface MessageDrawer {
   textWidth(message: string): number;
   rect(xPos: number, yPos: number, xSize: number, ySize: number, tl?: number, tr?: number, br?: number, bl?: number): void;
   text(message: string, xPos: number, yPos: number, xLimit: number, yLimit: number): void;
+  fill(color: string): void;
+  textAlign(alignment: string): void;
+  textSize(size: number): void;
+  textStyle(style: string): void;
+  stroke(color: string): void;
+  noStroke(): void;
 }
 
 const sizeFactor = 50
@@ -63,6 +69,7 @@ function messageBackgroundPosition(drawer: MessageDrawer, message: DrawableMessa
 function drawMessageBackground(drawer: MessageDrawer, message: DrawableMessage) {
   const size = messageSize(drawer, message)
   const position = messageBackgroundPosition(drawer, message)
+  drawer.fill('white')
   drawer.rect(position.x, position.y, size.x, size.y, 0, 15, 10, 5)
 }
 
@@ -70,5 +77,8 @@ export const drawMessage = (drawer: MessageDrawer) => (message: DrawableMessage)
   drawMessageBackground(drawer, message)
   const position = messageTextPosition(drawer, message)
   const limit = messageSizeLimit()
+  drawer.fill('black')
+  drawer.textAlign('left')
+  drawer.noStroke()
   drawer.text(message.message, position.x, position.y, limit.x, limit.y)
 }

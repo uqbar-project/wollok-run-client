@@ -130,12 +130,14 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
       messagesToDraw.push({ message, x, y })
     }
     if (text !== undefined) {
-      const x = position.x * cellPixelSize
+      const x = (position.x + 0.5) * cellPixelSize
       const y = sketch.height - position.y * cellPixelSize - cellPixelSize/2
       sketch.textSize(14)
       sketch.textStyle('bold')
-      sketch.textAlign('left')
-      sketch.fill(textColor || 'blue')
+      sketch.textAlign('center')
+      const color = textColor && '#' + textColor
+      sketch.stroke('#1c1c1c')
+      sketch.fill(color || 'blue')
       sketch.text(text, x, y)
     }
   }
