@@ -147,9 +147,7 @@ describe('VisualState', () => {
       text: 'Sample text',
       textColor: 'FF0000FF'
     })
-  }
-
-  )
+  })
 
   gameTest('visualState should round a visuals position', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
     expect(getVisualState(interpreter).position).toStrictEqual({ x: 1, y: 2 })
