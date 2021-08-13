@@ -18,6 +18,9 @@ export interface MessageDrawer {
   noStroke(): void;
 }
 
+export const TEXT_STYLE = 'bold'
+export const TEXT_SIZE = 14
+
 const sizeFactor = 50
 
 function messageSizeLimit() {
@@ -77,6 +80,8 @@ export const drawMessage = (drawer: MessageDrawer) => (message: DrawableMessage)
   drawMessageBackground(drawer, message)
   const position = messageTextPosition(drawer, message)
   const limit = messageSizeLimit()
+  drawer.textSize(TEXT_SIZE)
+  drawer.textStyle(TEXT_STYLE)
   drawer.fill('black')
   drawer.textAlign('left')
   drawer.noStroke()

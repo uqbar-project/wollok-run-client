@@ -10,7 +10,7 @@ import { GameSound, SoundState, SoundStatus } from './GameSound'
 import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, VisualState } from './SketchUtils'
 import { Button } from '@material-ui/core'
 import ReplayIcon from '@material-ui/icons/Replay'
-import { DrawableMessage, drawMessage } from './messages'
+import { DrawableMessage, drawMessage, TEXT_SIZE, TEXT_STYLE } from './messages'
 import { CenterFocusStrong } from '@material-ui/icons'
 
 const { round } = Math
@@ -45,8 +45,8 @@ function wKeyCode(key: string, keyCode: number): string {
 function textConfig(sketch: p5, textColor: undefined | string) {
   const defaultTextColor = 'blue'
   const grey = '#1c1c1c'
-  sketch.textSize(14)
-  sketch.textStyle('bold')
+  sketch.textSize(TEXT_SIZE)
+  sketch.textStyle(TEXT_STYLE)
   sketch.textAlign('center')
   sketch.stroke(grey)
   const color = textColor && '#' + textColor
