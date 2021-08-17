@@ -55,7 +55,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "cors": "cors-proxy start"
+    "cors": "cors-proxy start",
+    "debug": "cd ../wollok-ts && npm pack && cd ../wollok-run-client && npm uninstall wollok-ts && npm install ../wollok-ts"
   },
   "eslintConfig": {
     "extends": "react-app"
