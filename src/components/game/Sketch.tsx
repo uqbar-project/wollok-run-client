@@ -7,7 +7,7 @@ import validate from 'wollok-ts/dist/validator'
 import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
-import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, VisualState } from './SketchUtils'
+import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent } from './SketchUtils'
 import { Button } from '@material-ui/core'
 import ReplayIcon from '@material-ui/icons/Replay'
 import { DrawableMessage, drawMessage, TEXT_SIZE, TEXT_STYLE } from './messages'
@@ -133,16 +133,21 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
   for (const visual of game.get('visuals')?.innerCollection ?? []) {
     const { image: stateImage, position, message, text, textColor } = visualState(interpreter, visual)
     const imageObject =  stateImage === undefined ? stateImage : image(stateImage)
+    let x = position.x * cellPixelSize
+    let y = sketch.height - (position.y + 1) * cellPixelSize
+
     if (imageObject) {
-      const x = position.x * cellPixelSize
-      const y = sketch.height - position.y * cellPixelSize - imageObject.height
+      x = position.x * cellPixelSize
+      y = sketch.height - position.y * cellPixelSize - imageObject.height
       sketch.image(imageObject, x, y)
-      if (message && visual.get('messageTime')!.innerNumber! > sketch.millis())
-      messagesToDraw.push({ message, x, y })
     }
+
+    if (message && visual.get('messageTime')!.innerNumber! > sketch.millis())
+    messagesToDraw.push({ message, x, y })
+    
     if (text) {
-      const x = (position.x + 0.5) * cellPixelSize
-      const y = sketch.height - position.y * cellPixelSize - cellPixelSize/2
+      x = (position.x + 0.5) * cellPixelSize
+      y = sketch.height - (position.y + 0.5) * cellPixelSize
       textConfig(sketch, textColor)
       sketch.text(text, x, y)
     }
