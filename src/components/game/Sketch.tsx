@@ -143,7 +143,7 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
     }
 
     if (message && visual.get('messageTime')!.innerNumber! > sketch.millis())
-    messagesToDraw.push({ message, x, y })
+      messagesToDraw.push({ message, x, y })
     
     if (text) {
       x = (position.x + 0.5) * cellPixelSize
