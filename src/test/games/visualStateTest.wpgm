@@ -1,11 +1,5 @@
 import wollok.game.*
 
-object myVisual {
-  var property position = game.at(1.2, 1.8)
-  
-  method image() = "noImage.png"
-}
-
 object positionableVisual {
   var property position = game.at(1.2, 1.8)
 }
@@ -21,8 +15,12 @@ object completeVisual {
   method textColor() = "FF0000FF"
 }
 
+// object incompleteVisual { 
+//   method image() = "anImage.png" 
+// }
+
 program mockGame {
-  game.addVisual(myVisual)
+  // game.addVisual(incompleteVisual)
   game.addVisual(positionableVisual)
   game.addVisual(completeVisual)
   game.start()

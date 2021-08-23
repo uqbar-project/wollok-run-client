@@ -1,9 +1,10 @@
 import fs from 'fs'
-import { buildEnvironment, WRENatives } from 'wollok-ts'
+import { buildEnvironment, WollokException, WRENatives } from 'wollok-ts'
 import interpret, { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { visualState, flushEvents, canvasResolution, wKeyCode, buildKeyPressEvent, queueEvent } from '../components/game/SketchUtils';
 import { buildGameProject, GameProject, getProgramIn } from '../components/game/gameProject'
 import { MessageDrawer, messageTextPosition } from '../components/game/messages'
+import { exception } from 'console';
 
 const readFiles = (files: string[]) => files.map(file => ({
   name: file,
@@ -129,10 +130,10 @@ describe('messages', () => {
 })
 
 describe('VisualState', () => {
-  gameTest('visualStates', 'pepita', ['games/pepita.wpgm'], function (interpreter) {
-    expect(getVisualState(interpreter)).toStrictEqual({
-      image: 'pepita.png',
-      position: { x: 1, y: 1 },
+  gameTest('positionable visual', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
+    expect(getVisualState(interpreter, 0)).toStrictEqual({
+      image: undefined,
+      position: { x: 1, y: 2 },
       message: undefined,
       text: undefined,
       textColor: undefined
@@ -140,7 +141,7 @@ describe('VisualState', () => {
   })
 
   gameTest('complete visual', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
-    expect(getVisualState(interpreter, 2)).toStrictEqual({
+    expect(getVisualState(interpreter, 1)).toStrictEqual({
       image: 'anImage.png',
       position: { x: 0, y: 0 },
       message: undefined,
@@ -149,21 +150,13 @@ describe('VisualState', () => {
     })
   })
 
-  gameTest('visualState should round a visuals position', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
-    expect(getVisualState(interpreter).position).toStrictEqual({ x: 1, y: 2 })
-  })
-
-  gameTest('image is optional', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
-    expect(getVisualState(interpreter, 1).image).toBeUndefined()
-  })
-
-  gameTest('text is optional', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
-    expect(getVisualState(interpreter, 1).text).toBeUndefined()
-  })
-
-  gameTest('textColor is optional', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
-    expect(getVisualState(interpreter, 1).textColor).toBeUndefined()
-  })
+  try {
+    gameTest('incomplete visual', 'incompleteVisual', ['games/incompleteVisual.wpgm'], function (interpreter) {})
+  }
+  catch(exception) { 
+    expect(exception).toBeInstanceOf(WollokException)
+  }
+  
 })
 
 /*
