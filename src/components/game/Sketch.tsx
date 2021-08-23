@@ -140,6 +140,11 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
       x = position.x * cellPixelSize
       y = sketch.height - position.y * cellPixelSize - imageObject.height
       sketch.image(imageObject, x, y)
+      if (imageObject == image('wko.png')) {
+        sketch.fill('black')
+        sketch.textAlign('left')
+        sketch.text("IMAGE\n  NOT\nFOUND", x, y)
+      }
     }
 
     if (message && visual.get('messageTime')!.innerNumber! > sketch.millis())
@@ -154,6 +159,8 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
   }
 
   messagesToDraw.forEach(drawMessage(sketch))
+
+
 }
 
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
