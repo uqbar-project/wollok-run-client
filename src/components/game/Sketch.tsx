@@ -49,20 +49,21 @@ function write(sketch: p5, drawableText: DrawableText) {
   const vAlign = drawableText.vertAlign || 'center'
   const x = drawableText.position.x
   const y = drawableText.position.y
-  const color = drawableText.color && '#' + drawableText.color
   sketch.textSize(drawableText.size || TEXT_SIZE)
   sketch.textStyle(drawableText.style || TEXT_STYLE)
   sketch.textAlign(hAlign, vAlign)
   sketch.stroke(grey)
-  sketch.fill(color || defaultTextColor)
+  sketch.fill(drawableText.color || defaultTextColor)
   sketch.text(drawableText.text, x, y)
 }
+
+function hexaToColor(textColor?: string) { return !textColor ? undefined : '#' + textColor }
 interface DrawableText {
   position: Position;
   text: string;
   color?: string;
   size?: number;
-  horizAlign?: string;
+  horizAlign?: p5.HORIZ_ALIGN;
   vertAlign?: p5.VERT_ALIGN;
   style?: p5.THE_STYLE;  
 }
@@ -154,9 +155,10 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
       x = position.x * cellPixelSize
       y = sketch.height - position.y * cellPixelSize - imageObject.height
       sketch.image(imageObject, x, y)
-      if (imageObject == image('wko.png')) {
-        const drawableText = {color: 'black', horizAlign: "center",
-         vertAlign: 'top', text: 'IMAGE\n  NOT\nFOUND', position: {x, y}}
+      const defaultImage = image()
+      if (imageObject == defaultImage) {
+        const drawableText = {color: 'black', horizAlign: sketch.LEFT,
+         vertAlign: sketch.TOP, text: 'IMAGE\n  NOT\nFOUND', position: {x, y}}
         write(sketch, drawableText)
       }
     }
@@ -167,7 +169,7 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
     if (text) {
       x = (position.x + 0.5) * cellPixelSize
       y = sketch.height - (position.y + 0.5) * cellPixelSize
-      const drawableText = {text, position, color: textColor}
+      const drawableText = {text, position: {x, y}, color: hexaToColor(textColor)}
       write(sketch, drawableText)
     }
   }
