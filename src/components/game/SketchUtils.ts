@@ -3,6 +3,11 @@ import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 
 const { round } = Math
 
+function invokeMethod(interpreter: Interpreter, visual: RuntimeObject, method: string) {
+  const lookedUpMethod = visual.module.lookupMethod(method, 0)
+  return lookedUpMethod && interpreter.invoke(lookedUpMethod, visual)!.innerString
+}
+
 export function wKeyCode(keyName: string, keyCode: number): string { //These keyCodes correspond to http://keycode.info/
   if (keyCode >= 48 && keyCode <= 57) return `Digit${keyName}` //Numbers (non numpad)
   if (keyCode >= 65 && keyCode <= 90) return `Key${keyName.toUpperCase()}` //Letters
@@ -41,18 +46,15 @@ export interface Position {
 }
 
 export function visualState(interpreter: Interpreter, visual: RuntimeObject): VisualState {
-  const imageMethod = visual.module.lookupMethod('image', 0)
-  const image = imageMethod && interpreter.invoke(imageMethod, visual)!.innerString
+  const image = invokeMethod(interpreter, visual, 'image')
+  const text = invokeMethod(interpreter, visual, 'text')
+  const textColor = invokeMethod(interpreter, visual, 'textColor')
   const position = interpreter.send('position', visual)!
   const roundedPosition = interpreter.send('round', position)!
   const x = roundedPosition.get('x')!.innerNumber!
   const y = roundedPosition.get('y')!.innerNumber!
   const message = visual.get('message')?.innerString
-  const textMethod = visual.module.lookupMethod('text', 0)
-  const text = textMethod && interpreter.invoke(textMethod, visual)!.innerString
-  const textColorMethod = visual.module.lookupMethod('textColor', 0)
-  const textColor = textColorMethod && interpreter.invoke(textColorMethod, visual)!.innerString
-  return { image, position: { x, y }, message, text, textColor }
+  return { image, position: { x, y }, text, textColor, message }
 }
 
 export function flushEvents(interpreter: Interpreter, ms: number): void {
