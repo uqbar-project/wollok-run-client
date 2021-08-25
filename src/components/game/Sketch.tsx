@@ -142,7 +142,7 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
       sketch.image(imageObject, x, y)
       if (imageObject == image('wko.png')) {
         sketch.fill('black')
-        sketch.textAlign('left')
+        sketch.textAlign('left', 'top')
         sketch.text("IMAGE\n  NOT\nFOUND", x, y)
       }
     }
