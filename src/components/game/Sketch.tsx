@@ -7,8 +7,8 @@ import validate from 'wollok-ts/dist/validator'
 import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
-import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent } from './SketchUtils'
-import { Button } from '@material-ui/core'
+import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, Position } from './SketchUtils'
+import { Button, Size } from '@material-ui/core'
 import ReplayIcon from '@material-ui/icons/Replay'
 import { DrawableMessage, drawMessage, TEXT_SIZE, TEXT_STYLE } from './messages'
 import { CenterFocusStrong } from '@material-ui/icons'
@@ -42,15 +42,29 @@ function wKeyCode(key: string, keyCode: number): string {
   return '' //If an unknown key is pressed, a string should be returned
 }
 
-function textConfig(sketch: p5, textColor: undefined | string) {
+function write(sketch: p5, drawableText: DrawableText) {
   const defaultTextColor = 'blue'
   const grey = '#1c1c1c'
-  sketch.textSize(TEXT_SIZE)
-  sketch.textStyle(TEXT_STYLE)
-  sketch.textAlign('center')
+  const hAlign = drawableText.horizAlign || 'center'
+  const vAlign = drawableText.vertAlign || 'center'
+  const x = drawableText.position.x
+  const y = drawableText.position.y
+  const color = drawableText.color && '#' + drawableText.color
+  sketch.textSize(drawableText.size || TEXT_SIZE)
+  sketch.textStyle(drawableText.style || TEXT_STYLE)
+  sketch.textAlign(hAlign, vAlign)
   sketch.stroke(grey)
-  const color = textColor && '#' + textColor
   sketch.fill(color || defaultTextColor)
+  sketch.text(drawableText.text, x, y)
+}
+interface DrawableText {
+  position: Position;
+  text: string;
+  color?: string;
+  size?: number;
+  horizAlign?: string;
+  vertAlign?: p5.VERT_ALIGN;
+  style?: p5.THE_STYLE;  
 }
 
 interface SketchProps {
@@ -141,9 +155,9 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
       y = sketch.height - position.y * cellPixelSize - imageObject.height
       sketch.image(imageObject, x, y)
       if (imageObject == image('wko.png')) {
-        sketch.fill('black')
-        sketch.textAlign('left', 'top')
-        sketch.text("IMAGE\n  NOT\nFOUND", x, y)
+        const drawableText = {color: 'black', horizAlign: "center",
+         vertAlign: 'top', text: 'IMAGE\n  NOT\nFOUND', position: {x, y}}
+        write(sketch, drawableText)
       }
     }
 
@@ -153,8 +167,8 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
     if (text) {
       x = (position.x + 0.5) * cellPixelSize
       y = sketch.height - (position.y + 0.5) * cellPixelSize
-      textConfig(sketch, textColor)
-      sketch.text(text, x, y)
+      const drawableText = {text, position, color: textColor}
+      write(sketch, drawableText)
     }
   }
 

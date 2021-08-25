@@ -30,10 +30,14 @@ export function buildKeyPressEvent(interpreter: Interpreter, keyCode: string): R
 
 export interface VisualState {
   image?: string;
-  position: { x: number; y: number };
+  position: Position;
   message?: string;
   text?: string;
   textColor?: string;
+}
+export interface Position {
+  x: number;
+  y: number;
 }
 
 export function visualState(interpreter: Interpreter, visual: RuntimeObject): VisualState {
