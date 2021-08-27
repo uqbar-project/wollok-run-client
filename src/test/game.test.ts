@@ -1,7 +1,7 @@
 import fs from 'fs'
 import { buildEnvironment, WRENatives } from 'wollok-ts'
 import interpret, { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
-import { visualState, flushEvents, canvasResolution, wKeyCode, buildKeyPressEvent, queueEvent } from '../components/game/SketchUtils';
+import { visualState, flushEvents, canvasResolution, wKeyCode, buildKeyPressEvent, queueEvent } from '../components/game/SketchUtils'
 import { buildGameProject, GameProject, getProgramIn } from '../components/game/gameProject'
 import { MessageDrawer, messageTextPosition } from '../components/game/messages'
 
@@ -25,19 +25,6 @@ const getVisualState = (interpreter: Interpreter, index = 0) => {
 }
 
 describe('game', () => {
-
-  gameTest('visualStates', 'pepita', ['games/pepita.wpgm'], function (interpreter) {
-    expect(getVisualState(interpreter)).toStrictEqual({
-      image: 'pepita.png',
-      position: { x: 1, y: 1 },
-      message: undefined,
-    })
-  })
-
-  gameTest('visualState should round a visuals position', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
-    expect(getVisualState(interpreter).position).toStrictEqual({ x: 1, y: 2 })
-  })
-
   gameTest('a visual outside of the canvas should be drawn', 'gameTest', ['games/gameTest.wpgm'], function (interpreter) {
     expect(getVisualState(interpreter, 1)).toMatchObject({ image: 'out.png' })
   })
@@ -116,6 +103,12 @@ describe('messages', () => {
     textWidth: (text: string) => 5.5 * text.length,
     rect: () => { },
     text: () => { },
+    fill: () => { },
+    textAlign: () => { },
+    textSize: () => { },
+    textStyle: () => { },
+    stroke: () => { },
+    noStroke: () => { },
   }
 
   test('when a message is horizontally out of canvas, it should be inverted', () => {
@@ -133,6 +126,29 @@ describe('messages', () => {
     expect(messageTextPosition(drawer, message).y).toBeLessThan(message.y)
     expect(messageTextPosition(drawer, message).x).toBeGreaterThan(message.x)
   })
+})
+
+describe('VisualState', () => {
+  gameTest('positionable visual', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
+    expect(getVisualState(interpreter, 0)).toStrictEqual({
+      image: undefined,
+      position: { x: 1, y: 2 },
+      message: undefined,
+      text: undefined,
+      textColor: undefined,
+    })
+  })
+
+  gameTest('complete visual', 'visualStateTest', ['games/visualStateTest.wpgm'], function (interpreter) {
+    expect(getVisualState(interpreter, 1)).toStrictEqual({
+      image: 'anImage.png',
+      position: { x: 0, y: 0 },
+      message: undefined,
+      text: 'Sample text',
+      textColor: 'FF0000FF',
+    })
+  })
+
 })
 
 /*

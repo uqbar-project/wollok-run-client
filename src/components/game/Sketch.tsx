@@ -7,10 +7,11 @@ import validate from 'wollok-ts/dist/validator'
 import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
-import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent } from './SketchUtils'
-import { Button } from '@material-ui/core'
+import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, Position } from './SketchUtils'
+import { Button, Size } from '@material-ui/core'
 import ReplayIcon from '@material-ui/icons/Replay'
-import { DrawableMessage, drawMessage } from './messages'
+import { DrawableMessage, drawMessage, TEXT_SIZE, TEXT_STYLE } from './messages'
+import { CenterFocusStrong } from '@material-ui/icons'
 
 const { round } = Math
 
@@ -39,6 +40,32 @@ function wKeyCode(key: string, keyCode: number): string {
   if (keyCode === 32) return 'Space'
   if (keyCode === 16) return 'Shift'
   return '' //If an unknown key is pressed, a string should be returned
+}
+
+function write(sketch: p5, drawableText: DrawableText) {
+  const defaultTextColor = 'blue'
+  const grey = '#1c1c1c'
+  const hAlign = drawableText.horizAlign || 'center'
+  const vAlign = drawableText.vertAlign || 'center'
+  const x = drawableText.position.x
+  const y = drawableText.position.y
+  sketch.textSize(drawableText.size || TEXT_SIZE)
+  sketch.textStyle(drawableText.style || TEXT_STYLE)
+  sketch.textAlign(hAlign, vAlign)
+  sketch.stroke(grey)
+  sketch.fill(drawableText.color || defaultTextColor)
+  sketch.text(drawableText.text, x, y)
+}
+
+function hexaToColor(textColor?: string) { return !textColor ? undefined : '#' + textColor }
+interface DrawableText {
+  position: Position;
+  text: string;
+  color?: string;
+  size?: number;
+  horizAlign?: p5.HORIZ_ALIGN;
+  vertAlign?: p5.VERT_ALIGN;
+  style?: p5.THE_STYLE;  
 }
 
 interface SketchProps {
@@ -119,18 +146,37 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 
   const messagesToDraw: DrawableMessage[] = []
   for (const visual of game.get('visuals')?.innerCollection ?? []) {
-    const { image: stateImage, position, message } = visualState(interpreter, visual)
-    const imageObject = image(stateImage)
-    const x = position.x * cellPixelSize
-    const y = sketch.height - position.y * cellPixelSize - imageObject.height
+    const { image: stateImage, position, message, text, textColor } = visualState(interpreter, visual)
+    const imageObject =  stateImage === undefined ? stateImage : image(stateImage)
+    let x = position.x * cellPixelSize
+    let y = sketch.height - (position.y + 1) * cellPixelSize
 
-    sketch.image(imageObject, x, y)
+    if (imageObject) {
+      x = position.x * cellPixelSize
+      y = sketch.height - position.y * cellPixelSize - imageObject.height
+      sketch.image(imageObject, x, y)
+      const defaultImage = image()
+      if (imageObject == defaultImage) {
+        const drawableText = {color: 'black', horizAlign: sketch.LEFT,
+         vertAlign: sketch.TOP, text: 'IMAGE\n  NOT\nFOUND', position: {x, y}}
+        write(sketch, drawableText)
+      }
+    }
 
     if (message && visual.get('messageTime')!.innerNumber! > sketch.millis())
       messagesToDraw.push({ message, x, y })
+    
+    if (text) {
+      x = (position.x + 0.5) * cellPixelSize
+      y = sketch.height - (position.y + 0.5) * cellPixelSize
+      const drawableText = {text, position: {x, y}, color: hexaToColor(textColor)}
+      write(sketch, drawableText)
+    }
   }
 
   messagesToDraw.forEach(drawMessage(sketch))
+
+
 }
 
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
