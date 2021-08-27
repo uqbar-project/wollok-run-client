@@ -1,10 +1,9 @@
 import fs from 'fs'
-import { buildEnvironment, WollokException, WRENatives } from 'wollok-ts'
+import { buildEnvironment, WRENatives } from 'wollok-ts'
 import interpret, { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
-import { visualState, flushEvents, canvasResolution, wKeyCode, buildKeyPressEvent, queueEvent } from '../components/game/SketchUtils';
+import { visualState, flushEvents, canvasResolution, wKeyCode, buildKeyPressEvent, queueEvent } from '../components/game/SketchUtils'
 import { buildGameProject, GameProject, getProgramIn } from '../components/game/gameProject'
 import { MessageDrawer, messageTextPosition } from '../components/game/messages'
-import { exception } from 'console';
 
 const readFiles = (files: string[]) => files.map(file => ({
   name: file,
@@ -136,7 +135,7 @@ describe('VisualState', () => {
       position: { x: 1, y: 2 },
       message: undefined,
       text: undefined,
-      textColor: undefined
+      textColor: undefined,
     })
   })
 
@@ -146,17 +145,10 @@ describe('VisualState', () => {
       position: { x: 0, y: 0 },
       message: undefined,
       text: 'Sample text',
-      textColor: 'FF0000FF'
+      textColor: 'FF0000FF',
     })
   })
 
-  try {
-    gameTest('incomplete visual', 'incompleteVisual', ['games/incompleteVisual.wpgm'], function (interpreter) {})
-  }
-  catch(exception) { 
-    expect(exception).toBeInstanceOf(WollokException)
-  }
-  
 })
 
 /*
