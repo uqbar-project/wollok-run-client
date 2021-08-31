@@ -67,9 +67,9 @@ export interface DrawableText {
   style?: p5.THE_STYLE;  
 }
 
-export function draw(sketch: p5, drawable: Drawable){
+export function draw(sketch: p5, drawable: Drawable) {
   if(drawable.drawableImage){
-    const {drawableImage: {image, position: {x, y}}} = drawable
+    const { drawableImage: { image, position: { x, y } } } = drawable
     sketch.image(image, x, y)
   }
   if(drawable.drawableText){
@@ -93,25 +93,24 @@ export function write(sketch: p5, drawableText: DrawableText) {
 }
 
 export function baseDrawable(images: Map<string, p5.Image>, path?: string): Drawable {
-  const origin: Position = {x: 0, y: 0}
+  const origin: Position = { x: 0, y: 0 }
   const p5Image = path && images.get(path)
 
   if(!p5Image){
-    const drawableText = {color: 'black', horizAlign: p5.prototype.LEFT,
-    vertAlign: p5.prototype.TOP, text: 'IMAGE\n  NOT\nFOUND', position: origin}
-    return {drawableImage: {image: images.get('wko.png')!, position: origin}, drawableText}
+    const drawableText = { 
+      color: 'black', horizAlign: p5.prototype.LEFT,
+      vertAlign: p5.prototype.TOP, text: 'IMAGE\n  NOT\nFOUND', position: origin,
+    }
+    return { drawableImage: { image: images.get('wko.png')!, position: origin }, drawableText }
   }
 
-  return {drawableImage: {image: p5Image, position: origin}}
+  return { drawableImage: { image: p5Image, position: origin } }
 }
 
-export function moveAllTo(drawable: Drawable, position: Position){
-  if(drawable.drawableImage){
-    drawable.drawableImage.position = position
-  }
-  if(drawable.drawableText){
-    drawable.drawableText.position = position
-  }
+export function moveAllTo(drawable: Drawable, position: Position) {
+  const { drawableImage, drawableText } = drawable
+  if(drawableImage){ drawableImage.position = position }
+  if(drawableText){ drawableText.position = position }
 }
 
 export function hexaToColor(textColor?: string) { return !textColor ? undefined : '#' + textColor }
