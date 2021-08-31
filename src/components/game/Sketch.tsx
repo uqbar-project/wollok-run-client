@@ -7,7 +7,7 @@ import validate from 'wollok-ts/dist/validator'
 import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
-import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, hexaToColor, baseDrawable, draw, moveAllTo } from './SketchUtils'
+import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, hexaToColor, baseDrawable, draw, moveAllTo, write } from './SketchUtils'
 import { Button } from '@material-ui/core'
 import ReplayIcon from '@material-ui/icons/Replay'
 import { DrawableMessage, drawMessage } from './messages'
@@ -132,14 +132,15 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 
     if (message && visual.get('messageTime')!.innerNumber! > sketch.millis())
       messagesToDraw.push({ message, x, y })
+
+    draw(sketch, drawable)
     
     if (text) {
       x = (position.x + 0.5) * cellPixelSize
       y = sketch.height - (position.y + 0.5) * cellPixelSize
-      drawable.drawableText = {text, position: {x, y}, color: hexaToColor(textColor)}
+      const drawableText = {text, position: {x, y}, color: hexaToColor(textColor)}
+      write(sketch, drawableText)
     }
-
-    draw(sketch, drawable)
   }
 
   messagesToDraw.forEach(drawMessage(sketch))
