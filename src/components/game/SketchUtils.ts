@@ -47,6 +47,26 @@ export interface Position {
   y: number;
 }
 
+export interface Drawable {
+  drawableImage?: DrawableImage;
+  drawableText?: DrawableText;
+}
+
+export interface DrawableImage {
+  image: p5.Image;
+  position: Position;
+}
+
+export interface DrawableText {
+  position: Position;
+  text: string;
+  color?: string;
+  size?: number;
+  horizAlign?: p5.HORIZ_ALIGN;
+  vertAlign?: p5.VERT_ALIGN;
+  style?: p5.THE_STYLE;  
+}
+
 export function draw(sketch: p5, drawable: Drawable){
   if(drawable.drawableImage){
     const {drawableImage: {image, position: {x, y}}} = drawable
@@ -72,14 +92,9 @@ export function write(sketch: p5, drawableText: DrawableText) {
   sketch.text(drawableText.text, x, y)
 }
 
-//const image = (path?: string): p5.Image => (path && images.get(path)) || images.get('wko.png')!
-export function baseDrawable(images: Map<string, p5.Image>, path?: string, mustSearchImage = true): Drawable {
+export function baseDrawable(images: Map<string, p5.Image>, path?: string): Drawable {
   const origin: Position = {x: 0, y: 0}
   const p5Image = path && images.get(path)
-
-  if(!mustSearchImage){
-    return {}
-  }
 
   if(!p5Image){
     const drawableText = {color: 'black', horizAlign: p5.prototype.LEFT,
@@ -90,27 +105,16 @@ export function baseDrawable(images: Map<string, p5.Image>, path?: string, mustS
   return {drawableImage: {image: p5Image, position: origin}}
 }
 
+export function moveAllTo(drawable: Drawable, position: Position){
+  if(drawable.drawableImage){
+    drawable.drawableImage.position = position
+  }
+  if(drawable.drawableText){
+    drawable.drawableText.position = position
+  }
+}
+
 export function hexaToColor(textColor?: string) { return !textColor ? undefined : '#' + textColor }
-
-export interface Drawable {
-  drawableImage?: DrawableImage;
-  drawableText?: DrawableText;
-}
-
-export interface DrawableImage {
-  image: p5.Image;
-  position: Position;
-}
-
-export interface DrawableText {
-  position: Position;
-  text: string;
-  color?: string;
-  size?: number;
-  horizAlign?: p5.HORIZ_ALIGN;
-  vertAlign?: p5.VERT_ALIGN;
-  style?: p5.THE_STYLE;  
-}
 
 export function visualState(interpreter: Interpreter, visual: RuntimeObject): VisualState {
   const image = invokeMethod(interpreter, visual, 'image')
