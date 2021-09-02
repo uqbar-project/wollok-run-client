@@ -8,10 +8,8 @@ import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
 import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, Position } from './SketchUtils'
-import { Button, Size } from '@material-ui/core'
-import ReplayIcon from '@material-ui/icons/Replay'
 import { DrawableMessage, drawMessage, TEXT_SIZE, TEXT_STYLE } from './messages'
-import { CenterFocusStrong } from '@material-ui/icons'
+import Menu from '../Menu'
 
 const { round } = Math
 
@@ -58,6 +56,7 @@ function write(sketch: p5, drawableText: DrawableText) {
 }
 
 function hexaToColor(textColor?: string) { return !textColor ? undefined : '#' + textColor }
+
 interface DrawableText {
   position: Position;
   text: string;
@@ -71,6 +70,7 @@ interface DrawableText {
 interface SketchProps {
   gameProject: GameProject
   evaluation: Evaluation
+  backToFSSketch: () => void
 }
 
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -182,8 +182,7 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // COMPONENTS
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
-const SketchComponent = ({ gameProject, evaluation: initialEvaluation }: SketchProps) => {
+const SketchComponent = ({ gameProject, evaluation: initialEvaluation, backToFSSketch}: SketchProps) => {
   const [stop, setStop] = useState(false)
   const images = new Map<string, p5.Image>()
   const sounds = new Map<Id, GameSound>()
@@ -257,13 +256,8 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation }: SketchP
     {stop ?
       <h1>Se terminó el juego</h1>
       : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
-    <RestartButton restart={restart} />
+    <Menu restart={restart} backToFS={backToFSSketch}/>
   </div>
 }
 
 export default SketchComponent
-
-type RestartProps = { restart: () => void }
-export function RestartButton(props: RestartProps) {
-  return <Button onClick={event => { event.preventDefault(); props.restart() }} variant="contained" color="primary" startIcon={<ReplayIcon />}>Reiniciar el juego</Button>
-}

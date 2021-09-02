@@ -24,12 +24,17 @@ const Game = (_: GameProps) => {
 
   const title = evaluation ? evaluation.object('wollok.game.game')?.get('title')?.innerValue : ''
 
+  function backToFS() {
+    setGame(undefined)
+    setEvaluation(undefined)
+  }
+
   return !evaluation || !game
     ? <FilesSelector onFilesLoad={loadGame} />
     : <div className={$.container}>
       <h1>{title}</h1>
       <div>
-        <Sketch gameProject={game} evaluation={evaluation} />
+        <Sketch gameProject={game} evaluation={evaluation} backToFSSketch={backToFS}/>
         <ReactMarkdown source={game.description} className={$.description} />
       </div>
     </div>
