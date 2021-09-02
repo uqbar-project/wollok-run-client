@@ -5,9 +5,9 @@ import MenuItem from '@material-ui/core/MenuItem';
 import MenuIcon from '@material-ui/icons/Menu';
 import ReplayIcon from '@material-ui/icons/Replay'
 import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
-import VolumeOffIcon from '@material-ui/icons/VolumeOff';
+// import VolumeOffIcon from '@material-ui/icons/VolumeOff';
 // import VolumeUpIcon from '@material-ui/icons/VolumeUp';
-import PauseIcon from '@material-ui/icons/Pause';
+// import PauseIcon from '@material-ui/icons/Pause';
 // import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 
 type MenuProps = { 
@@ -44,12 +44,12 @@ export default function SimpleMenu(props: MenuProps) {
           <MenuItem onClick={event => { event.preventDefault(); props.backToFS(); setAnchorEl(null); }}>
             <PlaylistPlayIcon/> Elegir juego
           </MenuItem>
-          <MenuItem onClick={handleClose}>
+          {/* <MenuItem onClick={handleClose}>
             <PauseIcon />Pausar juego
           </MenuItem>
           <MenuItem onClick={handleClose}>
             <VolumeOffIcon /> Pausar música
-          </MenuItem>
+          </MenuItem> */}
         </Menu>
     </div>
   );
