@@ -9,6 +9,7 @@ import $ from './Game.module.scss'
 import { GameProject, buildGameProject, getProgramIn } from './gameProject'
 import { WollokLogo } from '../Home/Home'
 import { CenterFocusStrong } from '@material-ui/icons'
+import { BackArrow } from '../BackArrow'
 
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
@@ -35,13 +36,16 @@ const Game = (_: GameProps) => {
   const title = evaluation ? evaluation.object('wollok.game.game')?.get('title')?.innerValue : ''
 
   if(error){
-    return <div className={$.container} style={{display: 'flex', justifyContent: 'center',alignItems: 'center'}}>
+    return  <div className={$.error}>
               <WollokLogo />
-              <h1 style = {{fontSize: '3em'}}>{error}</h1>
-              <p style = {{fontSize: '1.5em'}}>No se encontro un programa, cuya extension es .wpgm, dentro del proyecto.
-                 Podes crear uno dentro de la carpeta src para poder correr el juego.
-              </p>
-           </div>
+              <div>
+                <h1> {error} </h1>
+                <p style={{marginTop:'5px', marginBottom:'5px'}}>No se encontro un programa, cuya extension es .wpgm, dentro del proyecto.
+                  Podes crear uno dentro de la carpeta src para poder correr el juego.
+                </p>
+                <BackArrow returnPath='/'/> 
+              </div>
+            </div>
   }
   if(!evaluation || !game)
     return <FilesSelector onFilesLoad={loadGame} />

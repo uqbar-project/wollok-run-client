@@ -37,3 +37,15 @@
     }
   }
 }
+
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+  height: 50%;
+  margin: auto;
+  padding: 20vh;
+  border: 2px solid $color-primary;
+}
