@@ -6,7 +6,7 @@ import { WollokLogo } from './Home/Home'
 
 type ErrorProps = { message: String }
 export const ErrorScreen = (props: ErrorProps) => {
-    return <div className={$.error}>
+  return <div className={$.error}>
     <WollokLogo />
     <br />
     <div>
