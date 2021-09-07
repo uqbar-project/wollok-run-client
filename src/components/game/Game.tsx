@@ -43,7 +43,7 @@ const Game = (_: GameProps) => {
   const title = evaluation ? evaluation.object('wollok.game.game')?.get('title')?.innerValue : ''
 
   if(error){
-    return  cantLoadProgramView(error)
+    return  cantLoadProgramView()
   }
   if(!evaluation || !game)
     return <FilesSelector onFilesLoad={loadGame} />
@@ -56,7 +56,7 @@ const Game = (_: GameProps) => {
     </div>
   </div>
 
-  function cantLoadProgramView(error: Error) {
+  function cantLoadProgramView() {
 
     if(error instanceof TooManyProgramsException){
       let program: string
