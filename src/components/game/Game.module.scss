@@ -1,4 +1,5 @@
 @import "../../_theme.scss";
+@import "../ErrorScreen.module.scss";
 
 .container {
   display: flex;
@@ -36,26 +37,4 @@
       margin: 2vw 2vw 1vw 0;
     }
   }
-}
-
-.error {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 50%;
-  height: 50%;
-  margin: auto;
-  padding: 20vh;
-  border: 2px solid $color-primary;
-
-  p {
-    margin-top: 2%;
-    margin-bottom: 2%
-  }
-}
-
-.wpgmPicker {
-  background-color: white;
-  width: 100%;
 }
