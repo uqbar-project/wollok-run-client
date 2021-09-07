@@ -11,6 +11,7 @@ import { WollokLogo } from '../Home/Home'
 import { BackArrow } from '../BackArrow'
 import { Button, FormControl, NativeSelect } from '@material-ui/core'
 import PublishIcon from '@material-ui/icons/Publish'
+import { ErrorScreen } from '../ErrorScreen'
 
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
@@ -78,19 +79,7 @@ const Game = (_: GameProps) => {
       </div>
     }
 
-    return <div className={$.error}>
-      <WollokLogo />
-      <br />
-      <div>
-        <h1 style={{ textAlign: 'center' }}> Se ha producido un error </h1>
-        <p style={{ marginTop: '5px', marginBottom: '5px' }}>No se encontró un programa dentro del proyecto.
-          Podes crear uno con la extensión .wpgm dentro de la carpeta src para poder correr el juego.
-        </p>
-        <div style={{ paddingTop: '2%' }}>
-          <BackArrow returnPath='/' />
-        </div>
-      </div>
-    </div>
+    return <ErrorScreen message="No se encontró un programa dentro del proyecto. Podes crear uno con la extensión .wpgm dentro de la carpeta src para poder correr el juego."/>
   }
 }
 
