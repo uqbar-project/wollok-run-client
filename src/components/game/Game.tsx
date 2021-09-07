@@ -55,6 +55,7 @@ const Game = (_: GameProps) => {
 
     if(error instanceof TooManyProgramsException){
       let program: string
+      // TODO: Pensar en cómo reutilizar el componente ErrorScreen para el caso de multiples .wpgm
       return <div className={$.error}>
         <WollokLogo />
         <br />
