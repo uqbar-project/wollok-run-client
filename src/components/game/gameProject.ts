@@ -30,17 +30,17 @@ export interface GameProject {
 }
 
 export class TooManyProgramsException extends Error {
-  
+
   wpgmFiles: Array<File | SourceFile> = []
   files: Array<File> = []
 
   constructor(msg: string, foundFiles: Array<File | SourceFile>, files: Array<File>) {
-      super(msg);
-      this.wpgmFiles = foundFiles
-      this.files = files
+    super(msg)
+    this.wpgmFiles = foundFiles
+    this.files = files
 
-      // Set the prototype explicitly.
-      Object.setPrototypeOf(this, TooManyProgramsException.prototype);
+    // Set the prototype explicitly.
+    Object.setPrototypeOf(this, TooManyProgramsException.prototype)
   }
 
 }
@@ -62,7 +62,7 @@ export const buildGameProject = (allFiles: File[], programName?: string): GamePr
   else
     wpgmFiles = wollokFiles.filter(withExtension(WOLLOK_PROGRAM_EXTENSION))
   if (wpgmFiles.length > 1) throw new TooManyProgramsException('This project has more than one program', wpgmFiles, allFiles)
-  if (wpgmFiles.length == 1) wpgmFile = wpgmFiles[0]
+  if (wpgmFiles.length === 1) wpgmFile = wpgmFiles[0]
   if (!wpgmFile) throw new Error('Program file not found')
   const main = wpgmFile.name.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').replace(/\//gi, '.')
   const description = allFiles.find(withExtension('md'))?.content.toString('utf8') || '## No description found'

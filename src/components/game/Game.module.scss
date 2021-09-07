@@ -48,9 +48,14 @@
   margin: auto;
   padding: 20vh;
   border: 2px solid $color-primary;
+
+  p {
+    margin-top: 2%;
+    margin-bottom: 2%
+  }
 }
 
 .wpgmPicker {
   background-color: white;
-  width: 400px;
+  width: 100%;
 }
