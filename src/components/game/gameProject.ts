@@ -58,7 +58,7 @@ export const buildGameProject = (allFiles: File[], programName?: string): GamePr
   let wpgmFile
 
   if(programName)
-    wpgmFile = wollokFiles.find(file => withExtension(WOLLOK_PROGRAM_EXTENSION) && file.name === programName)
+    wpgmFile = wollokFiles.find(file => file.name === programName)
   else
     wpgmFiles = wollokFiles.filter(withExtension(WOLLOK_PROGRAM_EXTENSION))
   if (wpgmFiles.length > 1) throw new TooManyProgramsException('This project has more than one program', wpgmFiles, allFiles)
