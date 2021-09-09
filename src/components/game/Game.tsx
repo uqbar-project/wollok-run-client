@@ -59,8 +59,7 @@ const Game = (_: GameProps) => {
   function cantLoadProgramView() {
     if(error instanceof TooManyProgramsException){
       let program: string
-      return <ErrorScreen innerCode={
-        <>
+      return <ErrorScreen>
           <p>Se encontraron varios programas en el proyecto.
           Seleccione uno para continuar:
           </p>
@@ -76,12 +75,10 @@ const Game = (_: GameProps) => {
               <Button style={{ float: 'right' }} startIcon={<PublishIcon />} onClick={() => reloadGame(error.files, program)} variant="contained" color="primary">Cargar Juego</Button>
             </div>
           </div>
-        </>
-      }/>
+        </ErrorScreen>
     }
 
-    return <ErrorScreen innerCode={
-    <>
+    return <ErrorScreen>
       <p style={{ marginTop: '5px', marginBottom: '5px' }}>
         No se encontró un programa dentro del proyecto. 
         Podes crear uno con la extensión .wpgm dentro de la carpeta src para poder correr el juego.
@@ -89,8 +86,7 @@ const Game = (_: GameProps) => {
       <div style={{ paddingTop: '2%' }}>
       <BackArrow returnPath='/' />
       </div>
-      </>
-    }/>
+    </ErrorScreen>
   }
 }
 
