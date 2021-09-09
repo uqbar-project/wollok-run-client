@@ -34,9 +34,9 @@ export class TooManyProgramsException extends Error {
   wpgmFiles: Array<File | SourceFile> = []
   files: Array<File> = []
 
-  constructor(msg: string, foundFiles: Array<File | SourceFile>, files: Array<File>) {
+  constructor(msg: string, programs: Array<File | SourceFile>, files: Array<File>) {
     super(msg)
-    this.wpgmFiles = foundFiles
+    this.wpgmFiles = programs
     this.files = files
 
     // Set the prototype explicitly.

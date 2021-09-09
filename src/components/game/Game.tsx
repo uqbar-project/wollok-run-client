@@ -19,6 +19,11 @@ const Game = (_: GameProps) => {
   const [evaluation, setEvaluation] = useState<Evaluation>()
   const [error, setError] = useState<Error>()
 
+  const reloadGame = (files: File[], program: string) => {
+    setError(undefined)
+    loadGame(files, program)
+  }
+
   const loadGame = (files: File[], program?: string) => {
     try {
       const project = buildGameProject(files, program)
@@ -38,7 +43,7 @@ const Game = (_: GameProps) => {
   const title = evaluation ? evaluation.object('wollok.game.game')?.get('title')?.innerValue : ''
 
   if(error){
-    return cantLoadProgramView(error)
+    return cantLoadProgramView()
   }
   if(!evaluation || !game)
     return <FilesSelector onFilesLoad={loadGame} />
@@ -51,8 +56,7 @@ const Game = (_: GameProps) => {
     </div>
   </div>
 
-  function cantLoadProgramView(error: Error) {
-
+  function cantLoadProgramView() {
     if(error instanceof TooManyProgramsException){
       let program: string
       return <ErrorScreen innerCode={
@@ -69,7 +73,7 @@ const Game = (_: GameProps) => {
             </FormControl>
             <div style={{ paddingTop: '2%' }}>
               <BackArrow returnPath='/' />
-              <Button style={{ float: 'right' }} startIcon={<PublishIcon />} onClick={() => { setError(undefined); loadGame(error.files, program) }} variant="contained" color="primary">Cargar Juego</Button>
+              <Button style={{ float: 'right' }} startIcon={<PublishIcon />} onClick={() => reloadGame(error.files, program)} variant="contained" color="primary">Cargar Juego</Button>
             </div>
           </div>
         </>
