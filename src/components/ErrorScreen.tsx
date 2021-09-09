@@ -1,5 +1,4 @@
 import React from 'react'
-import { BackArrow } from './BackArrow'
 import $ from './ErrorScreen.module.scss'
 import { WollokLogo } from './Home/Home'
 
