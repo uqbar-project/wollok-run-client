@@ -1,5 +1,5 @@
 import { RouteComponentProps } from '@reach/router'
-import React, { memo, useState } from 'react'
+import React, { Fragment, memo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { buildEnvironment, Evaluation, WRENatives } from 'wollok-ts'
 import interpret from 'wollok-ts/dist/interpreter/interpreter'
@@ -38,7 +38,7 @@ const Game = (_: GameProps) => {
   const title = evaluation ? evaluation.object('wollok.game.game')?.get('title')?.innerValue : ''
 
   if(error){
-    return  cantLoadProgramView(error)
+    return cantLoadProgramView(error)
   }
   if(!evaluation || !game)
     return <FilesSelector onFilesLoad={loadGame} />
@@ -55,12 +55,8 @@ const Game = (_: GameProps) => {
 
     if(error instanceof TooManyProgramsException){
       let program: string
-      // TODO: Pensar en cómo reutilizar el componente ErrorScreen para el caso de multiples .wpgm
-      return <div className={$.error}>
-        <WollokLogo />
-        <br />
-        <div>
-          <h1 style={{ textAlign: 'center' }}> Se ha producido un error </h1>
+      return <ErrorScreen innerCode={
+        <>
           <p>Se encontraron varios programas en el proyecto.
           Seleccione uno para continuar:
           </p>
@@ -76,11 +72,21 @@ const Game = (_: GameProps) => {
               <Button style={{ float: 'right' }} startIcon={<PublishIcon />} onClick={() => { setError(undefined); loadGame(error.files, program) }} variant="contained" color="primary">Cargar Juego</Button>
             </div>
           </div>
-        </div>
-      </div>
+        </>
+      }/>
     }
 
-    return <ErrorScreen message="No se encontró un programa dentro del proyecto. Podes crear uno con la extensión .wpgm dentro de la carpeta src para poder correr el juego."/>
+    return <ErrorScreen innerCode={
+    <>
+      <p style={{ marginTop: '5px', marginBottom: '5px' }}>
+        No se encontró un programa dentro del proyecto. 
+        Podes crear uno con la extensión .wpgm dentro de la carpeta src para poder correr el juego.
+      </p>
+      <div style={{ paddingTop: '2%' }}>
+      <BackArrow returnPath='/' />
+      </div>
+      </>
+    }/>
   }
 }
 
