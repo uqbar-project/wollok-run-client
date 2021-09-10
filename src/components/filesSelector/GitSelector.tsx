@@ -43,6 +43,7 @@ const getAllFilePathsFrom = (rootDirectory: string): string[] => {
 
 
 const GitSelector = (props: SelectorProps) => {
+  const defaultGameUri = 'https://github.com/wollok/pepitagame'
   const [gitUrl, setGitUrl] = useState<string>()
   const repoUri = new URLSearchParams(document.location.search).get(GIT)
 
@@ -55,7 +56,7 @@ const GitSelector = (props: SelectorProps) => {
   }, [props, repoUri])
 
   const navigateToGame = () => {
-    document.location.search = `${GIT}=${gitUrl}`
+    document.location.search = `${GIT}=${gitUrl || defaultGameUri}`
   }
 
   return (
@@ -63,7 +64,7 @@ const GitSelector = (props: SelectorProps) => {
       <form onSubmit={event => { event.preventDefault(); navigateToGame() }}>
         <div>
           <label>Pegá la URL del repositorio del juego a correr</label>
-          <input type='text' placeholder='https://github.com/wollok/pepitagame' onChange={event => setGitUrl(event.target.value)} required />
+          <input type='text' placeholder={defaultGameUri} onChange={event => setGitUrl(event.target.value)} />
         </div>
         <button type='submit'>Cargar Juego</button>
       </form>

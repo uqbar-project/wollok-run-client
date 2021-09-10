@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import p5 from 'p5'
 import React, { useEffect, useState } from 'react'
 import Sketch from 'react-p5'
@@ -7,8 +8,8 @@ import validate from 'wollok-ts/dist/validator'
 import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
-import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, hexaToColor, baseDrawable, draw, moveAllTo, write } from './SketchUtils'
 import { DrawableMessage, drawMessage } from './messages'
+import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, hexaToColor, baseDrawable, draw, moveAllTo, write } from './SketchUtils'
 import Menu from '../Menu'
 
 const { round } = Math
@@ -40,11 +41,10 @@ function wKeyCode(key: string, keyCode: number): string {
   return '' //If an unknown key is pressed, a string should be returned
 }
 
-
 interface SketchProps {
   gameProject: GameProject
   evaluation: Evaluation
-  backToFSSketch: () => void
+  exit: () => void
 }
 
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -151,7 +151,7 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // COMPONENTS
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-const SketchComponent = ({ gameProject, evaluation: initialEvaluation, backToFSSketch }: SketchProps) => {
+const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: SketchProps) => {
   const [stop, setStop] = useState(false)
   const images = new Map<string, p5.Image>()
   const sounds = new Map<Id, GameSound>()
@@ -222,10 +222,10 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, backToFSS
   }
 
   return <div>
-    {stop ?
-      <h1>Se terminó el juego</h1>
+    {stop
+      ? <h1>Se terminó el juego</h1>
       : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
-    <Menu restart={restart} backToFS={backToFSSketch} />
+    <Menu restart={restart} exit={exit} />
   </div>
 }
 
