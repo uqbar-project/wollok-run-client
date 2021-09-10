@@ -141,7 +141,7 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 
     for (let x = 0; x < gameWidth; x++)
       for (let y = 0; y < gameHeight; y++)
-        sketch.image(groundImage, x * cellPixelSize, y * cellPixelSize)
+        sketch.image(groundImage, x * cellPixelSize, y * cellPixelSize, cellPixelSize, cellPixelSize)
   }
 
   const messagesToDraw: DrawableMessage[] = []
