@@ -8,9 +8,8 @@ import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
 import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, hexaToColor, baseDrawable, draw, moveAllTo, write } from './SketchUtils'
-import { Button } from '@material-ui/core'
-import ReplayIcon from '@material-ui/icons/Replay'
 import { DrawableMessage, drawMessage } from './messages'
+import Menu from '../Menu'
 
 const { round } = Math
 
@@ -45,6 +44,7 @@ function wKeyCode(key: string, keyCode: number): string {
 interface SketchProps {
   gameProject: GameProject
   evaluation: Evaluation
+  backToFSSketch: () => void
 }
 
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -106,15 +106,15 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
   const cellPixelSize = game.get('cellSize')!.innerNumber!
   const boardGroundPath = game.get('boardGround')?.innerString
 
-  if (boardGroundPath) sketch.image(baseDrawable(images, boardGroundPath).drawableImage?.image!, 0, 0, sketch.width, sketch.height)
+  if (boardGroundPath) sketch.image(baseDrawable(images, boardGroundPath).drawableImage!.image, 0, 0, sketch.width, sketch.height)
   else {
-    const groundImage = baseDrawable(images, game.get('ground')!.innerString!).drawableImage?.image!
+    const groundImage = baseDrawable(images, game.get('ground')!.innerString!).drawableImage!.image
     const gameWidth = round(game.get('width')!.innerNumber!)
     const gameHeight = round(game.get('height')!.innerNumber!)
 
     for (let x = 0; x < gameWidth; x++)
       for (let y = 0; y < gameHeight; y++)
-        sketch.image(groundImage, x * cellPixelSize, y * cellPixelSize)
+        sketch.image(groundImage, x * cellPixelSize, y * cellPixelSize, cellPixelSize, cellPixelSize)
   }
 
   const messagesToDraw: DrawableMessage[] = []
@@ -127,18 +127,18 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
     if (stateImage) {
       x = position.x * cellPixelSize
       y = sketch.height - position.y * cellPixelSize - drawable.drawableImage!.image.height
-      moveAllTo(drawable, {x, y})
+      moveAllTo(drawable, { x, y })
     }
 
     if (message && visual.get('messageTime')!.innerNumber! > sketch.millis())
       messagesToDraw.push({ message, x, y })
 
     draw(sketch, drawable)
-    
+
     if (text) {
       x = (position.x + 0.5) * cellPixelSize
       y = sketch.height - (position.y + 0.5) * cellPixelSize
-      const drawableText = {text, position: {x, y}, color: hexaToColor(textColor)}
+      const drawableText = { text, position: { x, y }, color: hexaToColor(textColor) }
       write(sketch, drawableText)
     }
   }
@@ -151,8 +151,7 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // COMPONENTS
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
-const SketchComponent = ({ gameProject, evaluation: initialEvaluation }: SketchProps) => {
+const SketchComponent = ({ gameProject, evaluation: initialEvaluation, backToFSSketch }: SketchProps) => {
   const [stop, setStop] = useState(false)
   const images = new Map<string, p5.Image>()
   const sounds = new Map<Id, GameSound>()
@@ -226,13 +225,8 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation }: SketchP
     {stop ?
       <h1>Se terminó el juego</h1>
       : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
-    <RestartButton restart={restart} />
+    <Menu restart={restart} backToFS={backToFSSketch} />
   </div>
 }
 
 export default SketchComponent
-
-type RestartProps = { restart: () => void }
-export function RestartButton(props: RestartProps) {
-  return <Button onClick={event => { event.preventDefault(); props.restart() }} variant="contained" color="primary" startIcon={<ReplayIcon />}>Reiniciar el juego</Button>
-}

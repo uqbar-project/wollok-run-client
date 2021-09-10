@@ -133,7 +133,7 @@ const Repl = ({ environment: baseEnvironment, onEvaluationChange }: ReplProps) =
             highlight={text => text}
             padding={4}
           />
-          <button onClick={evaluate}>RUN</button>
+          <button style={{minWidth:'100px'}} onClick={evaluate}>RUN</button>
         </div>
         <CodeEditor
           className={$.editor}

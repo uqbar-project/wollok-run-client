@@ -64,20 +64,20 @@ export interface DrawableText {
   size?: number;
   horizAlign?: p5.HORIZ_ALIGN;
   vertAlign?: p5.VERT_ALIGN;
-  style?: p5.THE_STYLE;  
+  style?: p5.THE_STYLE;
 }
 
-export function draw(sketch: p5, drawable: Drawable) {
-  if(drawable.drawableImage){
+export function draw(sketch: p5, drawable: Drawable): void {
+  if (drawable.drawableImage) {
     const { drawableImage: { image, position: { x, y } } } = drawable
     sketch.image(image, x, y)
   }
-  if(drawable.drawableText){
+  if (drawable.drawableText) {
     write(sketch, drawable.drawableText)
   }
 }
 
-export function write(sketch: p5, drawableText: DrawableText) {
+export function write(sketch: p5, drawableText: DrawableText): void {
   const defaultTextColor = 'blue'
   const grey = '#1c1c1c'
   const hAlign = drawableText.horizAlign || 'center'
@@ -96,8 +96,8 @@ export function baseDrawable(images: Map<string, p5.Image>, path?: string): Draw
   const origin: Position = { x: 0, y: 0 }
   const p5Image = path && images.get(path)
 
-  if(!p5Image){
-    const drawableText = { 
+  if (!p5Image) {
+    const drawableText = {
       color: 'black', horizAlign: p5.prototype.LEFT,
       vertAlign: p5.prototype.TOP, text: 'IMAGE\n  NOT\nFOUND', position: origin,
     }
@@ -107,13 +107,13 @@ export function baseDrawable(images: Map<string, p5.Image>, path?: string): Draw
   return { drawableImage: { image: p5Image, position: origin } }
 }
 
-export function moveAllTo(drawable: Drawable, position: Position) {
+export function moveAllTo(drawable: Drawable, position: Position): void {
   const { drawableImage, drawableText } = drawable
-  if(drawableImage){ drawableImage.position = position }
-  if(drawableText){ drawableText.position = position }
+  if (drawableImage) { drawableImage.position = position }
+  if (drawableText) { drawableText.position = position }
 }
 
-export function hexaToColor(textColor?: string) { return !textColor ? undefined : '#' + textColor }
+export function hexaToColor(textColor?: string): string | undefined { return !textColor ? undefined : '#' + textColor }
 
 export function visualState(interpreter: Interpreter, visual: RuntimeObject): VisualState {
   const image = invokeMethod(interpreter, visual, 'image')
