@@ -38,9 +38,6 @@ export class TooManyProgramsException extends Error {
     super(msg)
     this.wpgmFiles = programs
     this.files = files
-
-    // Set the prototype explicitly.
-    Object.setPrototypeOf(this, TooManyProgramsException.prototype)
   }
 
 }

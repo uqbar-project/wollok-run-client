@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import p5 from 'p5'
 import React, { useEffect, useState } from 'react'
 import Sketch from 'react-p5'
@@ -8,10 +9,9 @@ import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
 import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, Position } from './SketchUtils'
-import { Button, Size } from '@material-ui/core'
+import { Button } from '@material-ui/core'
 import ReplayIcon from '@material-ui/icons/Replay'
 import { DrawableMessage, drawMessage, TEXT_SIZE, TEXT_STYLE } from './messages'
-import { CenterFocusStrong } from '@material-ui/icons'
 
 const { round } = Math
 
@@ -59,13 +59,13 @@ function write(sketch: p5, drawableText: DrawableText) {
 
 function hexaToColor(textColor?: string) { return !textColor ? undefined : '#' + textColor }
 interface DrawableText {
-  position: Position;
-  text: string;
-  color?: string;
-  size?: number;
-  horizAlign?: p5.HORIZ_ALIGN;
-  vertAlign?: p5.VERT_ALIGN;
-  style?: p5.THE_STYLE;  
+  position: Position
+  text: string
+  color?: string
+  size?: number
+  horizAlign?: p5.HORIZ_ALIGN
+  vertAlign?: p5.VERT_ALIGN
+  style?: p5.THE_STYLE
 }
 
 interface SketchProps {
@@ -147,7 +147,7 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
   const messagesToDraw: DrawableMessage[] = []
   for (const visual of game.get('visuals')?.innerCollection ?? []) {
     const { image: stateImage, position, message, text, textColor } = visualState(interpreter, visual)
-    const imageObject =  stateImage === undefined ? stateImage : image(stateImage)
+    const imageObject = stateImage === undefined ? stateImage : image(stateImage)
     let x = position.x * cellPixelSize
     let y = sketch.height - (position.y + 1) * cellPixelSize
 
@@ -156,20 +156,22 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
       y = sketch.height - position.y * cellPixelSize - imageObject.height
       sketch.image(imageObject, x, y)
       const defaultImage = image()
-      if (imageObject == defaultImage) {
-        const drawableText = {color: 'black', horizAlign: sketch.LEFT,
-         vertAlign: sketch.TOP, text: 'IMAGE\n  NOT\nFOUND', position: {x, y}}
+      if (imageObject === defaultImage) {
+        const drawableText = {
+          color: 'black', horizAlign: sketch.LEFT,
+          vertAlign: sketch.TOP, text: 'IMAGE\n  NOT\nFOUND', position: { x, y },
+        }
         write(sketch, drawableText)
       }
     }
 
     if (message && visual.get('messageTime')!.innerNumber! > sketch.millis())
       messagesToDraw.push({ message, x, y })
-    
+
     if (text) {
       x = (position.x + 0.5) * cellPixelSize
       y = sketch.height - (position.y + 0.5) * cellPixelSize
-      const drawableText = {text, position: {x, y}, color: hexaToColor(textColor)}
+      const drawableText = { text, position: { x, y }, color: hexaToColor(textColor) }
       write(sketch, drawableText)
     }
   }

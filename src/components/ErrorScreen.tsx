@@ -1,8 +1,11 @@
-import React from 'react'
+import React, { ReactNode } from 'react'
 import $ from './ErrorScreen.module.scss'
 import { WollokLogo } from './Home/Home'
 
-export const ErrorScreen = ({children}: any) => {
+export type ErrorProps = {
+  children: ReactNode
+}
+export const ErrorScreen = ({ children }: ErrorProps) => {
   return <div className={$.error}>
     <WollokLogo />
     <br />
