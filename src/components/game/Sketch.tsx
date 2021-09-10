@@ -7,8 +7,8 @@ import validate from 'wollok-ts/dist/validator'
 import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
-import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, Position } from './SketchUtils'
-import { DrawableMessage, drawMessage, TEXT_SIZE, TEXT_STYLE } from './messages'
+import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, hexaToColor, baseDrawable, draw, moveAllTo, write } from './SketchUtils'
+import { DrawableMessage, drawMessage } from './messages'
 import Menu from '../Menu'
 
 const { round } = Math
@@ -40,32 +40,6 @@ function wKeyCode(key: string, keyCode: number): string {
   return '' //If an unknown key is pressed, a string should be returned
 }
 
-function write(sketch: p5, drawableText: DrawableText) {
-  const defaultTextColor = 'blue'
-  const grey = '#1c1c1c'
-  const hAlign = drawableText.horizAlign || 'center'
-  const vAlign = drawableText.vertAlign || 'center'
-  const x = drawableText.position.x
-  const y = drawableText.position.y
-  sketch.textSize(drawableText.size || TEXT_SIZE)
-  sketch.textStyle(drawableText.style || TEXT_STYLE)
-  sketch.textAlign(hAlign, vAlign)
-  sketch.stroke(grey)
-  sketch.fill(drawableText.color || defaultTextColor)
-  sketch.text(drawableText.text, x, y)
-}
-
-function hexaToColor(textColor?: string) { return !textColor ? undefined : '#' + textColor }
-
-interface DrawableText {
-  position: Position;
-  text: string;
-  color?: string;
-  size?: number;
-  horizAlign?: p5.HORIZ_ALIGN;
-  vertAlign?: p5.VERT_ALIGN;
-  style?: p5.THE_STYLE;  
-}
 
 interface SketchProps {
   gameProject: GameProject
@@ -128,14 +102,13 @@ function updateSound(game: GameProject, interpreter: Interpreter, sounds: Map<Id
 }
 
 function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Image>) {
-  const image = (path?: string): p5.Image => (path && images.get(path)) || images.get('wko.png')!
   const game = interpreter.object('wollok.game.game')
   const cellPixelSize = game.get('cellSize')!.innerNumber!
   const boardGroundPath = game.get('boardGround')?.innerString
 
-  if (boardGroundPath) sketch.image(image(boardGroundPath), 0, 0, sketch.width, sketch.height)
+  if (boardGroundPath) sketch.image(baseDrawable(images, boardGroundPath).drawableImage!.image, 0, 0, sketch.width, sketch.height)
   else {
-    const groundImage = image(game.get('ground')!.innerString!)
+    const groundImage = baseDrawable(images, game.get('ground')!.innerString!).drawableImage!.image
     const gameWidth = round(game.get('width')!.innerNumber!)
     const gameHeight = round(game.get('height')!.innerNumber!)
 
@@ -147,29 +120,25 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
   const messagesToDraw: DrawableMessage[] = []
   for (const visual of game.get('visuals')?.innerCollection ?? []) {
     const { image: stateImage, position, message, text, textColor } = visualState(interpreter, visual)
-    const imageObject =  stateImage === undefined ? stateImage : image(stateImage)
+    const drawable = stateImage === undefined ? {} : baseDrawable(images, stateImage)
     let x = position.x * cellPixelSize
     let y = sketch.height - (position.y + 1) * cellPixelSize
 
-    if (imageObject) {
+    if (stateImage) {
       x = position.x * cellPixelSize
-      y = sketch.height - position.y * cellPixelSize - imageObject.height
-      sketch.image(imageObject, x, y)
-      const defaultImage = image()
-      if (imageObject == defaultImage) {
-        const drawableText = {color: 'black', horizAlign: sketch.LEFT,
-         vertAlign: sketch.TOP, text: 'IMAGE\n  NOT\nFOUND', position: {x, y}}
-        write(sketch, drawableText)
-      }
+      y = sketch.height - position.y * cellPixelSize - drawable.drawableImage!.image.height
+      moveAllTo(drawable, { x, y })
     }
 
     if (message && visual.get('messageTime')!.innerNumber! > sketch.millis())
       messagesToDraw.push({ message, x, y })
-    
+
+    draw(sketch, drawable)
+
     if (text) {
       x = (position.x + 0.5) * cellPixelSize
       y = sketch.height - (position.y + 0.5) * cellPixelSize
-      const drawableText = {text, position: {x, y}, color: hexaToColor(textColor)}
+      const drawableText = { text, position: { x, y }, color: hexaToColor(textColor) }
       write(sketch, drawableText)
     }
   }
@@ -182,7 +151,7 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // COMPONENTS
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-const SketchComponent = ({ gameProject, evaluation: initialEvaluation, backToFSSketch}: SketchProps) => {
+const SketchComponent = ({ gameProject, evaluation: initialEvaluation, backToFSSketch }: SketchProps) => {
   const [stop, setStop] = useState(false)
   const images = new Map<string, p5.Image>()
   const sounds = new Map<Id, GameSound>()
@@ -256,7 +225,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, backToFSS
     {stop ?
       <h1>Se terminó el juego</h1>
       : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
-    <Menu restart={restart} backToFS={backToFSSketch}/>
+    <Menu restart={restart} backToFS={backToFSSketch} />
   </div>
 }
 
