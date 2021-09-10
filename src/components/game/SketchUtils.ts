@@ -1,5 +1,7 @@
+import p5 from 'p5'
 import { RuntimeObject } from 'wollok-ts'
 import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
+import { TEXT_SIZE, TEXT_STYLE } from './messages'
 
 const { round } = Math
 
@@ -44,6 +46,74 @@ export interface Position {
   x: number;
   y: number;
 }
+
+export interface Drawable {
+  drawableImage?: DrawableImage;
+  drawableText?: DrawableText;
+}
+
+export interface DrawableImage {
+  image: p5.Image;
+  position: Position;
+}
+
+export interface DrawableText {
+  position: Position;
+  text: string;
+  color?: string;
+  size?: number;
+  horizAlign?: p5.HORIZ_ALIGN;
+  vertAlign?: p5.VERT_ALIGN;
+  style?: p5.THE_STYLE;
+}
+
+export function draw(sketch: p5, drawable: Drawable): void {
+  if (drawable.drawableImage) {
+    const { drawableImage: { image, position: { x, y } } } = drawable
+    sketch.image(image, x, y)
+  }
+  if (drawable.drawableText) {
+    write(sketch, drawable.drawableText)
+  }
+}
+
+export function write(sketch: p5, drawableText: DrawableText): void {
+  const defaultTextColor = 'blue'
+  const grey = '#1c1c1c'
+  const hAlign = drawableText.horizAlign || 'center'
+  const vAlign = drawableText.vertAlign || 'center'
+  const x = drawableText.position.x
+  const y = drawableText.position.y
+  sketch.textSize(drawableText.size || TEXT_SIZE)
+  sketch.textStyle(drawableText.style || TEXT_STYLE)
+  sketch.textAlign(hAlign, vAlign)
+  sketch.stroke(grey)
+  sketch.fill(drawableText.color || defaultTextColor)
+  sketch.text(drawableText.text, x, y)
+}
+
+export function baseDrawable(images: Map<string, p5.Image>, path?: string): Drawable {
+  const origin: Position = { x: 0, y: 0 }
+  const p5Image = path && images.get(path)
+
+  if (!p5Image) {
+    const drawableText = {
+      color: 'black', horizAlign: p5.prototype.LEFT,
+      vertAlign: p5.prototype.TOP, text: 'IMAGE\n  NOT\nFOUND', position: origin,
+    }
+    return { drawableImage: { image: images.get('wko.png')!, position: origin }, drawableText }
+  }
+
+  return { drawableImage: { image: p5Image, position: origin } }
+}
+
+export function moveAllTo(drawable: Drawable, position: Position): void {
+  const { drawableImage, drawableText } = drawable
+  if (drawableImage) { drawableImage.position = position }
+  if (drawableText) { drawableText.position = position }
+}
+
+export function hexaToColor(textColor?: string): string | undefined { return !textColor ? undefined : '#' + textColor }
 
 export function visualState(interpreter: Interpreter, visual: RuntimeObject): VisualState {
   const image = invokeMethod(interpreter, visual, 'image')

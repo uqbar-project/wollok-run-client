@@ -15,6 +15,10 @@ const Game = (_: GameProps) => {
   const [evaluation, setEvaluation] = useState<Evaluation>()
   const [error, setError] = useState<Error>()
 
+  function backToFS() {
+    setGame(undefined)
+    setEvaluation(undefined)
+  }
   const reloadGame = (files: File[], program: string) => {
     setError(undefined)
     loadGame(files, program)
@@ -47,7 +51,7 @@ const Game = (_: GameProps) => {
   return <div className={$.container}>
     <h1>{title}</h1>
     <div>
-      <Sketch gameProject={game} evaluation={evaluation} />
+      <Sketch gameProject={game} evaluation={evaluation} backToFSSketch={backToFS} />
       <ReactMarkdown source={game.description} className={$.description} />
     </div>
   </div>
