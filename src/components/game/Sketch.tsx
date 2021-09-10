@@ -44,7 +44,7 @@ function wKeyCode(key: string, keyCode: number): string {
 interface SketchProps {
   gameProject: GameProject
   evaluation: Evaluation
-  backToFSSketch: () => void
+  exit: () => void
 }
 
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -151,7 +151,7 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // COMPONENTS
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-const SketchComponent = ({ gameProject, evaluation: initialEvaluation, backToFSSketch }: SketchProps) => {
+const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: SketchProps) => {
   const [stop, setStop] = useState(false)
   const images = new Map<string, p5.Image>()
   const sounds = new Map<Id, GameSound>()
@@ -222,10 +222,10 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, backToFSS
   }
 
   return <div>
-    {stop ?
-      <h1>Se terminó el juego</h1>
+    {stop
+      ? <h1>Se terminó el juego</h1>
       : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
-    <Menu restart={restart} backToFS={backToFSSketch} />
+    <Menu restart={restart} exit={exit} />
   </div>
 }
 

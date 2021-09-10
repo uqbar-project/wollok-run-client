@@ -51,7 +51,7 @@ const Game = (_: GameProps) => {
   return <div className={$.container}>
     <h1>{title}</h1>
     <div>
-      <Sketch gameProject={game} evaluation={evaluation} backToFSSketch={backToFS} />
+      <Sketch gameProject={game} evaluation={evaluation} exit={backToFS} />
       <ReactMarkdown source={game.description} className={$.description} />
     </div>
   </div>

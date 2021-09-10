@@ -12,7 +12,7 @@ import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay'
 
 type MenuProps = {
   restart: () => void
-  backToFS: () => void
+  exit: () => void
 }
 
 export default function SimpleMenu(props: MenuProps) {
@@ -41,7 +41,7 @@ export default function SimpleMenu(props: MenuProps) {
         <MenuItem onClick={event => { event.preventDefault(); props.restart(); setAnchorEl(null) }}>
           <ReplayIcon />Reiniciar juego
         </MenuItem>
-        <MenuItem onClick={event => { event.preventDefault(); props.backToFS(); setAnchorEl(null) }}>
+        <MenuItem onClick={event => { event.preventDefault(); props.exit(); setAnchorEl(null) }}>
           <PlaylistPlayIcon /> Elegir juego
         </MenuItem>
         {/* <MenuItem onClick={handleClose}>
