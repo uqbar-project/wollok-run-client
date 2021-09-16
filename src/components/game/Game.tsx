@@ -18,10 +18,19 @@ const Game = (_: GameProps) => {
   function backToFS() {
     setGame(undefined)
     setEvaluation(undefined)
+    removeGitUrl()
   }
   const reloadGame = (files: File[], program: string) => {
     setError(undefined)
     loadGame(files, program)
+  }
+  const removeGitUrl = () => {
+    const currentUrl = window.location.href
+    const gitParameter = '?git='
+    if(currentUrl.includes(gitParameter)) {
+      const splitUrl = currentUrl.split(gitParameter)
+      window.location.href = splitUrl[0]
+    }
   }
 
   const loadGame = (files: File[], program?: string) => {
