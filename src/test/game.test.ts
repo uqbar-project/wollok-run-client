@@ -2,7 +2,7 @@ import fs from 'fs'
 import { buildEnvironment, WRENatives } from 'wollok-ts'
 import interpret, { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { visualState, flushEvents, canvasResolution, wKeyCode, buildKeyPressEvent, queueEvent } from '../components/game/SketchUtils'
-import { buildGameProject, GameProject, getProgramIn, NoProgramException, TooManyProgramsException } from '../components/game/gameProject'
+import { buildGameProject, GameProject, getProgramIn, NoProgramException, MultiProgramException } from '../components/game/gameProject'
 import { MessageDrawer, messageTextPosition } from '../components/game/messages'
 
 const readFiles = (files: string[]) => files.map(file => ({
@@ -115,7 +115,7 @@ describe('buildGameProject Errors', () => {
   })
 
   test('building a game project with more than one program should fail', () => {
-    expect(() => buildGameProject(allFiles(addPrefix(prefix, projectFiles.concat('src/juego.wpgm', 'src/otroJuego.wpgm'))))).toThrow(TooManyProgramsException)
+    expect(() => buildGameProject(allFiles(addPrefix(prefix, projectFiles.concat('src/juego.wpgm', 'src/otroJuego.wpgm'))))).toThrow(MultiProgramException)
   })
 })
 

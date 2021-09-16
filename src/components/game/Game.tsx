@@ -7,7 +7,7 @@ import FilesSelector, { File } from '../filesSelector/FilesSelector'
 import Sketch from './Sketch'
 import $ from './Game.module.scss'
 import { GameProject, buildGameProject, getProgramIn } from './gameProject'
-import { LoadProgramError } from './LoadProgramError'
+import { LoadError } from './LoadProgramError'
 
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
@@ -43,7 +43,7 @@ const Game = (_: GameProps) => {
   const title = evaluation ? evaluation.object('wollok.game.game')?.get('title')?.innerValue : ''
 
   if (error)
-    return <LoadProgramError error={error} reload={reloadGame} />
+    return <LoadError error={error} reload={reloadGame} />
 
   if (!evaluation || !game)
     return <FilesSelector onFilesLoad={loadGame} />

@@ -29,7 +29,7 @@ export interface GameProject {
   sounds: MediaFile[];
 }
 
-export class TooManyProgramsException extends Error {
+export class MultiProgramException extends Error {
 
   wpgmFiles: Array<File | SourceFile> = []
   files: Array<File> = []
@@ -42,12 +42,7 @@ export class TooManyProgramsException extends Error {
 
 }
 
-export class NoProgramException extends Error {
-
-  constructor(msg: string){
-    super(msg)
-  }
-}
+export class NoProgramException extends Error { }
 
 export const getProgramIn = (packageFQN: string, environment: Environment): Node => {
   const programWollokFile = environment.getNodeByFQN<Package>(packageFQN)
@@ -65,7 +60,7 @@ export const buildGameProject = (allFiles: File[], programName?: string): GamePr
     wpgmFile = wollokFiles.find(file => file.name === programName)
   else
     wpgmFiles = wollokFiles.filter(withExtension(WOLLOK_PROGRAM_EXTENSION))
-  if (wpgmFiles.length > 1) throw new TooManyProgramsException('This project has more than one program', wpgmFiles, allFiles)
+  if (wpgmFiles.length > 1) throw new MultiProgramException('This project has more than one program', wpgmFiles, allFiles)
   if (wpgmFiles.length === 1) wpgmFile = wpgmFiles[0]
   if (!wpgmFile) throw new NoProgramException('Program file not found')
   const main = wpgmFile.name.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').replace(/\//gi, '.')

@@ -2,23 +2,30 @@ import React from 'react'
 import { Button, FormControl, NativeSelect } from '@material-ui/core'
 import PublishIcon from '@material-ui/icons/Publish'
 import { File } from '../filesSelector/FilesSelector'
-import { TooManyProgramsException } from './gameProject'
+import { MultiProgramException, NoProgramException } from './gameProject'
 import { BackArrow } from '../BackArrow'
 import { ErrorScreen } from '../ErrorScreen'
 import $ from './Game.module.scss'
 
-export interface LoadProgramErrorProps {
+export interface LoadErrorProps {
   error: Error
   reload: (files: File[], program: string) => void
 }
-export function LoadProgramError(props: LoadProgramErrorProps) {
-  return props.error instanceof TooManyProgramsException
-    ? <MultiProgramError {...props} />
-    : <NoProgramError />
+export function LoadError(props: LoadErrorProps) {
+
+  const error = props.error
+
+  if(error instanceof MultiProgramException)
+    return <MultiProgramError {...props} />
+
+  if(error instanceof NoProgramException)
+    return <NoProgramError />
+
+  return <GenericError />
 }
 
-function MultiProgramError({ error: e, reload }: LoadProgramErrorProps) {
-  const error = e as TooManyProgramsException
+function MultiProgramError({ error: e, reload }: LoadErrorProps) {
+  const error = e as MultiProgramException
   let program: string // TODO: Tenerlo en la URL?
   return <ErrorScreen>
     <p>Se encontraron varios programas en el proyecto.
@@ -45,7 +52,18 @@ function NoProgramError() {
   return <ErrorScreen>
     <p style={{ marginTop: '5px', marginBottom: '5px' }}>
       No se encontró un programa dentro del proyecto.
-      Podes crear uno con la extensión .wpgm dentro de la carpeta src para poder correr el juego.
+      Podés crear uno con la extensión .wpgm dentro de la carpeta src para poder correr el juego.
+    </p>
+    <div style={{ paddingTop: '2%' }}>
+      <BackArrow returnPath='/' />
+    </div>
+  </ErrorScreen>
+}
+
+function GenericError() {
+  return <ErrorScreen>
+    <p style={{ marginTop: '5px', marginBottom: '5px' }}>
+      Lo sentimos, ocurrió un error desconocido y no se pudo cargar el juego. Podés volver atrás e intentar cargar otro.
     </p>
     <div style={{ paddingTop: '2%' }}>
       <BackArrow returnPath='/' />
