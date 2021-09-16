@@ -2,7 +2,7 @@ import fs from 'fs'
 import { buildEnvironment, WRENatives } from 'wollok-ts'
 import interpret, { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { visualState, flushEvents, canvasResolution, wKeyCode, buildKeyPressEvent, queueEvent } from '../components/game/SketchUtils'
-import { buildGameProject, GameProject, getProgramIn } from '../components/game/gameProject'
+import { buildGameProject, GameProject, getProgramIn, NoProgramException, TooManyProgramsException } from '../components/game/gameProject'
 import { MessageDrawer, messageTextPosition } from '../components/game/messages'
 
 const readFiles = (files: string[]) => files.map(file => ({
@@ -22,6 +22,14 @@ const getVisualState = (interpreter: Interpreter, index = 0) => {
   const visual = game.get('visuals')!.innerCollection![index]
   const state = visualState(interpreter, visual)
   return state
+}
+
+function allFiles(filePaths: string[]) {
+  return readFiles(filePaths).map((file) => { return { name: file.name, content: new Buffer(file.content) } })
+}
+
+function addPrefix(prefix: string, filePaths: string[]){
+  return filePaths.map(path => prefix + path)
 }
 
 describe('game', () => {
@@ -68,10 +76,10 @@ describe('buildGameProject', () => {
     expect(list1.sort()).toEqual(list2.sort())
 
   beforeAll(() => {
-    const filePaths = ['src/pepita.wlk', 'src/juego.wpgm', 'assets/pepita.png', 'src/sound.mp3', '.classpath', 'README.md'].map(path => `gameProject/${path}`)
-    const allFiles = readFiles(filePaths).map((file) => { return { name: file.name, content: new Buffer(file.content) } })
+    const filePaths = addPrefix('gameProject/', ['src/pepita.wlk', 'src/juego.wpgm', 'assets/pepita.png', 'src/sound.mp3', '.classpath', 'README.md'])
+    const _allFiles = allFiles(filePaths)
     URL.createObjectURL = jest.fn().mockReturnValue('asd')
-    gameProject = buildGameProject(allFiles)
+    gameProject = buildGameProject(_allFiles)
   })
 
   afterAll(() => {
@@ -95,6 +103,20 @@ describe('buildGameProject', () => {
     expect(gameProject.description.trim()).toBe('Descripcion de pepita')
   })
 
+})
+
+describe('buildGameProject Errors', () => {
+
+  const projectFiles = ['src/pepita.wlk', '.classpath']
+  const prefix = 'gameProject/'
+
+  test('building a game project with no program should fail', () => {
+    expect(() => buildGameProject(allFiles(addPrefix(prefix, projectFiles)))).toThrow(NoProgramException)
+  })
+
+  test('building a game project with more than one program should fail', () => {
+    expect(() => buildGameProject(allFiles(addPrefix(prefix, projectFiles.concat('src/juego.wpgm', 'src/otroJuego.wpgm'))))).toThrow(TooManyProgramsException)
+  })
 })
 
 describe('messages', () => {
@@ -150,6 +172,7 @@ describe('VisualState', () => {
   })
 
 })
+
 
 /*
 describe('GameSound', () => {

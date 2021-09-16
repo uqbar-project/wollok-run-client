@@ -1,0 +1,5 @@
+import wollok.game.*
+
+program otroPepitaGame{
+  game.start()
+}
