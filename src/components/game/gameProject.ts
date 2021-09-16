@@ -47,7 +47,7 @@ export class NoProgramException extends Error { }
 export const getProgramIn = (packageFQN: string, environment: Environment): Node => {
   const programWollokFile = environment.getNodeByFQN<Package>(packageFQN)
   const wollokProgram = programWollokFile.members.find(entity => entity.is('Program'))
-  if (!wollokProgram) throw new Error('Program not found')
+  if (!wollokProgram) throw new NoProgramException('Program not found')
   return wollokProgram
 }
 
