@@ -40,21 +40,25 @@ const Game = (_: GameProps) => {
     }
   }
 
-  const title = evaluation ? evaluation.object('wollok.game.game')?.get('title')?.innerValue : ''
-
   if (error)
     return <LoadProgramError error={error} reload={reloadGame} />
 
   if (!evaluation || !game)
     return <FilesSelector onFilesLoad={loadGame} />
 
+  configTitle(evaluation)
+
   return <div className={$.container}>
-    <h1>{title}</h1>
     <div>
       <Sketch gameProject={game} evaluation={evaluation} exit={backToFS} />
       <ReactMarkdown source={game.description} className={$.description} />
     </div>
   </div>
+}
+
+function configTitle(evaluation: Evaluation) {
+  const title = (evaluation && evaluation.object('wollok.game.game')?.get('title')?.innerValue?.toString()) || 'Game'
+  document.title = title
 }
 
 export default memo(Game)
