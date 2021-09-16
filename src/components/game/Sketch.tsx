@@ -51,10 +51,10 @@ interface SketchProps {
 // GAME CYCLE
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
-function step(sketch: p5, game: GameProject, interpreter: Interpreter, sounds: Map<Id, GameSound>, images: Map<Id, p5.Image>) {
+function step(sketch: p5, game: GameProject, interpreter: Interpreter, sounds: Map<Id, GameSound>, images: Map<Id, p5.Image>, audioMuted: Boolean) {
   window.performance.mark('update-start')
   flushEvents(interpreter, sketch.millis())
-  updateSound(game, interpreter, sounds)
+  updateSound(game, interpreter, sounds, audioMuted)
   window.performance.mark('update-end')
 
   window.performance.mark('draw-start')
@@ -67,7 +67,7 @@ function step(sketch: p5, game: GameProject, interpreter: Interpreter, sounds: M
   return undefined
 }
 
-function updateSound(game: GameProject, interpreter: Interpreter, sounds: Map<Id, GameSound>) {
+function updateSound(game: GameProject, interpreter: Interpreter, sounds: Map<Id, GameSound>, audioMuted: Boolean) {
   const soundInstances = interpreter.object('wollok.game.game').get('sounds')?.innerCollection ?? []
 
   for (const [id, sound] of sounds.entries()) {
@@ -84,7 +84,7 @@ function updateSound(game: GameProject, interpreter: Interpreter, sounds: Map<Id
       id: soundInstance.id,
       file: soundInstance.get('file')!.innerString!,
       status: soundInstance.get('status')!.innerString! as SoundStatus,
-      volume: soundInstance.get('volume')!.innerNumber!,
+      volume: audioMuted ? 0 : soundInstance.get('volume')!.innerNumber!,
       loop: soundInstance.get('loop')!.innerBoolean!,
     }
 
@@ -153,6 +153,7 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: SketchProps) => {
   const [stop, setStop] = useState(false)
+  let mute = false
   const images = new Map<string, p5.Image>()
   const sounds = new Map<Id, GameSound>()
   let interpreter = new Interpreter(initialEvaluation.copy())
@@ -204,7 +205,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
 
   function draw(sketch: p5) {
     if (!interpreter.object('wollok.game.game').get('running')!.innerBoolean!) setStop(true)
-    else step(sketch, gameProject, interpreter, sounds, images)
+    else step(sketch, gameProject, interpreter, sounds, images, mute)
   }
 
   function keyPressed(sketch: p5) {
@@ -221,11 +222,15 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
     setStop(false)
   }
 
+  function toggleAudio() {
+    mute = !mute
+  }
+
   return <div>
     {stop
       ? <h1>Se terminó el juego</h1>
       : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
-    <Menu restart={restart} exit={exit} />
+    <Menu restart={restart} exit={exit} toggleAudio={toggleAudio} />
   </div>
 }
 
