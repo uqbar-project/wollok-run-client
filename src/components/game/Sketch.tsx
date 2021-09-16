@@ -51,19 +51,22 @@ interface SketchProps {
 // GAME CYCLE
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
-function step(sketch: p5, game: GameProject, interpreter: Interpreter, sounds: Map<Id, GameSound>, images: Map<Id, p5.Image>, audioMuted: Boolean) {
-  window.performance.mark('update-start')
-  flushEvents(interpreter, sketch.millis())
-  updateSound(game, interpreter, sounds, audioMuted)
-  window.performance.mark('update-end')
+function step(sketch: p5, game: GameProject, interpreter: Interpreter, sounds: Map<Id, GameSound>, images: Map<Id, p5.Image>, audioMuted: Boolean, isPaused: Boolean) {
+  if(!isPaused) {
+    window.performance.mark('update-start')
+    flushEvents(interpreter, sketch.millis())
+    updateSound(game, interpreter, sounds, audioMuted)
+    window.performance.mark('update-end')
+    window.performance.mark('draw-start')
+    render(interpreter, sketch, images)
+    window.performance.mark('draw-end')
 
-  window.performance.mark('draw-start')
-  render(interpreter, sketch, images)
-  window.performance.mark('draw-end')
-
-  window.performance.measure('update-start-to-end', 'update-start', 'update-end')
-  window.performance.measure('draw-start-to-end', 'draw-start', 'draw-end')
-
+    window.performance.measure('update-start-to-end', 'update-start', 'update-end')
+    window.performance.measure('draw-start-to-end', 'draw-start', 'draw-end')
+  }
+  else {
+    updateSound(game, interpreter, sounds, true)
+  }
   return undefined
 }
 
@@ -153,6 +156,7 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: SketchProps) => {
   const [stop, setStop] = useState(false)
+  let pause = false
   let mute = false
   const images = new Map<string, p5.Image>()
   const sounds = new Map<Id, GameSound>()
@@ -205,7 +209,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
 
   function draw(sketch: p5) {
     if (!interpreter.object('wollok.game.game').get('running')!.innerBoolean!) setStop(true)
-    else step(sketch, gameProject, interpreter, sounds, images, mute)
+    else step(sketch, gameProject, interpreter, sounds, images, mute, pause)
   }
 
   function keyPressed(sketch: p5) {
@@ -219,18 +223,21 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
 
   function restart() {
     interpreter = new Interpreter(initialEvaluation.copy())
-    setStop(false)
   }
 
   function toggleAudio() {
     mute = !mute
   }
 
+  function togglePause() {
+    pause = !pause
+  }
+
   return <div>
     {stop
       ? <h1>Se terminó el juego</h1>
       : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
-    <Menu restart={restart} exit={exit} toggleAudio={toggleAudio} />
+    <Menu restart={restart} exit={exit} toggleAudio={toggleAudio} togglePause={togglePause} />
   </div>
 }
 
