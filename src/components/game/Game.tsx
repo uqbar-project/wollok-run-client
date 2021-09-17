@@ -8,6 +8,7 @@ import Sketch from './Sketch'
 import $ from './Game.module.scss'
 import { GameProject, buildGameProject, getProgramIn } from './gameProject'
 import { LoadProgramError } from './LoadProgramError'
+import { DrawerReadme } from '../DrawerReadme'
 
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
@@ -52,7 +53,6 @@ const Game = (_: GameProps) => {
     <h1>{title}</h1>
     <div>
       <Sketch gameProject={game} evaluation={evaluation} exit={backToFS} />
-      <ReactMarkdown source={game.description} className={$.description} />
     </div>
   </div>
 }
