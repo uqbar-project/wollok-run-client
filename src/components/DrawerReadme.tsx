@@ -9,44 +9,42 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
-import $ from './game/Game.module.scss'
-
+import $ from './DrawerReadme.module.scss'
+import { InnerValue } from 'wollok-ts';
+import { Height } from '@material-ui/icons';
+import { MenuItem } from '@material-ui/core';
 type Anchor = 'top' | 'left' | 'bottom' | 'right';
 
 
 export type DescriptionProps = {
-  description: string
+  description: string,
+  children: ReactNode,
+  close: () => void
 }
-export const DrawerReadme = ({ description }: DescriptionProps) => {
+export const DrawerReadme = ({ description, children }: DescriptionProps) => {
   const [state, setState] = React.useState({
     right: false,
   });
 
   const toggleDrawer =
     (anchor: Anchor, open: boolean) =>
-    (event: React.MouseEvent) => {
+    () => {
       setState({ ...state, [anchor]: open });
     };
-
-  const list = (anchor: Anchor) => (
-    <Box
-      role="presentation"
-      onClick={toggleDrawer(anchor, false)}
-    >
-      <ReactMarkdown source={description} className={$.description} />
-    </Box>
-  );
 
   return (
     <div>
       <React.Fragment key={'right'}>
-          <Button onClick={toggleDrawer('right', true)}>{'right'}</Button>
+          <MenuItem onClick={toggleDrawer('right', true)}>{children}</MenuItem>
           <Drawer
             anchor={'right'}
             open={state['right']}
             onClose={toggleDrawer('right', false)}
+            className={$.container}
           >
-            {list('right')}
+            <div style={{ backgroundColor: '#1c1a1c', height:'100%'}}>
+              <ReactMarkdown source={description} className={$.description}/>
+            </div>
           </Drawer>
         </React.Fragment>
     </div>

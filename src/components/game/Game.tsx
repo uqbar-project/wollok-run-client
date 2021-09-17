@@ -53,7 +53,6 @@ const Game = (_: GameProps) => {
     <h1>{title}</h1>
     <div>
       <Sketch gameProject={game} evaluation={evaluation} exit={backToFS} />
-      <DrawerReadme description={game.description} />
     </div>
   </div>
 }

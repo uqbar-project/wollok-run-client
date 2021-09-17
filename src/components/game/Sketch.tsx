@@ -225,7 +225,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
     {stop
       ? <h1>Se terminó el juego</h1>
       : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
-    <Menu restart={restart} exit={exit} />
+    <Menu restart={restart} exit={exit} gameDescription={gameProject.description}/>
   </div>
 }
 

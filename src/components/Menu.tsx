@@ -6,19 +6,20 @@ import MenuIcon from '@material-ui/icons/Menu'
 import ReplayIcon from '@material-ui/icons/Replay'
 import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay'
 import MenuBookIcon from '@material-ui/icons/MenuBook'
+import { DrawerReadme } from './DrawerReadme'
 // import VolumeOffIcon from '@material-ui/icons/VolumeOff'
 // import VolumeUpIcon from '@material-ui/icons/VolumeUp'
 // import PauseIcon from '@material-ui/icons/Pause'
 // import PlayArrowIcon from '@material-ui/icons/PlayArrow'
 
 type MenuProps = {
-  restart: () => void
-  exit: () => void
+  restart: () => void,
+  exit: () => void,
+  gameDescription: string,
 }
 
 export default function SimpleMenu(props: MenuProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-  const [readmeOpen, setReadmeOpen] = useState(false)
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget)
@@ -27,19 +28,7 @@ export default function SimpleMenu(props: MenuProps) {
   const handleClose = () => {
     setAnchorEl(null)
   }
-
-  const toggleReadme = () => {
-    setReadmeOpen(!readmeOpen)
-  }
   
-
-  const ReadmeItem = () => {
-    if(readmeOpen) {
-      return <><MenuBookIcon /> Abrir Readme</>
-    }
-    return <><MenuBookIcon /> Cerrar Readme</>
-  }
-
   return (
     <div>
       <Button aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick} variant="contained" color="primary">
@@ -58,9 +47,9 @@ export default function SimpleMenu(props: MenuProps) {
         <MenuItem onClick={event => { event.preventDefault(); props.exit(); setAnchorEl(null) }}>
           <PlaylistPlayIcon /> Elegir juego
         </MenuItem>
-        <MenuItem onClick={event => { event.preventDefault(); toggleReadme(); setAnchorEl(null) }}>
-          <ReadmeItem />
-        </MenuItem>
+        <DrawerReadme description={props.gameDescription} close={handleClose} >
+          <MenuBookIcon /> Abrir Readme 
+        </DrawerReadme>
         {/* <MenuItem onClick={handleClose}>
             <PauseIcon />Pausar juego
           </MenuItem>
