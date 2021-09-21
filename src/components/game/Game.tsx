@@ -1,5 +1,5 @@
 import { RouteComponentProps } from '@reach/router'
-import React, { memo, useState } from 'react'
+import React, { memo, useEffect, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { buildEnvironment, Evaluation, WRENatives } from 'wollok-ts'
 import interpret from 'wollok-ts/dist/interpreter/interpreter'
@@ -14,6 +14,10 @@ const Game = (_: GameProps) => {
   const [game, setGame] = useState<GameProject>()
   const [evaluation, setEvaluation] = useState<Evaluation>()
   const [error, setError] = useState<Error>()
+
+  useEffect(() => {
+    configTitle(evaluation)
+  })
 
   function backToFS() {
     setGame(undefined)
@@ -46,8 +50,6 @@ const Game = (_: GameProps) => {
   if (!evaluation || !game)
     return <FilesSelector onFilesLoad={loadGame} />
 
-  configTitle(evaluation)
-
   return <div className={$.container}>
     <div>
       <Sketch gameProject={game} evaluation={evaluation} exit={backToFS} />
@@ -56,8 +58,8 @@ const Game = (_: GameProps) => {
   </div>
 }
 
-function configTitle(evaluation: Evaluation) {
-  const title = (evaluation && evaluation.object('wollok.game.game')?.get('title')?.innerValue?.toString()) || 'Game'
+function configTitle(evaluation: Evaluation | undefined) {
+  const title = evaluation?.object('wollok.game.game')?.get('title')?.innerValue?.toString() || 'Game'
   document.title = title
 }
 
