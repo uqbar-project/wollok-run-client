@@ -17,7 +17,7 @@ const Game = (_: GameProps) => {
 
   useEffect(() => {
     configTitle(evaluation)
-  })
+  }, [evaluation])
 
   function backToFS() {
     setGame(undefined)
