@@ -4,7 +4,7 @@ import PublishIcon from '@material-ui/icons/Publish'
 import { File } from '../filesSelector/FilesSelector'
 import { MultiProgramException, NoProgramException } from './gameProject'
 import { BackArrow } from '../BackArrow'
-import { ErrorScreen } from '../ErrorScreen'
+import { BaseErrorScreen, ErrorScreen } from '../ErrorScreen'
 import $ from './Game.module.scss'
 
 export interface LoadErrorProps {
@@ -54,30 +54,28 @@ function MultiProgramError({ error: e, reload }: LoadErrorProps) {
 }
 
 function NoProgramError() {
-  return <ErrorScreen>
-    <p style={{ marginTop: '5px', marginBottom: '5px' }}>
-      No se encontró un programa dentro del proyecto.
-      Podés crear uno con la extensión .wpgm dentro de la carpeta src para poder correr el juego.
-    </p>
-    <div style={{ paddingTop: '2%' }}>
-      <BackArrow returnPath='/' />
-    </div>
-  </ErrorScreen>
+  const props = {
+    description: 'No se encontró un programa dentro del proyecto. Podés crear uno con la extensión .wpgm dentro de la carpeta src para poder correr el juego.',
+    children: null,
+  }
+
+  return <BaseErrorScreen { ... props } />
 }
 
 function GenericError({ error }: GenericErrorProps) {
-  return <ErrorScreen>
-    <p style={{ marginTop: '5px', marginBottom: '5px' }}>
-      Lo sentimos, ocurrió un error y no se pudo cargar el juego.
-    </p>
-    <br />
-    <textarea
-      className={$.errorMessage}
-      readOnly
-      value={error.message}
-    />
-    <div style={{ paddingTop: '2%' }}>
-      <BackArrow returnPath='/' />
-    </div>
-  </ErrorScreen>
+  const props = {
+    description: 'Lo sentimos, ocurrió un error y no se pudo cargar el juego.',
+    children: (
+      <>
+        <br />
+        <textarea
+          className={$.errorMessage}
+          readOnly
+          value={error.message}
+        />
+      </>
+    ),
+  }
+
+  return <BaseErrorScreen { ... props } />
 }
