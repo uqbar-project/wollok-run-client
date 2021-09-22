@@ -11,6 +11,11 @@ export interface LoadErrorProps {
   error: Error
   reload: (files: File[], program: string) => void
 }
+
+export interface GenericErrorProps {
+  error: Error
+}
+
 export function LoadError(props: LoadErrorProps) {
 
   const error = props.error
@@ -21,7 +26,7 @@ export function LoadError(props: LoadErrorProps) {
   if(error instanceof NoProgramException)
     return <NoProgramError />
 
-  return <GenericError />
+  return <GenericError { ... { error } }/>
 }
 
 function MultiProgramError({ error: e, reload }: LoadErrorProps) {
@@ -60,11 +65,17 @@ function NoProgramError() {
   </ErrorScreen>
 }
 
-function GenericError() {
+function GenericError({ error }: GenericErrorProps) {
   return <ErrorScreen>
     <p style={{ marginTop: '5px', marginBottom: '5px' }}>
-      Lo sentimos, ocurrió un error desconocido y no se pudo cargar el juego. Podés volver atrás e intentar cargar otro.
+      Lo sentimos, ocurrió un error y no se pudo cargar el juego.
     </p>
+    <br />
+    <textarea
+      className={$.errorMessage}
+      readOnly
+      value={error.message}
+    />
     <div style={{ paddingTop: '2%' }}>
       <BackArrow returnPath='/' />
     </div>

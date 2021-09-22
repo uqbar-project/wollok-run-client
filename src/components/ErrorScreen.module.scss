@@ -21,3 +21,13 @@
 background-color: white;
 width: 100%;
 }
+
+.errorMessage {
+    padding: 1.5%;
+    width: 100%;
+    height: 60%;
+    background-color: #1c1a1c;
+    color: white;
+    overflow: scroll;
+    resize: none;
+}
