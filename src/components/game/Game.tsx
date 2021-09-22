@@ -7,7 +7,7 @@ import FilesSelector, { File } from '../filesSelector/FilesSelector'
 import Sketch from './Sketch'
 import $ from './Game.module.scss'
 import { GameProject, buildGameProject, getProgramIn } from './gameProject'
-import { LoadError } from './LoadProgramError'
+import { LoadError } from './LoadError'
 
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
