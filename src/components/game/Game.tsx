@@ -1,5 +1,5 @@
 import { RouteComponentProps } from '@reach/router'
-import React, { memo, useState } from 'react'
+import React, { memo, useEffect, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { buildEnvironment, Evaluation, WRENatives } from 'wollok-ts'
 import interpret from 'wollok-ts/dist/interpreter/interpreter'
@@ -8,12 +8,17 @@ import Sketch from './Sketch'
 import $ from './Game.module.scss'
 import { GameProject, buildGameProject, getProgramIn } from './gameProject'
 import { LoadError } from './LoadError'
+import { DrawerReadme } from '../DrawerReadme'
 
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
   const [game, setGame] = useState<GameProject>()
   const [evaluation, setEvaluation] = useState<Evaluation>()
   const [error, setError] = useState<Error>()
+
+  useEffect(() => {
+    configTitle(evaluation)
+  }, [evaluation])
 
   function backToFS() {
     setGame(undefined)
@@ -40,8 +45,6 @@ const Game = (_: GameProps) => {
     }
   }
 
-  const title = evaluation ? evaluation.object('wollok.game.game')?.get('title')?.innerValue : ''
-
   if (error)
     return <LoadError error={error} reload={reloadGame} />
 
@@ -49,12 +52,15 @@ const Game = (_: GameProps) => {
     return <FilesSelector onFilesLoad={loadGame} />
 
   return <div className={$.container}>
-    <h1>{title}</h1>
     <div>
       <Sketch gameProject={game} evaluation={evaluation} exit={backToFS} />
-      <ReactMarkdown source={game.description} className={$.description} />
     </div>
   </div>
+}
+
+function configTitle(evaluation: Evaluation | undefined) {
+  const title = evaluation?.object('wollok.game.game')?.get('title')?.innerValue?.toString() || 'Game'
+  document.title = title
 }
 
 export default memo(Game)
