@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import Button from '@material-ui/core/Button'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
@@ -13,9 +13,9 @@ import { DrawerReadme } from './DrawerReadme'
 // import PlayArrowIcon from '@material-ui/icons/PlayArrow'
 
 type MenuProps = {
-  restart: () => void,
-  exit: () => void,
-  gameDescription: string,
+  restart: () => void
+  exit: () => void
+  gameDescription: string
 }
 
 export default function SimpleMenu(props: MenuProps) {
@@ -28,7 +28,7 @@ export default function SimpleMenu(props: MenuProps) {
   const handleClose = () => {
     setAnchorEl(null)
   }
-  
+
   return (
     <div>
       <Button aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick} variant="contained" color="primary">
@@ -48,7 +48,7 @@ export default function SimpleMenu(props: MenuProps) {
           <PlaylistPlayIcon /> Elegir juego
         </MenuItem>
         <DrawerReadme description={props.gameDescription} close={handleClose} >
-          <MenuBookIcon /> Abrir Readme 
+          <MenuBookIcon /> Abrir Readme
         </DrawerReadme>
         {/* <MenuItem onClick={handleClose}>
             <PauseIcon />Pausar juego
