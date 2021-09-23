@@ -10,6 +10,11 @@ export type ErrorProps = {
 export interface BaseErrorProps {
   description: string
   children: ReactNode
+  bottom: ErrorBottomProps
+}
+
+export interface ErrorBottomProps {
+  children: ReactNode
 }
 
 export const ErrorScreen = ({ children }: ErrorProps) => {
@@ -32,9 +37,16 @@ export const BaseErrorScreen = (props: BaseErrorProps) => {
         { props.description }
       </p>
       { props.children }
-      <div style={{ paddingTop: '2%' }}>
-        <BackArrow returnPath='/' />
-      </div>
+      <ErrorBottom { ... props.bottom }/>
     </ErrorScreen>
+  )
+}
+
+export const ErrorBottom = (props: ErrorBottomProps) => {
+  return (
+    <div style={{ paddingTop: '2%' }}>
+      <BackArrow returnPath='/' />
+      { props.children }
+    </div>
   )
 }
