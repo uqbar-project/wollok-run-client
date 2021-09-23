@@ -24,6 +24,10 @@ const getVisualState = (interpreter: Interpreter, index = 0) => {
   return state
 }
 
+function buildGameProjectFrom(prefix: string, projectFiles: string[]): GameProject {
+  return buildGameProject(allFiles(addPrefix(prefix, projectFiles)))
+}
+
 function allFiles(filePaths: string[]) {
   return readFiles(filePaths).map((file) => { return { name: file.name, content: new Buffer(file.content) } })
 }
@@ -111,11 +115,11 @@ describe('buildGameProject Errors', () => {
   const prefix = 'gameProject/'
 
   test('building a game project with no program should fail', () => {
-    expect(() => buildGameProject(allFiles(addPrefix(prefix, projectFiles)))).toThrow(NoProgramException)
+    expect(() => buildGameProjectFrom(prefix, projectFiles)).toThrow(NoProgramException)
   })
 
   test('building a game project with more than one program should fail', () => {
-    expect(() => buildGameProject(allFiles(addPrefix(prefix, projectFiles.concat('src/juego.wpgm', 'src/otroJuego.wpgm'))))).toThrow(MultiProgramException)
+    expect(() => buildGameProjectFrom(prefix, projectFiles.concat('src/juego.wpgm', 'src/otroJuego.wpgm'))).toThrow(MultiProgramException)
   })
 })
 
@@ -172,7 +176,6 @@ describe('VisualState', () => {
   })
 
 })
-
 
 /*
 describe('GameSound', () => {
