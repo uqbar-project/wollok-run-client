@@ -71,11 +71,11 @@ interface SoundAssets {
 
 function step(assets: StepAssets) {
   const { sketch, gameProject, interpreter, sounds, images, audioMuted, gamePaused } = assets
-  
+
   if(!gamePaused) {
     window.performance.mark('update-start')
     flushEvents(interpreter, sketch.millis())
-    updateSound({gameProject, interpreter, sounds, audioMuted})
+    updateSound({ gameProject, interpreter, sounds, audioMuted })
     window.performance.mark('update-end')
     window.performance.mark('draw-start')
     render(interpreter, sketch, images)
@@ -85,7 +85,7 @@ function step(assets: StepAssets) {
     window.performance.measure('draw-start-to-end', 'draw-start', 'draw-end')
   }
   else {
-    updateSound({gameProject, interpreter, sounds, gamePaused})
+    updateSound({ gameProject, interpreter, sounds, gamePaused })
   }
   return undefined
 }

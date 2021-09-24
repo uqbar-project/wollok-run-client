@@ -1,6 +1,5 @@
 import { RouteComponentProps } from '@reach/router'
 import React, { memo, useEffect, useState } from 'react'
-import ReactMarkdown from 'react-markdown'
 import { buildEnvironment, Evaluation, WRENatives } from 'wollok-ts'
 import interpret from 'wollok-ts/dist/interpreter/interpreter'
 import FilesSelector, { File } from '../filesSelector/FilesSelector'
@@ -8,7 +7,6 @@ import Sketch from './Sketch'
 import $ from './Game.module.scss'
 import { GameProject, buildGameProject, getProgramIn } from './gameProject'
 import { LoadProgramError } from './LoadProgramError'
-import { DrawerReadme } from '../DrawerReadme'
 
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
