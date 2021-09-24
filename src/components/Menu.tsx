@@ -4,7 +4,7 @@ import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import MenuIcon from '@material-ui/icons/Menu'
 import ReplayIcon from '@material-ui/icons/Replay'
-import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay'
+import CloseIcon from '@material-ui/icons/Close'
 import VolumeOffIcon from '@material-ui/icons/VolumeOff'
 import VolumeUpIcon from '@material-ui/icons/VolumeUp'
 import PauseCircleFilledIcon from '@material-ui/icons/PauseCircleFilled'
@@ -97,7 +97,7 @@ export default function SimpleMenu(props: MenuProps) {
           <ReplayIcon />Reiniciar juego
         </MenuItem>
         <MenuItem onClick={event => { event.preventDefault(); props.exit(); setAnchorEl(null) }}>
-          <PlaylistPlayIcon /> Elegir juego
+          <CloseIcon /> Cerrar juego
         </MenuItem>
         <DrawerReadme description={props.gameDescription} close={handleClose} >
           <MenuBookIcon /> Abrir Readme
