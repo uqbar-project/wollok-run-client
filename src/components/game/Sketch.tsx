@@ -69,7 +69,9 @@ interface SoundAssets {
 // GAME CYCLE
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
-function step({ sketch, gameProject, interpreter, sounds, images, audioMuted, gamePaused }: StepAssets) {
+function step(assets: StepAssets) {
+  const { sketch, gameProject, interpreter, sounds, images, audioMuted, gamePaused } = assets
+  
   if(!gamePaused) {
     window.performance.mark('update-start')
     flushEvents(interpreter, sketch.millis())
@@ -88,7 +90,8 @@ function step({ sketch, gameProject, interpreter, sounds, images, audioMuted, ga
   return undefined
 }
 
-function updateSound({ gameProject, interpreter, sounds, audioMuted, gamePaused }: SoundAssets) {
+function updateSound(assets: SoundAssets) {
+  const { gameProject, interpreter, sounds, audioMuted, gamePaused } = assets
   const soundInstances = gamePaused ? [] : interpreter.object('wollok.game.game').get('sounds')?.innerCollection ?? []
 
   for (const [id, sound] of sounds.entries()) {
