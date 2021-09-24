@@ -4,6 +4,15 @@ import { MultiProgramException, NoProgramException } from './gameProject'
 import { BaseErrorScreen } from '../ErrorScreen'
 import $ from './Game.module.scss'
 import { ProgramSelector } from '../ProgramSelector'
+import { List } from 'wollok-ts'
+import { Problem } from 'wollok-ts/dist/validator'
+import { Button } from '@material-ui/core'
+import PublishIcon from '@material-ui/icons/Publish'
+
+export interface ValidationErrorProps {
+  problems: List<Problem>
+  callback: () => void
+}
 
 export interface LoadErrorProps {
   error: Error
@@ -30,6 +39,31 @@ export function LoadError(props: LoadErrorProps) {
     return <NoProgramError />
 
   return <GenericError { ... { error } }/>
+}
+
+export function ValidationError({ problems, callback }: ValidationErrorProps) {
+  const props = {
+    description: 'Se encontraron algunos problemas que pueden impedir que el juego se ejecute con normalidad. ¿Desea correrlo de todos modos?',
+    children: (
+      <>
+        <br />
+        <textarea
+          className={$.errorMessage}
+          readOnly
+          value='Hubieron problemas de validacion' //TODO: USE PROBLEMS TO CREATE A BETTER MESSAGE
+        />
+      </>
+    ),
+    bottom: {
+      children: (
+        <Button style={{ float: 'right' }} startIcon={<PublishIcon />} onClick={() => callback() } variant="contained" color="primary">
+          Cargar Juego
+        </Button>
+      ),
+    },
+  }
+
+  return <BaseErrorScreen { ... props } />
 }
 
 function NoProgramError() {

@@ -1,18 +1,20 @@
 import { RouteComponentProps } from '@reach/router'
 import React, { memo, useEffect, useState } from 'react'
-import { buildEnvironment, Environment, Evaluation, validate, WRENatives } from 'wollok-ts'
+import { buildEnvironment, Environment, Evaluation, List, validate, WRENatives } from 'wollok-ts'
 import interpret from 'wollok-ts/dist/interpreter/interpreter'
 import FilesSelector, { File } from '../filesSelector/FilesSelector'
 import Sketch from './Sketch'
 import $ from './Game.module.scss'
 import { GameProject, buildGameProject, getProgramIn } from './gameProject'
-import { LoadError } from './LoadError'
+import { LoadError, ValidationError } from './LoadError'
+import { Problem } from 'wollok-ts/dist/validator'
 
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
   const [game, setGame] = useState<GameProject>()
   const [evaluation, setEvaluation] = useState<Evaluation>()
   const [error, setError] = useState<Error>()
+  const [problems, setProblems] = useState<List<Problem>>()
 
   useEffect(() => {
     configTitle(evaluation)
@@ -22,19 +24,35 @@ const Game = (_: GameProps) => {
     setGame(undefined)
     setEvaluation(undefined)
   }
+
   const reloadGame = (files: File[], program: string) => {
     setError(undefined)
     loadGame(files, program)
   }
 
+  const runGameAnyway = () => {
+    setProblems(undefined)
+  }
+
+  const runGame = (environment: Environment, project: GameProject) => {
+    const interpreter = interpret(environment, WRENatives)
+    interpreter.exec(getProgramIn(project.main, environment))
+    setGame(project)
+    setEvaluation(interpreter.evaluation)
+  }
+
   const validateGame = (environment: Environment) => {
-    const problems = validate(environment)
-    const warnings = problems.filter(problem => problem.level === 'warning')
+    const validationProblems = validate(environment)
+    const warnings = validationProblems.filter(problem => problem.level === 'warning')
+    const errors = validationProblems.filter(problem => problem.level === 'error')
 
     if (warnings.length){
-      console.error(`FOUND ${warnings.length} PROBLEMS IN LOADED GAME!`, warnings)
+      console.warn(`FOUND ${warnings.length} WARNINGS IN LOADED GAME!`, warnings)
     }
-    else console.info('NO PROBLEMS FOUND IN LOADED GAME!')
+    else console.info('NO WARNINGS FOUND IN LOADED GAME!')
+
+    if (errors.length)
+      setProblems(errors)
   }
 
   const loadGame = (files: File[], program?: string) => {
@@ -42,10 +60,7 @@ const Game = (_: GameProps) => {
       const project = buildGameProject(files, program)
       const environment = buildEnvironment(project.sources)
       validateGame(environment)
-      const interpreter = interpret(environment, WRENatives)
-      interpreter.exec(getProgramIn(project.main, environment))
-      setGame(project)
-      setEvaluation(interpreter.evaluation)
+      runGame(environment, project)
     }
     catch (exception) {
       if (exception instanceof Error) {
@@ -53,6 +68,9 @@ const Game = (_: GameProps) => {
       }
     }
   }
+
+  if (problems)
+    return <ValidationError problems = { problems } callback = { runGameAnyway }/>
 
   if (error)
     return <LoadError error={error} reload={reloadGame} />
