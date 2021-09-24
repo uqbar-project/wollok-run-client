@@ -51,14 +51,14 @@ interface SketchProps {
 // GAME CYCLE
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
-function step(sketch: p5, game: GameProject, interpreter: Interpreter, sounds: Map<Id, GameSound>, images: Map<Id, p5.Image>) {
+function step(sketch: p5, game: GameProject, interpreter: Interpreter, sounds: Map<Id, GameSound>, images: Map<Id, p5.Image>, ratio: number) {
   window.performance.mark('update-start')
   flushEvents(interpreter, sketch.millis())
   updateSound(game, interpreter, sounds)
   window.performance.mark('update-end')
 
   window.performance.mark('draw-start')
-  render(interpreter, sketch, images)
+  render(interpreter, sketch, images, ratio)
   window.performance.mark('draw-end')
 
   window.performance.measure('update-start-to-end', 'update-start', 'update-end')
@@ -101,9 +101,9 @@ function updateSound(game: GameProject, interpreter: Interpreter, sounds: Map<Id
   })
 }
 
-function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Image>) {
+function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Image>, ratio: number) {
   const game = interpreter.object('wollok.game.game')
-  const cellPixelSize = game.get('cellSize')!.innerNumber!
+  const cellPixelSize = game.get('cellSize')!.innerNumber! * ratio
   const boardGroundPath = game.get('boardGround')?.innerString
 
   if (boardGroundPath) sketch.image(baseDrawable(images, boardGroundPath).drawableImage!.image, 0, 0, sketch.width, sketch.height)
@@ -156,6 +156,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
   const images = new Map<string, p5.Image>()
   const sounds = new Map<Id, GameSound>()
   let interpreter = new Interpreter(initialEvaluation.copy())
+  const { width, height, ratio } = canvasResolution(interpreter)
 
   useEffect(() => {
     // TODO: Move out of sketch
@@ -190,7 +191,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
   }, [interpreter])
 
   function setup(sketch: p5, canvasParentRef: Element) {
-    const { width, height } = canvasResolution(interpreter)
+    
     sketch.createCanvas(width, height).parent(canvasParentRef)
 
     defaultImgs.forEach(path => images.set(path, sketch.loadImage(DEFAULT_GAME_ASSETS_DIR + path)))
@@ -204,7 +205,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
 
   function draw(sketch: p5) {
     if (!interpreter.object('wollok.game.game').get('running')!.innerBoolean!) setStop(true)
-    else step(sketch, gameProject, interpreter, sounds, images)
+    else step(sketch, gameProject, interpreter, sounds, images, ratio)
   }
 
   function keyPressed(sketch: p5) {

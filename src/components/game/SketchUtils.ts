@@ -3,7 +3,7 @@ import { RuntimeObject } from 'wollok-ts'
 import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { TEXT_SIZE, TEXT_STYLE } from './messages'
 
-const { round } = Math
+const { round, min } = Math
 
 function invokeMethod(interpreter: Interpreter, visual: RuntimeObject, method: string) {
   const lookedUpMethod = visual.module.lookupMethod(method, 0)
@@ -138,6 +138,18 @@ export function flushEvents(interpreter: Interpreter, ms: number): void {
 export interface CanvasResolution {
   width: number;
   height: number;
+  ratio: number;
+}
+
+
+function resize(gameWidth: number, gameHeight: number) {
+  const screenWidth = window.innerWidth
+  const screenHeight = window.innerHeight
+  const ratio = min(screenWidth / gameWidth, screenHeight / gameHeight);
+  const width = gameWidth*ratio
+  const height = gameHeight*ratio
+
+  return { width, height, ratio }
 }
 
 export function canvasResolution(interpreter: Interpreter): CanvasResolution {
@@ -145,7 +157,8 @@ export function canvasResolution(interpreter: Interpreter): CanvasResolution {
   const cellPixelSize = game.get('cellSize')!.innerNumber!
   const width = round(game.get('width')!.innerNumber!) * cellPixelSize
   const height = round(game.get('height')!.innerNumber!) * cellPixelSize
-  return { width, height }
+
+  return resize(width, height)
 }
 
 export function queueEvent(interpreter: Interpreter, ...events: RuntimeObject[]): void {
