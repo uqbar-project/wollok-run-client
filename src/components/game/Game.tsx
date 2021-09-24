@@ -1,6 +1,6 @@
 import { RouteComponentProps } from '@reach/router'
 import React, { memo, useEffect, useState } from 'react'
-import { buildEnvironment, Evaluation, WRENatives } from 'wollok-ts'
+import { buildEnvironment, Environment, Evaluation, validate, WRENatives } from 'wollok-ts'
 import interpret from 'wollok-ts/dist/interpreter/interpreter'
 import FilesSelector, { File } from '../filesSelector/FilesSelector'
 import Sketch from './Sketch'
@@ -27,10 +27,21 @@ const Game = (_: GameProps) => {
     loadGame(files, program)
   }
 
+  const validateGame = (environment: Environment) => {
+    const problems = validate(environment)
+    const warnings = problems.filter(problem => problem.level === 'warning')
+
+    if (warnings.length){
+      console.error(`FOUND ${warnings.length} PROBLEMS IN LOADED GAME!`, warnings)
+    }
+    else console.info('NO PROBLEMS FOUND IN LOADED GAME!')
+  }
+
   const loadGame = (files: File[], program?: string) => {
     try {
       const project = buildGameProject(files, program)
       const environment = buildEnvironment(project.sources)
+      validateGame(environment)
       const interpreter = interpret(environment, WRENatives)
       interpreter.exec(getProgramIn(project.main, environment))
       setGame(project)
