@@ -11,12 +11,15 @@ import PauseCircleFilledIcon from '@material-ui/icons/PauseCircleFilled'
 import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled'
 import FullscreenIcon from '@material-ui/icons/Fullscreen';
 import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
+import MenuBookIcon from '@material-ui/icons/MenuBook'
+import { DrawerReadme } from './DrawerReadme'
 
 type MenuProps = {
   restart: () => void
   exit: () => void
   toggleAudio: () => void
   togglePause: () => void
+  gameDescription: string,
 }
 
 export default function SimpleMenu(props: MenuProps) {
@@ -72,6 +75,7 @@ export default function SimpleMenu(props: MenuProps) {
     return <><FullscreenIcon /> Pantalla completa</>
   }
 
+  
   return (
     <div>
       <Button aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick} variant="contained" color="primary">
@@ -96,6 +100,9 @@ export default function SimpleMenu(props: MenuProps) {
         <MenuItem onClick={event => { event.preventDefault(); props.exit(); setAnchorEl(null) }}>
           <PlaylistPlayIcon /> Elegir juego
         </MenuItem>
+        <DrawerReadme description={props.gameDescription} close={handleClose} >
+          <MenuBookIcon /> Abrir Readme 
+        </DrawerReadme>
         <MenuItem onClick={event => { event.preventDefault(); toggleFullscreen(); setAnchorEl(null) }}>
           <FullscreenItem/>
         </MenuItem>
