@@ -9,7 +9,7 @@ import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
 import { DrawableMessage, drawMessage } from './messages'
-import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, hexaToColor, baseDrawable, draw, moveAllTo, write } from './SketchUtils'
+import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, hexaToColor, baseDrawable, draw, moveAllTo, write, resizeCanvas } from './SketchUtils'
 import Menu from '../Menu'
 
 const { round } = Math
@@ -226,6 +226,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
         images.set(path, sketch.loadImage(url))
       )
     )
+    resizeCanvas(width, height)
   }
 
   function draw(sketch: p5) {
