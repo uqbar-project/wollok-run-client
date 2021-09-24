@@ -26,10 +26,21 @@ const Game = (_: GameProps) => {
   }
   const removeGitUrl = () => {
     const currentUrl = window.location.href
-    const gitParameter = '?git='
-    if(currentUrl.includes(gitParameter)) {
-      const splitUrl = currentUrl.split(gitParameter)
-      window.location.href = splitUrl[0]
+
+    if (typeof URLSearchParams !== 'undefined') {
+      const url = new URL(currentUrl)
+      const params = new URLSearchParams(url.search);
+      if(params.has('git')) {
+        params.delete('git')
+        window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+      }
+    }
+    else {
+      // Internet explorer does not support URLSearchParams
+      if(currentUrl.includes('git')) {
+        const splitUrl = currentUrl.split('git')
+        window.location.href = splitUrl[0]
+      }
     }
   }
 
