@@ -40,9 +40,9 @@ export default function SimpleMenu(props: MenuProps) {
 
   const AudioItem = () => {
     if(mute) {
-      return <><VolumeUpIcon /> Reanudar música</>
+      return <><VolumeUpIcon /> Reanudar audio</>
     }
-    return <><VolumeOffIcon /> Pausar música</>
+    return <><VolumeOffIcon /> Silenciar audio</>
   }
 
   const TogglePauseItem = () => {
@@ -66,7 +66,7 @@ export default function SimpleMenu(props: MenuProps) {
       >
         <MenuItem onClick={event => { event.preventDefault(); props.togglePause(); togglePause(); setAnchorEl(null) }}>
           <TogglePauseItem />
-        </MenuItem> 
+        </MenuItem>
         <MenuItem onClick={event => { event.preventDefault(); props.toggleAudio(); toggleAudio(); setAnchorEl(null) }}>
           <AudioItem/>
         </MenuItem>
