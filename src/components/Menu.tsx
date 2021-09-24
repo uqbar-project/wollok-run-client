@@ -9,6 +9,8 @@ import VolumeOffIcon from '@material-ui/icons/VolumeOff'
 import VolumeUpIcon from '@material-ui/icons/VolumeUp'
 import PauseCircleFilledIcon from '@material-ui/icons/PauseCircleFilled'
 import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled'
+import FullscreenIcon from '@material-ui/icons/Fullscreen';
+import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
 
 type MenuProps = {
   restart: () => void
@@ -21,6 +23,7 @@ export default function SimpleMenu(props: MenuProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [mute, setMute] = useState(false)
   const [pause, setPause] = useState(false)
+  const [fullscreen, setFullscreen] = useState(false)
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget)
@@ -38,6 +41,16 @@ export default function SimpleMenu(props: MenuProps) {
     setPause(!pause)
   }
 
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement === null) {
+      document.documentElement.requestFullscreen()
+    } 
+    else {
+      document.exitFullscreen()
+    }
+    setFullscreen(!fullscreen)
+  }
+
   const AudioItem = () => {
     if(mute) {
       return <><VolumeUpIcon /> Reanudar audio</>
@@ -50,6 +63,13 @@ export default function SimpleMenu(props: MenuProps) {
       return <><PlayCircleFilledIcon /> Reanudar juego</>
     }
     return <><PauseCircleFilledIcon /> Pausar juego</>
+  }
+
+  const FullscreenItem = () => {
+    if(fullscreen) {
+      return <><FullscreenExitIcon /> Salir de pantalla completa</>
+    }
+    return <><FullscreenIcon /> Pantalla completa</>
   }
 
   return (
@@ -75,6 +95,9 @@ export default function SimpleMenu(props: MenuProps) {
         </MenuItem>
         <MenuItem onClick={event => { event.preventDefault(); props.exit(); setAnchorEl(null) }}>
           <PlaylistPlayIcon /> Elegir juego
+        </MenuItem>
+        <MenuItem onClick={event => { event.preventDefault(); toggleFullscreen(); setAnchorEl(null) }}>
+          <FullscreenItem/>
         </MenuItem>
       </Menu>
     </div>
