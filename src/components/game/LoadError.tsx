@@ -5,13 +5,8 @@ import { BaseErrorScreen } from '../ErrorScreen'
 import $ from './Game.module.scss'
 import { ProgramSelector } from '../ProgramSelector'
 
-export interface LoadErrorProps {
-  error: Error
-  reload: (files: File[], program: string) => void
-}
-
-export interface MultiProgramErrorProps {
-  error: MultiProgramException
+export interface LoadErrorProps<T extends Error> {
+  error: T
   reload: (files: File[], program: string) => void
 }
 
@@ -19,7 +14,7 @@ export interface GenericErrorProps {
   error: Error
 }
 
-export function LoadError(props: LoadErrorProps) {
+export function LoadError<T extends Error>(props: LoadErrorProps<T>) {
 
   const error = props.error
 
@@ -33,30 +28,18 @@ export function LoadError(props: LoadErrorProps) {
 }
 
 function NoProgramError() {
-  const props = {
-    description: 'No se encontró un programa dentro del proyecto. Podés crear uno con la extensión .wpgm dentro de la carpeta src para poder correr el juego.',
-    children: null,
-    bottom: { children: null },
-  }
-
-  return <BaseErrorScreen { ... props } />
+  return <BaseErrorScreen description = 'No se encontró un programa dentro del proyecto. Podés crear uno con la extensión .wpgm dentro de la carpeta src para poder correr el juego.' />
 }
 
 function GenericError({ error }: GenericErrorProps) {
-  const props = {
-    description: 'Lo sentimos, ocurrió un error y no se pudo cargar el juego.',
-    children: (
-      <>
-        <br />
-        <textarea
-          className={$.errorMessage}
-          readOnly
-          value={error.message}
-        />
-      </>
-    ),
-    bottom: { children: null },
-  }
-
-  return <BaseErrorScreen { ... props } />
+  return (
+    <BaseErrorScreen description = 'Lo sentimos, ocurrió un error y no se pudo cargar el juego.'>
+      <br />
+      <textarea
+        className={$.errorMessage}
+        readOnly
+        value={error.message}
+      />
+    </BaseErrorScreen>
+  )
 }
