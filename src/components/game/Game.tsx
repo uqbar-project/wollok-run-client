@@ -63,8 +63,8 @@ const Game = (_: GameProps) => {
 
   const validateGame = (environment: Environment) => {
     const validationProblems = validate(environment)
-    const warnings = validationProblems.filter(problem => problem.level === 'warning')
-    const errors = validationProblems.filter(problem => problem.level === 'error')
+    const warnings = validationProblems.filter(problem => problem.level === 'Warning')
+    const errors = validationProblems.filter(problem => problem.level === 'Error')
 
     if (warnings.length){
       console.warn(`FOUND ${warnings.length} WARNINGS IN LOADED GAME!`, warnings)

@@ -97,9 +97,9 @@ function humanizedLocation(num: number | undefined){
 }
 
 function sourceMapStart(problem: Problem) {
-  return problem.sourceMap?.start
+  return problem.source?.start
 }
 
 function sourceMapEnd(problem: Problem) {
-  return problem.sourceMap?.end
+  return problem.source?.end
 }
