@@ -8,6 +8,7 @@ import { List } from 'wollok-ts'
 import { Problem } from 'wollok-ts/dist/validator'
 import { Button } from '@material-ui/core'
 import PublishIcon from '@material-ui/icons/Publish'
+import Parsimmon from 'parsimmon'
 
 export interface ValidationErrorProps {
   problems: List<Problem>
@@ -50,13 +51,13 @@ export function ValidationError({ problems, callback }: ValidationErrorProps) {
         <textarea
           className={$.errorMessage}
           readOnly
-          value='Hubieron problemas de validacion' //TODO: USE PROBLEMS TO CREATE A BETTER MESSAGE
+          value= { 'Hubo problemas de validacion: \n' + validationMessage(problems)} //TODO: USE PROBLEMS TO CREATE A BETTER MESSAGE
         />
       </>
     ),
     bottom: {
       children: (
-        <Button style={{ float: 'right' }} startIcon={<PublishIcon />} onClick={() => callback() } variant="contained" color="primary">
+        <Button style={{ float: 'right' }} startIcon={<PublishIcon />} onClick={ callback } variant="contained" color="primary">
           Cargar Juego
         </Button>
       ),
@@ -93,4 +94,28 @@ function GenericError({ error }: GenericErrorProps) {
   }
 
   return <BaseErrorScreen { ... props } />
+}
+
+function validationMessage(problems: List<Problem>) {
+  return problems.map(problem => problemMessage(problem)).join("\n")
+}
+
+function problemMessage(problem: Problem) {
+  return `Problem code: ${problem.code} starting ${problemLocation(problem, sourceMapStart)} and ending ${problemLocation(problem, sourceMapEnd)}.`
+}
+
+function problemLocation(problem: Problem, location: (problem: Problem) => Parsimmon.Index | undefined) {
+  return `in line ${humanizedLocation(location(problem)?.line)} on column ${humanizedLocation(location(problem)?.column)}`
+}
+
+function humanizedLocation(num: number | undefined){
+  return num ? num : 'unknown'
+}
+
+function sourceMapStart(problem: Problem) {
+  return problem.sourceMap?.start
+}
+
+function sourceMapEnd(problem: Problem) {
+  return problem.sourceMap?.end
 }
