@@ -101,11 +101,15 @@ function validationMessage(problems: List<Problem>) {
 }
 
 function problemMessage(problem: Problem) {
-  return `Problem code: ${problem.code} starting ${problemLocation(problem, sourceMapStart)} and ending ${problemLocation(problem, sourceMapEnd)}.`
+  return `Problem code: ${problem.code} in file ${humanizeFile(problem)}. Starting ${problemLocation(problem, sourceMapStart)} and ending ${problemLocation(problem, sourceMapEnd)}.`
 }
 
 function problemLocation(problem: Problem, location: (problem: Problem) => Parsimmon.Index | undefined) {
   return `in line ${humanizedLocation(location(problem)?.line)} on column ${humanizedLocation(location(problem)?.column)}`
+}
+
+function humanizeFile(problem: Problem) {
+  return problem.node.sourceFileName() || 'unknown'
 }
 
 function humanizedLocation(num: number | undefined){
