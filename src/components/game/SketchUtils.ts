@@ -161,11 +161,13 @@ function canvasAspectRatio(gameWidth: number, gameHeight: number) {
   return ratio 
 }
 
-export function resizeCanvas(gameWidth: number, gameHeight: number) {
+export function resizeCanvas(gameWidth: number, gameHeight: number, menuSize: number) {
   const canvas = document.getElementById('defaultCanvas0')
   const ratio = canvasAspectRatio(gameWidth, gameHeight)
+  const menuOffset = window.innerHeight / 100 * menuSize * 2
+  
   canvas?.style.removeProperty('width')
   canvas?.style.removeProperty('height')
   canvas!.style.width = `${gameWidth * ratio}px`
-  canvas!.style.height = `${gameHeight * ratio}px`
+  canvas!.style.height = `${gameHeight * ratio - menuOffset}px`
 }

@@ -182,6 +182,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
   const images = new Map<string, p5.Image>()
   const sounds = new Map<Id, GameSound>()
   let interpreter = new Interpreter(initialEvaluation.copy())
+  const menuSize = 4
 
   useEffect(() => {
     // TODO: Move out of sketch
@@ -226,7 +227,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
         images.set(path, sketch.loadImage(url))
       )
     )
-    resizeCanvas(width, height)
+    resizeCanvas(width, height, menuSize)
   }
 
   function draw(sketch: p5) {
@@ -261,7 +262,7 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
     {stop
       ? <h1>Se terminó el juego</h1>
       : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
-    <Menu restart={restart} exit={exit} gameDescription={gameProject.description} toggleAudio={toggleAudio} togglePause={togglePause} />
+    <Menu menuSize={menuSize} restart={restart} exit={exit} gameDescription={gameProject.description} toggleAudio={toggleAudio} togglePause={togglePause} />
   </div>
 }
 
