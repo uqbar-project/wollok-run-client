@@ -156,16 +156,16 @@ export function queueEvent(interpreter: Interpreter, ...events: RuntimeObject[])
 function canvasAspectRatio(gameWidth: number, gameHeight: number) {
   const screenWidth = window.innerWidth
   const screenHeight = window.innerHeight
-  const ratio = min(screenWidth / gameWidth, screenHeight / gameHeight);
+  const ratio = min(screenWidth / gameWidth, screenHeight / gameHeight)
 
-  return ratio 
+  return ratio
 }
 
 export function resizeCanvas(gameWidth: number, gameHeight: number, menuSize: number) {
   const canvas = document.getElementById('defaultCanvas0')
   const ratio = canvasAspectRatio(gameWidth, gameHeight)
   const menuOffset = window.innerHeight / 100 * menuSize * 2
-  
+
   canvas?.style.removeProperty('width')
   canvas?.style.removeProperty('height')
   canvas!.style.width = `${gameWidth * ratio}px`

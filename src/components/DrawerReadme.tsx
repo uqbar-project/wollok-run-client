@@ -16,13 +16,13 @@ export const DrawerReadme = ({ description, children }: DescriptionProps) => {
   const toggleDrawer =
     (open: boolean) =>
       () => {
-        setState({ ...state, ['right']: open })
+        setState({ ...state, right: open })
       }
 
   return (
     <div>
       <React.Fragment key={'right'}>
-        <IconButton style={{color: 'white'}} onClick={toggleDrawer(true)}>{children}</IconButton>
+        <IconButton style={{ color: 'white' }} onClick={ toggleDrawer(true) }>{ children }</IconButton>
         <Drawer
           anchor={'right'}
           open={state['right']}

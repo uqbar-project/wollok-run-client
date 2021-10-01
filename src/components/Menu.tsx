@@ -7,12 +7,12 @@ import PauseCircleFilledIcon from '@material-ui/icons/PauseCircleFilled'
 import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled'
 import FullscreenIcon from '@material-ui/icons/Fullscreen'
 import FullscreenExitIcon from '@material-ui/icons/FullscreenExit'
-import PublishIcon from '@material-ui/icons/Publish'
+// import PublishIcon from '@material-ui/icons/Publish'
 import MenuBookIcon from '@material-ui/icons/MenuBook'
 import { DrawerReadme } from './DrawerReadme'
 import { AppBar, IconButton, Toolbar, Tooltip } from '@material-ui/core'
 import $ from './Menu.module.scss'
-import { ModalFileSelector } from './ModalFileSelector'
+// import { ModalFileSelector } from './ModalFileSelector'
 
 type MenuProps = {
   restart: () => void
@@ -46,52 +46,48 @@ export default function SimpleMenu(props: MenuProps) {
     setFullscreen(!fullscreen)
   }
 
-  const fullscreenText = () => {
-    return fullscreen ? "Salir de pantalla completa" : "Pantalla completa"
-  }
-
   const AudioItem = () => {
     if(mute) {
       return <>
-      <Tooltip title="Reanudar audio">
-        <VolumeUpIcon />
-      </Tooltip>
+        <Tooltip title="Reanudar audio">
+          <VolumeUpIcon />
+        </Tooltip>
       </>
     }
     return <>
-    <Tooltip title="Silenciar audio">
-      <VolumeOffIcon />
-    </Tooltip>
+      <Tooltip title="Silenciar audio">
+        <VolumeOffIcon />
+      </Tooltip>
     </>
   }
 
   const TogglePauseItem = () => {
     if(pause) {
       return <>
-      <Tooltip title="Reanudar juego">
-        <PlayCircleFilledIcon />
-      </Tooltip>
+        <Tooltip title="Reanudar juego">
+          <PlayCircleFilledIcon />
+        </Tooltip>
       </>
     }
     return <>
-    <Tooltip title="Pausar juego">
-      <PauseCircleFilledIcon />
-    </Tooltip>
+      <Tooltip title="Pausar juego">
+        <PauseCircleFilledIcon />
+      </Tooltip>
     </>
   }
 
   const FullscreenItem = () => {
     if(fullscreen) {
       return <>
-      <Tooltip title="Salir de pantalla completa">
-        <FullscreenExitIcon />
-      </Tooltip>
+        <Tooltip title="Salir de pantalla completa">
+          <FullscreenExitIcon />
+        </Tooltip>
       </>
     }
     return <>
-    <Tooltip title="Pantalla completa">
-      <FullscreenIcon />
-    </Tooltip>
+      <Tooltip title="Pantalla completa">
+        <FullscreenIcon />
+      </Tooltip>
     </>
   }
 
@@ -99,9 +95,9 @@ export default function SimpleMenu(props: MenuProps) {
     <div>
       <AppBar className={$.navContainer} position="static" style={{ height: `${props.menuSize}vh` }}>
         <Toolbar className={$.toolbar}>
-        <DrawerReadme description={props.gameDescription} >
+          <DrawerReadme description={props.gameDescription} >
             <Tooltip title="Abrir README">
-            <MenuBookIcon />
+              <MenuBookIcon />
             </Tooltip>
           </DrawerReadme>
           <IconButton onClick={event => { event.preventDefault(); props.togglePause(); togglePause() }}>
@@ -115,15 +111,15 @@ export default function SimpleMenu(props: MenuProps) {
               <PublishIcon />
             </Tooltip>
           </ModalFileSelector> */}
-          <IconButton onClick={event => { event.preventDefault(); toggleFullscreen(); }}>
+          <IconButton onClick={event => { event.preventDefault(); toggleFullscreen() }}>
             <FullscreenItem/>
           </IconButton>
-          <IconButton onClick={event => { event.preventDefault(); props.restart(); }}>
+          <IconButton onClick={event => { event.preventDefault(); props.restart() }}>
             <Tooltip title="Reiniciar juego">
               <ReplayIcon />
             </Tooltip>
           </IconButton>
-          <IconButton onClick={event => { event.preventDefault(); props.exit(); }}>
+          <IconButton onClick={event => { event.preventDefault(); props.exit() }}>
             <Tooltip title="Cerrar juego">
               <CloseIcon />
             </Tooltip>

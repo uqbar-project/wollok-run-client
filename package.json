@@ -47,7 +47,7 @@
     "typescript": "^4.2.3",
     "use-interval": "^1.2.1",
     "uuid": "^3.4.0",
-    "wollok-ts": "file:../wollok-ts/wollok-ts-3.0.7.tgz",
+    "wollok-ts": "3.0.6",
     "xml-parser": "^1.2.1"
   },
   "scripts": {
