@@ -99,29 +99,29 @@ export default function SimpleMenu(props: MenuProps) {
     <div>
       <AppBar className={$.navContainer} position="static" style={{ height: `${props.menuSize}vh` }}>
         <Toolbar className={$.toolbar}>
-          <IconButton onClick={event => { event.preventDefault(); props.restart(); }}>
-            <Tooltip title="Reiniciar juego">
-              <ReplayIcon />
+        <DrawerReadme description={props.gameDescription} >
+            <Tooltip title="Abrir README">
+            <MenuBookIcon />
             </Tooltip>
-          </IconButton>
+          </DrawerReadme>
           <IconButton onClick={event => { event.preventDefault(); props.togglePause(); togglePause() }}>
             <TogglePauseItem />
           </IconButton>
           <IconButton onClick={event => { event.preventDefault(); props.toggleAudio(); toggleAudio() }}>
             <AudioItem/>
           </IconButton>
-          <DrawerReadme description={props.gameDescription} >
-            <Tooltip title="Abrir README">
-            <MenuBookIcon />
-            </Tooltip>
-          </DrawerReadme>
-          <ModalFileSelector>
+          {/* <ModalFileSelector>
             <Tooltip title="Cargar juego">
               <PublishIcon />
             </Tooltip>
-          </ModalFileSelector>
+          </ModalFileSelector> */}
           <IconButton onClick={event => { event.preventDefault(); toggleFullscreen(); }}>
             <FullscreenItem/>
+          </IconButton>
+          <IconButton onClick={event => { event.preventDefault(); props.restart(); }}>
+            <Tooltip title="Reiniciar juego">
+              <ReplayIcon />
+            </Tooltip>
           </IconButton>
           <IconButton onClick={event => { event.preventDefault(); props.exit(); }}>
             <Tooltip title="Cerrar juego">
