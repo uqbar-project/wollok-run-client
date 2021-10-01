@@ -24,7 +24,7 @@ export const DrawerReadme = ({ description, children }: DescriptionProps) => {
   return (
     <div>
       <React.Fragment key={'right'}>
-        <MenuItem onClick={toggleDrawer('right', true)}>{children}</MenuItem>
+        <MenuItem onClick={ toggleDrawer('right', true) }>{ children }</MenuItem>
         <Drawer
           anchor={'right'}
           open={state['right']}
