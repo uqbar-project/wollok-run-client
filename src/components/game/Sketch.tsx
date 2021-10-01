@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react'
 import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id } from 'wollok-ts'
-import validate from 'wollok-ts/dist/validator'
 import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
@@ -182,14 +181,6 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
   const images = new Map<string, p5.Image>()
   const sounds = new Map<Id, GameSound>()
   let interpreter = new Interpreter(initialEvaluation.copy())
-
-  useEffect(() => {
-    // TODO: Move out of sketch
-    const problems = validate(initialEvaluation.environment)
-    if (problems.length) {
-      console.error(`FOUND ${problems.length} PROBLEMS IN LOADED GAME!`, problems)
-    } else console.info('NO PROBLEMS FOUND IN LOADED GAME!')
-  }, [initialEvaluation])
 
   useEffect(() => {
     setInterval(() => {
