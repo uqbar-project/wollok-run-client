@@ -25,7 +25,6 @@ export default function SimpleMenu(props: MenuProps) {
   const [mute, setMute] = useState(false)
   const [pause, setPause] = useState(false)
   const [fullscreen, setFullscreen] = useState(false)
-  const caca = `dasdas${"asd"}`
 
   const toggleAudio = () => {
     setMute(!mute)

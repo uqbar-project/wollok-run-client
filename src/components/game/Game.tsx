@@ -7,7 +7,6 @@ import Sketch from './Sketch'
 import $ from './Game.module.scss'
 import { GameProject, buildGameProject, getProgramIn } from './gameProject'
 import { LoadProgramError } from './LoadProgramError'
-import { AppBar, Button, Toolbar } from '@material-ui/core'
 
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
@@ -22,10 +21,30 @@ const Game = (_: GameProps) => {
   function backToFS() {
     setGame(undefined)
     setEvaluation(undefined)
+    removeGitUrl()
   }
   const reloadGame = (files: File[], program: string) => {
     setError(undefined)
     loadGame(files, program)
+  }
+  const removeGitUrl = () => {
+    const currentUrl = window.location.href
+
+    if (typeof URLSearchParams !== 'undefined') {
+      const url = new URL(currentUrl)
+      const params = new URLSearchParams(url.search);
+      if(params.has('git')) {
+        params.delete('git')
+        window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+      }
+    }
+    else {
+      // Internet explorer does not support URLSearchParams
+      if(currentUrl.includes('git')) {
+        const splitUrl = currentUrl.split('git')
+        window.location.href = splitUrl[0]
+      }
+    }
   }
 
   const loadGame = (files: File[], program?: string) => {
