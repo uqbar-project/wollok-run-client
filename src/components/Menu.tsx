@@ -7,10 +7,12 @@ import PauseCircleFilledIcon from '@material-ui/icons/PauseCircleFilled'
 import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled'
 import FullscreenIcon from '@material-ui/icons/Fullscreen'
 import FullscreenExitIcon from '@material-ui/icons/FullscreenExit'
+import PublishIcon from '@material-ui/icons/Publish'
 import MenuBookIcon from '@material-ui/icons/MenuBook'
 import { DrawerReadme } from './DrawerReadme'
 import { AppBar, IconButton, Toolbar, Tooltip } from '@material-ui/core'
 import $ from './Menu.module.scss'
+import { ModalFileSelector } from './ModalFileSelector'
 
 type MenuProps = {
   restart: () => void
@@ -113,6 +115,11 @@ export default function SimpleMenu(props: MenuProps) {
             <MenuBookIcon />
             </Tooltip>
           </DrawerReadme>
+          <ModalFileSelector>
+            <Tooltip title="Cargar juego">
+              <PublishIcon />
+            </Tooltip>
+          </ModalFileSelector>
           <IconButton onClick={event => { event.preventDefault(); toggleFullscreen(); }}>
             <FullscreenItem/>
           </IconButton>
