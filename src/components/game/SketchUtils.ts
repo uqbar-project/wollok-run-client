@@ -3,7 +3,7 @@ import { RuntimeObject } from 'wollok-ts'
 import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { TEXT_SIZE, TEXT_STYLE } from './messages'
 
-const { round } = Math
+const { round, min } = Math
 
 function invokeMethod(interpreter: Interpreter, visual: RuntimeObject, method: string) {
   const lookedUpMethod = visual.module.lookupMethod(method, 0)
@@ -151,4 +151,23 @@ export function canvasResolution(interpreter: Interpreter): CanvasResolution {
 export function queueEvent(interpreter: Interpreter, ...events: RuntimeObject[]): void {
   const io = interpreter.object('wollok.io.io')
   events.forEach(e => interpreter.send('queueEvent', io, e))
+}
+
+function canvasAspectRatio(gameWidth: number, gameHeight: number) {
+  const screenWidth = window.innerWidth
+  const screenHeight = window.innerHeight
+  const ratio = min(screenWidth / gameWidth, screenHeight / gameHeight);
+
+  return ratio 
+}
+
+export function resizeCanvas(gameWidth: number, gameHeight: number, menuSize: number) {
+  const canvas = document.getElementById('defaultCanvas0')
+  const ratio = canvasAspectRatio(gameWidth, gameHeight)
+  const menuOffset = window.innerHeight / 100 * menuSize * 2
+  
+  canvas?.style.removeProperty('width')
+  canvas?.style.removeProperty('height')
+  canvas!.style.width = `${gameWidth * ratio}px`
+  canvas!.style.height = `${gameHeight * ratio - menuOffset}px`
 }

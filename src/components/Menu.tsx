@@ -20,6 +20,7 @@ type MenuProps = {
   toggleAudio: () => void
   togglePause: () => void
   gameDescription: string
+  menuSize: number
 }
 
 export default function SimpleMenu(props: MenuProps) {
@@ -77,7 +78,7 @@ export default function SimpleMenu(props: MenuProps) {
 
   return (
     <div>
-      <Button aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick} variant="contained" color="primary">
+      <Button style={{height: `${props.menuSize}vh`}} aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick} variant="contained" color="primary">
         <MenuIcon />
       </Button>
       <Menu
