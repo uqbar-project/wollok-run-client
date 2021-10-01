@@ -11,6 +11,7 @@ import { GameSound, SoundState, SoundStatus } from './GameSound'
 import { DrawableMessage, drawMessage } from './messages'
 import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, hexaToColor, baseDrawable, draw, moveAllTo, write, resizeCanvas } from './SketchUtils'
 import Menu from '../Menu'
+import { AppBar, Button, Toolbar } from '@material-ui/core'
 
 const { round } = Math
 
@@ -259,10 +260,19 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
   }
 
   return <div>
+     <Menu 
+      menuSize={menuSize}
+      restart={restart}
+      exit={exit}
+      gameDescription={gameProject.description}
+      toggleAudio={toggleAudio}
+      togglePause={togglePause} 
+     />
+    <div>
     {stop
       ? <h1>Se terminó el juego</h1>
       : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
-    <Menu menuSize={menuSize} restart={restart} exit={exit} gameDescription={gameProject.description} toggleAudio={toggleAudio} togglePause={togglePause} />
+    </div> 
   </div>
 }
 

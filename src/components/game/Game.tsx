@@ -7,6 +7,7 @@ import Sketch from './Sketch'
 import $ from './Game.module.scss'
 import { GameProject, buildGameProject, getProgramIn } from './gameProject'
 import { LoadProgramError } from './LoadProgramError'
+import { AppBar, Button, Toolbar } from '@material-ui/core'
 
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {

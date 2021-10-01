@@ -2,7 +2,7 @@
 
 .container {
     display: flex;
-    height: 100%;
+    height: 100vh;
     flex-direction: column;
     padding: 15vh;
     font-family: "monospace";
@@ -21,10 +21,12 @@
         display: flex;
         flex-direction: column;
         width: 40vw;
-        height: 100%;
+        height: 100vh;
         justify-content: center;
         margin-left: 1vw;
         margin-right: 1vw;
+        padding-top: 10vh;
+        padding-bottom: 1vh;
         padding-left: 4vw;
         border-left: 2px solid $color-primary;
         overflow: auto;
