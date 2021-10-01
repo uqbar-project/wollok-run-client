@@ -9,12 +9,12 @@ export type ErrorProps = {
 
 export interface BaseErrorProps {
   description: string
-  children: ReactNode
-  bottom: ErrorBottomProps
+  children?: ReactNode
+  bottom?: ErrorBottomProps
 }
 
 export interface ErrorBottomProps {
-  children: ReactNode
+  children?: ReactNode
 }
 
 export const ErrorScreen = ({ children }: ErrorProps) => {

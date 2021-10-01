@@ -15,13 +15,8 @@ export interface ValidationErrorProps {
   callback: () => void
 }
 
-export interface LoadErrorProps {
-  error: Error
-  reload: (files: File[], program: string) => void
-}
-
-export interface MultiProgramErrorProps {
-  error: MultiProgramException
+export interface LoadErrorProps<T extends Error> {
+  error: T
   reload: (files: File[], program: string) => void
 }
 
@@ -29,7 +24,7 @@ export interface GenericErrorProps {
   error: Error
 }
 
-export function LoadError(props: LoadErrorProps) {
+export function LoadError<T extends Error>(props: LoadErrorProps<T>) {
 
   const error = props.error
 
@@ -43,61 +38,46 @@ export function LoadError(props: LoadErrorProps) {
 }
 
 export function ValidationError({ problems, callback }: ValidationErrorProps) {
-  const props = {
-    description: 'Se encontraron algunos problemas que pueden impedir que el juego se ejecute con normalidad. ¿Desea correrlo de todos modos?',
+  const button = {
     children: (
-      <>
-        <br />
-        <textarea
-          className={$.errorMessage}
-          readOnly
-          value= { 'Hubo problemas de validacion: \n' + validationMessage(problems)} //TODO: USE PROBLEMS TO CREATE A BETTER MESSAGE
-        />
-      </>
+      <Button style={{ float: 'right' }} startIcon={<PublishIcon />} onClick={ callback } variant="contained" color="primary">
+      Cargar Juego
+      </Button>
     ),
-    bottom: {
-      children: (
-        <Button style={{ float: 'right' }} startIcon={<PublishIcon />} onClick={ callback } variant="contained" color="primary">
-          Cargar Juego
-        </Button>
-      ),
-    },
   }
 
-  return <BaseErrorScreen { ... props } />
+  return (
+    <BaseErrorScreen description = 'Se encontraron algunos problemas que pueden impedir que el juego se ejecute con normalidad. ¿Desea correrlo de todos modos?'
+      bottom = { button }>
+      <br />
+      <textarea
+        className={$.errorMessage}
+        readOnly
+        value= { 'Hubo problemas de validacion: \n' + validationMessage(problems)} //TODO: USE PROBLEMS TO CREATE A BETTER MESSAGE
+      />
+    </BaseErrorScreen>
+  )
 }
 
 function NoProgramError() {
-  const props = {
-    description: 'No se encontró un programa dentro del proyecto. Podés crear uno con la extensión .wpgm dentro de la carpeta src para poder correr el juego.',
-    children: null,
-    bottom: { children: null },
-  }
-
-  return <BaseErrorScreen { ... props } />
+  return <BaseErrorScreen description = 'No se encontró un programa dentro del proyecto. Podés crear uno con la extensión .wpgm dentro de la carpeta src para poder correr el juego.' />
 }
 
 function GenericError({ error }: GenericErrorProps) {
-  const props = {
-    description: 'Lo sentimos, ocurrió un error y no se pudo cargar el juego.',
-    children: (
-      <>
-        <br />
-        <textarea
-          className={$.errorMessage}
-          readOnly
-          value={error.message}
-        />
-      </>
-    ),
-    bottom: { children: null },
-  }
-
-  return <BaseErrorScreen { ... props } />
+  return (
+    <BaseErrorScreen description = 'Lo sentimos, ocurrió un error y no se pudo cargar el juego.'>
+      <br />
+      <textarea
+        className={$.errorMessage}
+        readOnly
+        value={error.message}
+      />
+    </BaseErrorScreen>
+  )
 }
 
 function validationMessage(problems: List<Problem>) {
-  return problems.map(problem => problemMessage(problem)).join("\n")
+  return problems.map(problem => problemMessage(problem)).join('\n')
 }
 
 function problemMessage(problem: Problem) {
