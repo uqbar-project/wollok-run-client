@@ -71,7 +71,7 @@ export default function SimpleMenu(props: MenuProps) {
     }
     return <>
       <Tooltip title="Pausar juego">
-        <PlayCircleFilledIcon />
+        <PauseCircleFilledIcon />
       </Tooltip>
     </>
   }
