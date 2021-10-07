@@ -50,13 +50,13 @@ export default function SimpleMenu(props: MenuProps) {
     if(mute) {
       return <>
         <Tooltip title="Reanudar audio">
-          <VolumeUpIcon />
+          <VolumeOffIcon />
         </Tooltip>
       </>
     }
     return <>
       <Tooltip title="Silenciar audio">
-        <VolumeOffIcon />
+        <VolumeUpIcon />
       </Tooltip>
     </>
   }
@@ -65,13 +65,13 @@ export default function SimpleMenu(props: MenuProps) {
     if(pause) {
       return <>
         <Tooltip title="Reanudar juego">
-          <PlayCircleFilledIcon />
+          <PauseCircleFilledIcon />
         </Tooltip>
       </>
     }
     return <>
       <Tooltip title="Pausar juego">
-        <PauseCircleFilledIcon />
+        <PlayCircleFilledIcon />
       </Tooltip>
     </>
   }

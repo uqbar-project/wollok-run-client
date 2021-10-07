@@ -7,7 +7,7 @@ import $ from './FilesSelector.module.scss'
 const GIT = 'git'
 
 
-const loadGitFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (repoUrl: string) => {
+export const loadGitFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (repoUrl: string) => {
   const corsProxy = process.env.REACT_APP_PROXY_URL || 'http://localhost:9999'
   onStartLoad()
   await git.clone({
