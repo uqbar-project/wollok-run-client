@@ -65,7 +65,7 @@ export default function SimpleMenu(props: MenuProps) {
     if(pause) {
       return <>
         <Tooltip title="Reanudar juego">
-          <PauseCircleFilledIcon />
+          <PlayCircleFilledIcon />
         </Tooltip>
       </>
     }
