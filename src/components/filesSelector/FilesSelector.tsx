@@ -5,6 +5,7 @@ import Spinner from '../Spinner'
 import $ from './FilesSelector.module.scss'
 import { WollokLogo } from '../Home/Home'
 import { BackArrow } from '../BackArrow'
+import { BaseErrorScreen } from '../ErrorScreen'
 
 export type File = {
   name: string
@@ -18,8 +19,13 @@ export type SelectorProps = FilesSelectorProps & { onStartLoad: () => void }
 
 type FilesSelectorProps = { onFilesLoad: FilesCallback }
 const FilesSelector = (props: FilesSelectorProps) => {
+  const [repoNotFound, setRepoNotFound] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
   const onStartLoad = () => setLoading(true)
+  const onFailureDo = () => setRepoNotFound(true)
+
+  if (repoNotFound)
+    return <BaseErrorScreen description = 'Repositorio no encontrado. No pudimos encontrar el repo que indicaste, asegurate de que exista y sea público.' />
 
   return loading
     ? <Spinner />
@@ -27,7 +33,7 @@ const FilesSelector = (props: FilesSelectorProps) => {
       <div><BackArrow returnPath='/' /></div>
       <WollokLogo />
       <div>
-        <GitSelector {...props} onStartLoad={onStartLoad} />
+        <GitSelector {...props} onStartLoad={onStartLoad} onFailureDo={onFailureDo}/>
         <LocalSelector {...props} onStartLoad={onStartLoad} />
       </div>
     </div>

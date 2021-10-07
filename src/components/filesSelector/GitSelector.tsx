@@ -6,6 +6,8 @@ import $ from './FilesSelector.module.scss'
 
 const GIT = 'git'
 
+type GitSelectorProps = SelectorProps & { onFailureDo: () => void }
+
 
 const loadGitFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (repoUrl: string) => {
   const corsProxy = process.env.REACT_APP_PROXY_URL || 'http://localhost:9999'
@@ -42,7 +44,7 @@ const getAllFilePathsFrom = (rootDirectory: string): string[] => {
 }
 
 
-const GitSelector = (props: SelectorProps) => {
+const GitSelector = (props: GitSelectorProps) => {
   const defaultGameUri = 'https://github.com/wollok/pepitagame'
   const [gitUrl, setGitUrl] = useState<string>()
   const repoUri = new URLSearchParams(document.location.search).get(GIT)
@@ -51,7 +53,7 @@ const GitSelector = (props: SelectorProps) => {
     BrowserFS.configure({ fs: 'InMemory', options: {} }, (err: any) => {
       if (err) throw new Error('FS error')
       git.plugins.set('fs', BrowserFS.BFSRequire('fs'))
-      if (repoUri) loadGitFiles(props)(repoUri)
+      if (repoUri) loadGitFiles(props)(repoUri).catch(props.onFailureDo)
     })
   }, [props, repoUri])
 
