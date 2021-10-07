@@ -25,7 +25,7 @@ const FilesSelector = (props: FilesSelectorProps) => {
   const onFailureDo = () => setRepoNotFound(true)
 
   if (repoNotFound)
-    return <BaseErrorScreen description = 'Repositorio no encontrado. No pudimos encontrar el repo que indicaste, asegurate de que exista y sea público.' />
+    return <BaseErrorScreen title = 'Repositorio no encontrado' description = 'No pudimos encontrar el repo que indicaste. Asegurate de que exista y sea público.' />
 
   return loading
     ? <Spinner />
