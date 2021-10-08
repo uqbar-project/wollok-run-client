@@ -1,11 +1,13 @@
 import React, { memo, useState, useEffect } from 'react'
 import { SelectorProps } from './FilesSelector'
 import * as BrowserFS from 'browserfs'
-import * as git from 'isomorphic-git'
+import { clone } from 'isomorphic-git'
+import http from 'isomorphic-git/http/web'
 import $ from './FilesSelector.module.scss'
 
 const DEFAULT_GAME_URI = 'https://github.com/wollok/pepitagame'
 const GIT = 'git'
+let fs: any
 
 export function loadGitRepo(url: string) {
   setGitSearch(url)
@@ -41,7 +43,8 @@ const setGitSearch = (url?: string) => {
 const loadGitFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (repoUrl: string) => {
   const corsProxy = process.env.REACT_APP_PROXY_URL || 'http://localhost:9999'
   onStartLoad()
-  await git.clone({
+  await clone({
+    fs, http,
     dir: GIT,
     corsProxy,
     url: repoUrl,
@@ -80,7 +83,7 @@ const GitSelector = (props: SelectorProps) => {
   useEffect(() => {
     BrowserFS.configure({ fs: 'InMemory', options: {} }, (err: any) => {
       if (err) throw new Error('FS error')
-      git.plugins.set('fs', BrowserFS.BFSRequire('fs'))
+      fs = BrowserFS.BFSRequire('fs')
       if (repoUri) loadGitFiles(props)(repoUri)
     })
   }, [props, repoUri])
