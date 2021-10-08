@@ -6,8 +6,11 @@ import $ from './FilesSelector.module.scss'
 
 const GIT = 'git'
 
+export function loadGitRepo(url: string) {
+  document.location.search = `${GIT}=${url}`
+}
 
-export const loadGitFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (repoUrl: string) => {
+const loadGitFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (repoUrl: string) => {
   const corsProxy = process.env.REACT_APP_PROXY_URL || 'http://localhost:9999'
   onStartLoad()
   await git.clone({
@@ -56,7 +59,7 @@ const GitSelector = (props: SelectorProps) => {
   }, [props, repoUri])
 
   const navigateToGame = () => {
-    document.location.search = `${GIT}=${gitUrl || defaultGameUri}`
+    loadGitRepo(gitUrl || defaultGameUri)
   }
 
   return (

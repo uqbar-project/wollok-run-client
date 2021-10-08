@@ -1,13 +1,16 @@
-import { RouteComponentProps } from '@reach/router'
 import React, { memo, useEffect, useState } from 'react'
+import { RouteComponentProps } from '@reach/router'
 import { buildEnvironment, Environment, Evaluation, List, validate, WRENatives } from 'wollok-ts'
+import { Problem } from 'wollok-ts/dist/validator'
 import interpret from 'wollok-ts/dist/interpreter/interpreter'
-import FilesSelector, { File } from '../filesSelector/FilesSelector'
 import Sketch from './Sketch'
 import $ from './Game.module.scss'
+import FeaturedGames from './FeaturedGames'
+import FilesSelector, { File } from '../filesSelector/FilesSelector'
 import { GameProject, buildGameProject, getProgramIn } from './gameProject'
 import { LoadError, ValidationError } from './LoadError'
-import { Problem } from 'wollok-ts/dist/validator'
+
+const { warn, info } = console
 
 export type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
@@ -33,17 +36,18 @@ const Game = (_: GameProps) => {
   const removeGitUrl = () => {
     const currentUrl = window.location.href
 
+    // TODO: Move to general place
     if (typeof URLSearchParams !== 'undefined') {
       const url = new URL(currentUrl)
       const params = new URLSearchParams(url.search)
-      if(params.has('git')) {
+      if (params.has('git')) {
         params.delete('git')
         window.history.replaceState({}, '', `${window.location.pathname}?${params}`)
       }
     }
     else {
       // Internet explorer does not support URLSearchParams
-      if(currentUrl.includes('git')) {
+      if (currentUrl.includes('git')) {
         const splitUrl = currentUrl.split('git')
         window.location.href = splitUrl[0]
       }
@@ -66,10 +70,10 @@ const Game = (_: GameProps) => {
     const warnings = validationProblems.filter(problem => problem.level === 'Warning')
     const errors = validationProblems.filter(problem => problem.level === 'Error')
 
-    if (warnings.length){
-      console.warn(`FOUND ${warnings.length} WARNINGS IN LOADED GAME!`, warnings)
+    if (warnings.length) {
+      warn(`FOUND ${warnings.length} WARNINGS IN LOADED GAME!`, warnings)
     }
-    else console.info('NO WARNINGS FOUND IN LOADED GAME!')
+    else info('NO WARNINGS FOUND IN LOADED GAME!')
 
     if (errors.length)
       setProblems(errors)
@@ -90,13 +94,16 @@ const Game = (_: GameProps) => {
   }
 
   if (problems)
-    return <ValidationError problems = { problems } callback = { runGameAnyway }/>
+    return <ValidationError problems={problems} callback={runGameAnyway} />
 
   if (error)
     return <LoadError error={error} reload={reloadGame} />
 
   if (!evaluation || !game)
-    return <FilesSelector onFilesLoad={loadGame} />
+    return <FilesSelector onFilesLoad={loadGame} >
+      <FeaturedGames />
+    </FilesSelector>
+
 
   return <div className={$.container}>
     <div>

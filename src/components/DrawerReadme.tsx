@@ -1,15 +1,16 @@
 import * as React from 'react'
 import Drawer from '@material-ui/core/Drawer'
-import { ReactNode, useState } from 'react'
+import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import $ from './DrawerReadme.module.scss'
 import { IconButton } from '@material-ui/core'
+import { Parent } from './utils'
 
 
-export type DescriptionProps = {
+interface DescriptionProps extends Parent {
   description: string
-  children: ReactNode
 }
+
 export const DrawerReadme = ({ description, children }: DescriptionProps) => {
   const [state, setState] = useState({ right: false })
 
