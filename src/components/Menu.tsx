@@ -1,56 +1,131 @@
-import React from 'react';
-import Button from '@material-ui/core/Button';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import MenuIcon from '@material-ui/icons/Menu';
+import React, { useState } from 'react'
 import ReplayIcon from '@material-ui/icons/Replay'
-import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
-// import VolumeOffIcon from '@material-ui/icons/VolumeOff';
-// import VolumeUpIcon from '@material-ui/icons/VolumeUp';
-// import PauseIcon from '@material-ui/icons/Pause';
-// import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import CloseIcon from '@material-ui/icons/Close'
+import VolumeOffIcon from '@material-ui/icons/VolumeOff'
+import VolumeUpIcon from '@material-ui/icons/VolumeUp'
+import PauseCircleFilledIcon from '@material-ui/icons/PauseCircleFilled'
+import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled'
+import FullscreenIcon from '@material-ui/icons/Fullscreen'
+import FullscreenExitIcon from '@material-ui/icons/FullscreenExit'
+// import PublishIcon from '@material-ui/icons/Publish'
+import MenuBookIcon from '@material-ui/icons/MenuBook'
+import { DrawerReadme } from './DrawerReadme'
+import { AppBar, IconButton, Toolbar, Tooltip } from '@material-ui/core'
+import $ from './Menu.module.scss'
+// import { ModalFileSelector } from './ModalFileSelector'
 
-type MenuProps = { 
-    restart: () => void 
-    backToFS: () => void
+type MenuProps = {
+  restart: () => void
+  exit: () => void
+  toggleAudio: () => void
+  togglePause: () => void
+  gameDescription: string
+  menuSize: number
 }
 
 export default function SimpleMenu(props: MenuProps) {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [mute, setMute] = useState(false)
+  const [pause, setPause] = useState(false)
+  const [fullscreen, setFullscreen] = useState(false)
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const toggleAudio = () => {
+    setMute(!mute)
+  }
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const togglePause = () => {
+    setPause(!pause)
+  }
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement === null) {
+      document.documentElement.requestFullscreen()
+    }
+    else {
+      document.exitFullscreen()
+    }
+    setFullscreen(!fullscreen)
+  }
+
+  const AudioItem = () => {
+    if(mute) {
+      return <>
+        <Tooltip title="Reanudar audio">
+          <VolumeOffIcon />
+        </Tooltip>
+      </>
+    }
+    return <>
+      <Tooltip title="Silenciar audio">
+        <VolumeUpIcon />
+      </Tooltip>
+    </>
+  }
+
+  const TogglePauseItem = () => {
+    if(pause) {
+      return <>
+        <Tooltip title="Reanudar juego">
+          <PlayCircleFilledIcon />
+        </Tooltip>
+      </>
+    }
+    return <>
+      <Tooltip title="Pausar juego">
+        <PauseCircleFilledIcon />
+      </Tooltip>
+    </>
+  }
+
+  const FullscreenItem = () => {
+    if(fullscreen) {
+      return <>
+        <Tooltip title="Salir de pantalla completa">
+          <FullscreenExitIcon />
+        </Tooltip>
+      </>
+    }
+    return <>
+      <Tooltip title="Pantalla completa">
+        <FullscreenIcon />
+      </Tooltip>
+    </>
+  }
 
   return (
     <div>
-      <Button aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}variant="contained" color="primary">
-      <MenuIcon />
-      </Button>
-        <Menu
-            id="simple-menu"
-            anchorEl={anchorEl}
-            keepMounted
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-        >
-          <MenuItem onClick={event => { event.preventDefault(); props.restart(); setAnchorEl(null);}}>
-            <ReplayIcon />Reiniciar juego
-          </MenuItem>
-          <MenuItem onClick={event => { event.preventDefault(); props.backToFS(); setAnchorEl(null); }}>
-            <PlaylistPlayIcon/> Elegir juego
-          </MenuItem>
-          {/* <MenuItem onClick={handleClose}>
-            <PauseIcon />Pausar juego
-          </MenuItem>
-          <MenuItem onClick={handleClose}>
-            <VolumeOffIcon /> Pausar música
-          </MenuItem> */}
-        </Menu>
+      <AppBar className={$.navContainer} position="static" style={{ height: `${props.menuSize}vh` }}>
+        <Toolbar className={$.toolbar}>
+          <DrawerReadme description={props.gameDescription} >
+            <Tooltip title="Abrir README">
+              <MenuBookIcon />
+            </Tooltip>
+          </DrawerReadme>
+          <IconButton onClick={event => { event.preventDefault(); props.togglePause(); togglePause() }}>
+            <TogglePauseItem />
+          </IconButton>
+          <IconButton onClick={event => { event.preventDefault(); props.toggleAudio(); toggleAudio() }}>
+            <AudioItem/>
+          </IconButton>
+          {/* <ModalFileSelector>
+            <Tooltip title="Cargar juego">
+              <PublishIcon />
+            </Tooltip>
+          </ModalFileSelector> */}
+          <IconButton onClick={event => { event.preventDefault(); toggleFullscreen() }}>
+            <FullscreenItem/>
+          </IconButton>
+          <IconButton onClick={event => { event.preventDefault(); props.restart() }}>
+            <Tooltip title="Reiniciar juego">
+              <ReplayIcon />
+            </Tooltip>
+          </IconButton>
+          <IconButton onClick={event => { event.preventDefault(); props.exit() }}>
+            <Tooltip title="Cerrar juego">
+              <CloseIcon />
+            </Tooltip>
+          </IconButton>
+        </Toolbar>
+      </AppBar>
     </div>
-  );
+  )
 }

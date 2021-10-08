@@ -1,0 +1,45 @@
+@import "../_theme.scss";
+
+.container {
+    display: flex;
+    height: 100vh;
+    flex-direction: column;
+    padding: 15vh;
+    font-family: "monospace";
+  
+    & > div {
+      display: flex;
+      margin: auto;
+    }
+  
+    h1 {
+      font-size: 1.5em;
+      margin-bottom: 0vh;
+    }
+
+    .description {
+        display: flex;
+        flex-direction: column;
+        width: 40vw;
+        height: 100vh;
+        justify-content: center;
+        margin-left: 1vw;
+        margin-right: 1vw;
+        padding-top: 10vh;
+        padding-bottom: 1vh;
+        padding-left: 4vw;
+        border-left: 2px solid $color-primary;
+        overflow: auto;
+        
+        * {
+            color: white;
+        }
+
+        h1{
+          font-size: 3em;
+        }
+        h2{
+          margin: 2vw 2vw 1vw 0;
+        }
+      }
+  }

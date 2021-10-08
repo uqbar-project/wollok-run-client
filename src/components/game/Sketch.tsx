@@ -1,14 +1,14 @@
+/* eslint-disable no-console */
 import p5 from 'p5'
 import React, { useEffect, useState } from 'react'
 import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id } from 'wollok-ts'
-import validate from 'wollok-ts/dist/validator'
 import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
-import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, hexaToColor, baseDrawable, draw, moveAllTo, write } from './SketchUtils'
 import { DrawableMessage, drawMessage } from './messages'
+import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, hexaToColor, baseDrawable, draw, moveAllTo, write, resizeCanvas } from './SketchUtils'
 import Menu from '../Menu'
 
 const { round } = Math
@@ -40,35 +40,58 @@ function wKeyCode(key: string, keyCode: number): string {
   return '' //If an unknown key is pressed, a string should be returned
 }
 
-
 interface SketchProps {
   gameProject: GameProject
   evaluation: Evaluation
-  backToFSSketch: () => void
+  exit: () => void
+}
+
+interface StepAssets {
+  sketch: p5
+  gameProject: GameProject
+  interpreter: Interpreter
+  sounds: Map<Id, GameSound>
+  images: Map<Id, p5.Image>
+  audioMuted: boolean
+  gamePaused: boolean
+}
+
+interface SoundAssets {
+  gameProject: GameProject
+  interpreter: Interpreter
+  sounds: Map<Id, GameSound>
+  audioMuted?: boolean
+  gamePaused?: boolean
 }
 
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // GAME CYCLE
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
-function step(sketch: p5, game: GameProject, interpreter: Interpreter, sounds: Map<Id, GameSound>, images: Map<Id, p5.Image>) {
-  window.performance.mark('update-start')
-  flushEvents(interpreter, sketch.millis())
-  updateSound(game, interpreter, sounds)
-  window.performance.mark('update-end')
+function step(assets: StepAssets) {
+  const { sketch, gameProject, interpreter, sounds, images, audioMuted, gamePaused } = assets
 
-  window.performance.mark('draw-start')
-  render(interpreter, sketch, images)
-  window.performance.mark('draw-end')
+  if(!gamePaused) {
+    window.performance.mark('update-start')
+    flushEvents(interpreter, sketch.millis())
+    updateSound({ gameProject, interpreter, sounds, audioMuted })
+    window.performance.mark('update-end')
+    window.performance.mark('draw-start')
+    render(interpreter, sketch, images)
+    window.performance.mark('draw-end')
 
-  window.performance.measure('update-start-to-end', 'update-start', 'update-end')
-  window.performance.measure('draw-start-to-end', 'draw-start', 'draw-end')
-
+    window.performance.measure('update-start-to-end', 'update-start', 'update-end')
+    window.performance.measure('draw-start-to-end', 'draw-start', 'draw-end')
+  }
+  else {
+    updateSound({ gameProject, interpreter, sounds, gamePaused })
+  }
   return undefined
 }
 
-function updateSound(game: GameProject, interpreter: Interpreter, sounds: Map<Id, GameSound>) {
-  const soundInstances = interpreter.object('wollok.game.game').get('sounds')?.innerCollection ?? []
+function updateSound(assets: SoundAssets) {
+  const { gameProject, interpreter, sounds, audioMuted, gamePaused } = assets
+  const soundInstances = gamePaused ? [] : interpreter.object('wollok.game.game').get('sounds')?.innerCollection ?? []
 
   for (const [id, sound] of sounds.entries()) {
     if (!soundInstances.some(sound => sound.id === id)) {
@@ -84,13 +107,13 @@ function updateSound(game: GameProject, interpreter: Interpreter, sounds: Map<Id
       id: soundInstance.id,
       file: soundInstance.get('file')!.innerString!,
       status: soundInstance.get('status')!.innerString! as SoundStatus,
-      volume: soundInstance.get('volume')!.innerNumber!,
+      volume: audioMuted ? 0 : soundInstance.get('volume')!.innerNumber!,
       loop: soundInstance.get('loop')!.innerBoolean!,
     }
 
     let sound = sounds.get(soundState.id)
     if (!sound) {
-      const soundPath = game.sounds.find(({ possiblePaths }) => possiblePaths.includes(soundState.file))?.url
+      const soundPath = gameProject.sounds.find(({ possiblePaths }) => possiblePaths.includes(soundState.file))?.url
       if (soundPath) { // TODO: add soundfile not found exception
         sound = new GameSound(soundState, soundPath)
         sounds.set(soundState.id, sound)
@@ -151,19 +174,14 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // COMPONENTS
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-const SketchComponent = ({ gameProject, evaluation: initialEvaluation, backToFSSketch }: SketchProps) => {
+const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: SketchProps) => {
   const [stop, setStop] = useState(false)
+  let gamePaused = false
+  let audioMuted = false
   const images = new Map<string, p5.Image>()
   const sounds = new Map<Id, GameSound>()
   let interpreter = new Interpreter(initialEvaluation.copy())
-
-  useEffect(() => {
-    // TODO: Move out of sketch
-    const problems = validate(initialEvaluation.environment)
-    if (problems.length) {
-      console.error(`FOUND ${problems.length} PROBLEMS IN LOADED GAME!`, problems)
-    } else console.info('NO PROBLEMS FOUND IN LOADED GAME!')
-  }, [initialEvaluation])
+  const menuSize = 4
 
   useEffect(() => {
     setInterval(() => {
@@ -200,32 +218,57 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, backToFSS
         images.set(path, sketch.loadImage(url))
       )
     )
+    resizeCanvas(width, height, menuSize)
   }
 
   function draw(sketch: p5) {
     if (!interpreter.object('wollok.game.game').get('running')!.innerBoolean!) setStop(true)
-    else step(sketch, gameProject, interpreter, sounds, images)
+    else step({ sketch, gameProject, interpreter, sounds, images, audioMuted, gamePaused })
   }
 
   function keyPressed(sketch: p5) {
-    window.performance.mark('key-start')
-    queueEvent(interpreter, buildKeyPressEvent(interpreter, wKeyCode(sketch.key, sketch.keyCode)), buildKeyPressEvent(interpreter, 'ANY'))
-    window.performance.mark('key-end')
-    window.performance.measure('key-start-to-end', 'key-start', 'key-end')
+    if(!gamePaused) {
+      window.performance.mark('key-start')
+      queueEvent(interpreter, buildKeyPressEvent(interpreter, wKeyCode(sketch.key, sketch.keyCode)), buildKeyPressEvent(interpreter, 'ANY'))
+      window.performance.mark('key-end')
+      window.performance.measure('key-start-to-end', 'key-start', 'key-end')
+    }
 
     return false
   }
 
   function restart() {
     interpreter = new Interpreter(initialEvaluation.copy())
-    setStop(false)
+  }
+
+  function pauseAndExit() {
+    audioMuted = true
+    updateSound({ gameProject, interpreter, sounds, audioMuted })
+    exit()
+  }
+
+  function toggleAudio() {
+    audioMuted = !audioMuted
+  }
+
+  function togglePause() {
+    gamePaused = !gamePaused
   }
 
   return <div>
-    {stop ?
-      <h1>Se terminó el juego</h1>
-      : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
-    <Menu restart={restart} backToFS={backToFSSketch} />
+    <Menu
+      menuSize={menuSize}
+      restart={restart}
+      exit={pauseAndExit}
+      gameDescription={gameProject.description}
+      toggleAudio={toggleAudio}
+      togglePause={togglePause}
+    />
+    <div>
+      {stop
+        ? <h1>Se terminó el juego</h1>
+        : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
+    </div>
   </div>
 }
 

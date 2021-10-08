@@ -9,6 +9,10 @@
     display: flex;
     width: inherit;
   }
+
+  & > h1 {
+    padding: 20px
+  }
 }
 
 .selector {
@@ -65,4 +69,10 @@ form {
   color: white;
   font-size: large;
   background-color: #ac4142;
+}
+
+.breaker{
+  background-color: #ac4142;
+  height: 1px;
+  margin: 2rem;
 }

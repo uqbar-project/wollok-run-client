@@ -5,8 +5,40 @@ import { clone } from 'isomorphic-git'
 import http from 'isomorphic-git/http/web'
 import $ from './FilesSelector.module.scss'
 
+const DEFAULT_GAME_URI = 'https://github.com/wollok/pepitagame'
 const GIT = 'git'
 let fs: any
+
+export function loadGitRepo(url: string) {
+  setGitSearch(url)
+}
+
+export function clearGitRepo() {
+  setGitSearch()
+}
+
+const setGitSearch = (url?: string) => {
+  const search = document.location.search
+  let newSearch
+  if (typeof URLSearchParams !== 'undefined') {
+    const params = new URLSearchParams(search)
+    if (!url) {
+      params.delete(GIT)
+    } else {
+      params.set(GIT, url)
+    }
+    newSearch = params.toString()
+  }
+  else {
+    // Internet explorer does not support URLSearchParams
+    if (!url) {
+      newSearch = search.split(GIT)[0]
+    } else {
+      newSearch = `${GIT}=${url}`
+    }
+  }
+  document.location.search = newSearch
+}
 
 const loadGitFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (repoUrl: string) => {
   const corsProxy = process.env.REACT_APP_PROXY_URL || 'http://localhost:9999'
@@ -57,7 +89,7 @@ const GitSelector = (props: SelectorProps) => {
   }, [props, repoUri])
 
   const navigateToGame = () => {
-    document.location.search = `${GIT}=${gitUrl}`
+    loadGitRepo(gitUrl || DEFAULT_GAME_URI)
   }
 
   return (
@@ -65,7 +97,7 @@ const GitSelector = (props: SelectorProps) => {
       <form onSubmit={event => { event.preventDefault(); navigateToGame() }}>
         <div>
           <label>Pegá la URL del repositorio del juego a correr</label>
-          <input type='text' placeholder='https://github.com/wollok/pepitagame' onChange={event => setGitUrl(event.target.value)} required />
+          <input type='text' placeholder={DEFAULT_GAME_URI} onChange={event => setGitUrl(event.target.value)} />
         </div>
         <button type='submit'>Cargar Juego</button>
       </form>
