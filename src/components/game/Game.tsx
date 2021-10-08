@@ -6,13 +6,14 @@ import interpret from 'wollok-ts/dist/interpreter/interpreter'
 import Sketch from './Sketch'
 import $ from './Game.module.scss'
 import FeaturedGames from './FeaturedGames'
+import { clearGitRepo } from '../filesSelector/GitSelector'
 import FilesSelector, { File } from '../filesSelector/FilesSelector'
 import { GameProject, buildGameProject, getProgramIn } from './gameProject'
 import { LoadError, ValidationError } from './LoadError'
 
 const { warn, info } = console
 
-export type GameProps = RouteComponentProps
+type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
   const [game, setGame] = useState<GameProject>()
   const [evaluation, setEvaluation] = useState<Evaluation>()
@@ -24,34 +25,14 @@ const Game = (_: GameProps) => {
   }, [evaluation])
 
   function backToFS() {
+    clearGitRepo()
     setGame(undefined)
     setEvaluation(undefined)
-    removeGitUrl()
   }
 
   const reloadGame = (files: File[], program: string) => {
     setError(undefined)
     loadGame(files, program)
-  }
-  const removeGitUrl = () => {
-    const currentUrl = window.location.href
-
-    // TODO: Move to general place
-    if (typeof URLSearchParams !== 'undefined') {
-      const url = new URL(currentUrl)
-      const params = new URLSearchParams(url.search)
-      if (params.has('git')) {
-        params.delete('git')
-        window.history.replaceState({}, '', `${window.location.pathname}?${params}`)
-      }
-    }
-    else {
-      // Internet explorer does not support URLSearchParams
-      if (currentUrl.includes('git')) {
-        const splitUrl = currentUrl.split('git')
-        window.location.href = splitUrl[0]
-      }
-    }
   }
 
   const runGameAnyway = () => {
