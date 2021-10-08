@@ -241,6 +241,12 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
     interpreter = new Interpreter(initialEvaluation.copy())
   }
 
+  function pauseAndExit() {
+    audioMuted = true
+    updateSound({ gameProject, interpreter, sounds, audioMuted })
+    exit()
+  }
+
   function toggleAudio() {
     audioMuted = !audioMuted
   }
@@ -250,10 +256,19 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
   }
 
   return <div>
-    {stop
-      ? <h1>Se terminó el juego</h1>
-      : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
-    <Menu menuSize={menuSize} restart={restart} exit={exit} gameDescription={gameProject.description} toggleAudio={toggleAudio} togglePause={togglePause} />
+    <Menu
+      menuSize={menuSize}
+      restart={restart}
+      exit={pauseAndExit}
+      gameDescription={gameProject.description}
+      toggleAudio={toggleAudio}
+      togglePause={togglePause}
+    />
+    <div>
+      {stop
+        ? <h1>Se terminó el juego</h1>
+        : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
+    </div>
   </div>
 }
 
