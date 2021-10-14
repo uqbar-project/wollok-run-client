@@ -2,7 +2,7 @@ import { Button, ButtonGroup } from '@material-ui/core'
 import { Link, RouteComponentProps } from '@reach/router'
 import React from 'react'
 import { Provider } from '../../context/Context'
-import Contador from '../contador'
+import { Contador } from '../Contador'
 
 import $ from './Home.module.scss'
 

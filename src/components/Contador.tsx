@@ -2,14 +2,8 @@ import React, { useContext } from 'react'
 
 import { Context } from '../context/Context'
 
-const color = (valor) => {
-  if (valor === 0) return 'gray'
-  return valor > 0 ? 'green' : 'red'
-}
-
-const Contador = () => {
+export const Contador = () => {
   const { count, decrement, increment } = useContext(Context)
-
 
   return (
     <div>
@@ -26,5 +20,3 @@ const Contador = () => {
     </div>
   )
 }
-
-export default Contador

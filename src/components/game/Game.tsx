@@ -88,6 +88,7 @@ const Game = (_: GameProps) => {
 
   return <div className={$.container}>
     <div>
+      {/* <Menu /> */}
       <Sketch gameProject={game} evaluation={evaluation} exit={backToFS} />
     </div>
   </div>
