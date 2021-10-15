@@ -1,5 +1,5 @@
 import React, { memo, useState, useEffect } from 'react'
-import { SelectorProps } from './FilesSelector'
+import { LoadingError, SelectorProps } from './FilesSelector'
 import * as BrowserFS from 'browserfs'
 import { clone } from 'isomorphic-git'
 import http from 'isomorphic-git/http/web'
@@ -9,7 +9,7 @@ const DEFAULT_GAME_URI = 'https://github.com/wollok/pepitagame'
 const GIT = 'git'
 let fs: any
 
-type GitSelectorProps = SelectorProps & { onFailureDo: () => void }
+type GitSelectorProps = SelectorProps & { onFailureDo: (error: LoadingError) => void }
 
 export function loadGitRepo(url: string) {
   setGitSearch(url)
@@ -82,11 +82,21 @@ const GitSelector = (props: GitSelectorProps) => {
   const [gitUrl, setGitUrl] = useState<string>()
   const repoUri = new URLSearchParams(document.location.search).get(GIT)
 
+  const repoNotFoundError = () => {
+    const error = {
+      title: 'Repositorio no encontrado',
+      description: 'No pudimos encontrar el repo que indicaste. Asegurate de que exista y sea público.',
+      children: <div style={{ textAlign: 'center' }}><a href={repoUri!} target="_blank" rel="noreferrer noopener" style={{ color: 'white', fontSize: 16 }}>Link al repositorio</a></div>,
+    }
+
+    return error
+  }
+
   useEffect(() => {
     BrowserFS.configure({ fs: 'InMemory', options: {} }, (err: any) => {
       if (err) throw new Error('FS error')
       fs = BrowserFS.BFSRequire('fs')
-      if (repoUri) loadGitFiles(props)(repoUri).catch(props.onFailureDo)
+      if (repoUri) loadGitFiles(props)(repoUri).catch(() => props.onFailureDo(repoNotFoundError()))
     })
   }, [props, repoUri])
 
