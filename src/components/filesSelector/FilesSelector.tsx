@@ -6,6 +6,7 @@ import $ from './FilesSelector.module.scss'
 import { WollokLogo } from '../Home/Home'
 import { BackArrow } from '../BackArrow'
 import { BaseErrorScreen } from '../ErrorScreen'
+import { Parent } from '../utils'
 
 export type File = {
   name: string
@@ -16,9 +17,8 @@ export type FilesCallback = (files: File[]) => void
 
 export type SelectorProps = FilesSelectorProps & { onStartLoad: () => void }
 
-
 type FilesSelectorProps = { onFilesLoad: FilesCallback }
-const FilesSelector = (props: FilesSelectorProps) => {
+const FilesSelector = ({ children, ...props }: FilesSelectorProps & Parent) => {
   const [repoNotFound, setRepoNotFound] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
   const onStartLoad = () => setLoading(true)
@@ -36,6 +36,8 @@ const FilesSelector = (props: FilesSelectorProps) => {
         <GitSelector {...props} onStartLoad={onStartLoad} onFailureDo={onFailureDo}/>
         <LocalSelector {...props} onStartLoad={onStartLoad} />
       </div>
+      <div className={$.breaker} />
+      {children}
     </div>
 }
 

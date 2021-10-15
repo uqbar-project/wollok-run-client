@@ -1,34 +1,33 @@
 import * as React from 'react'
 import Drawer from '@material-ui/core/Drawer'
-import { ReactNode } from 'react'
+import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import $ from './DrawerReadme.module.scss'
-import { MenuItem } from '@material-ui/core'
-type Anchor = 'top' | 'left' | 'bottom' | 'right'
+import { IconButton } from '@material-ui/core'
+import { Parent } from './utils'
 
 
-export type DescriptionProps = {
+interface DescriptionProps extends Parent {
   description: string
-  children: ReactNode
-  close: () => void
 }
+
 export const DrawerReadme = ({ description, children }: DescriptionProps) => {
-  const [state, setState] = React.useState({ right: false })
+  const [state, setState] = useState({ right: false })
 
   const toggleDrawer =
-    (anchor: Anchor, open: boolean) =>
+    (open: boolean) =>
       () => {
-        setState({ ...state, [anchor]: open })
+        setState({ ...state, right: open })
       }
 
   return (
     <div>
       <React.Fragment key={'right'}>
-        <MenuItem onClick={ toggleDrawer('right', true) }>{ children }</MenuItem>
+        <IconButton style={{ color: 'white' }} onClick={ toggleDrawer(true) }>{ children }</IconButton>
         <Drawer
           anchor={'right'}
           open={state['right']}
-          onClose={toggleDrawer('right', false)}
+          onClose={toggleDrawer(false)}
           className={$.container}
         >
           <div style={{ backgroundColor: '#1c1a1c', height:'100%' }}>
