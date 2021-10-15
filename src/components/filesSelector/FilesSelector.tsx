@@ -31,7 +31,6 @@ const FilesSelector = ({ children, ...props }: FilesSelectorProps & Parent) => {
   const onFailureDo = (error: LoadingError) => setloadingError(error)
 
   if (loadingError)
-    //return <BaseErrorScreen title = 'Repositorio no encontrado' description = 'No pudimos encontrar el repo que indicaste. Asegurate de que exista y sea público.' />
     return (
       <BaseErrorScreen title = {loadingError.title} description = {loadingError.description}>
         {loadingError.children}
