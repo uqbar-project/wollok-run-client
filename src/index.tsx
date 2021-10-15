@@ -24,14 +24,14 @@ if (process.env.NODE_ENV !== 'production') whyDidYouRender(React, { trackHooks: 
 
 const Routes = () => (
   <ThemeProvider theme={wollokTheme}>
-    <Router>
-      <Home path='/' />
-      <GameProvider path='/game'>
+    <GameProvider>
+      <Router>
+        <Home path='/' />
         <Game path='/game' />
-      </GameProvider>
-      <Debugger path='/debugger' />
-      <Worksheet path='/worksheet' />
-    </Router>
+        <Debugger path='/debugger' />
+        <Worksheet path='/worksheet' />
+      </Router>
+    </GameProvider>
   </ThemeProvider>
 )
 
