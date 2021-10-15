@@ -4,10 +4,12 @@ import $ from './ErrorScreen.module.scss'
 import { WollokLogo } from './Home/Home'
 
 export type ErrorProps = {
+  title?: string
   children: ReactNode
 }
 
 export interface BaseErrorProps {
+  title?: string
   description: string
   children?: ReactNode
   bottom?: ErrorBottomProps
@@ -17,13 +19,13 @@ export interface ErrorBottomProps {
   children?: ReactNode
 }
 
-export const ErrorScreen = ({ children }: ErrorProps) => {
+export const ErrorScreen = ({ title, children }: ErrorProps) => {
   return (
     <div className={$.error}>
       <WollokLogo />
       <br />
       <div>
-        <h1 style={{ textAlign: 'center' }}> Se ha producido un error </h1>
+        <h1 style={{ textAlign: 'center' }}> {title || 'Se ha producido un error'} </h1>
         { children }
       </div>
     </div>
@@ -32,7 +34,7 @@ export const ErrorScreen = ({ children }: ErrorProps) => {
 
 export const BaseErrorScreen = (props: BaseErrorProps) => {
   return (
-    <ErrorScreen>
+    <ErrorScreen title = { props.title }>
       <p style={{ marginTop: '5px', marginBottom: '5px' }}>
         { props.description }
       </p>
