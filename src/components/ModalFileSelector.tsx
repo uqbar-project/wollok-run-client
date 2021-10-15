@@ -3,6 +3,7 @@ import {Box, IconButton, Typography, Modal} from '@material-ui/core'
 import $ from './ModalFileSelector.module.scss'
 import { ReactNode } from 'react';
 import Game from './game/Game';
+import { GameProvider } from '../context/GameContext';
 
 export type ModalProps = {
     children: ReactNode
@@ -22,7 +23,9 @@ export const ModalFileSelector = ({ children }: ModalProps) => {
         aria-describedby="modal-modal-description"
       >
         <Box className={$.box}>
+          <GameProvider>
             <Game />
+          </GameProvider>
         </Box>
       </Modal>
     </div>
