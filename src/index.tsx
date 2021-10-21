@@ -11,6 +11,7 @@ import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles'
 import { Home } from './components/Home/Home'
 import Debugger from './components/debugger/Debugger'
 import Game from './components/game/Game'
+import { GameProvider } from './context/GameContext'
 
 const wollokTheme = createMuiTheme({
   palette: {
@@ -23,12 +24,14 @@ if (process.env.NODE_ENV !== 'production') whyDidYouRender(React, { trackHooks: 
 
 const Routes = () => (
   <ThemeProvider theme={wollokTheme}>
-    <Router>
-      <Home path='/' />
-      <Game path='/game' />
-      <Debugger path='/debugger' />
-      <Worksheet path='/worksheet' />
-    </Router>
+    <GameProvider>
+      <Router>
+        <Home path='/' />
+        <Game path='/game' />
+        <Debugger path='/debugger' />
+        <Worksheet path='/worksheet' />
+      </Router>
+    </GameProvider>
   </ThemeProvider>
 )
 
