@@ -7,6 +7,7 @@ import FeaturedGames from './FeaturedGames'
 import FilesSelector from '../filesSelector/FilesSelector'
 import { LoadError, ValidationError } from './LoadError'
 import { GameContext } from '../../context/GameContext'
+import { SketchProvider } from '../../context/SketchContext'
 
 type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
@@ -33,7 +34,9 @@ const Game = (_: GameProps) => {
   return <div className={$.container}>
     <div>
       {/* <Menu /> */}
-      <Sketch gameProject={game} evaluation={evaluation} exit={backToFS} />
+      <SketchProvider>
+        <Sketch gameProject={game} evaluation={evaluation} exit={backToFS} />
+      </SketchProvider>
     </div>
   </div>
 }

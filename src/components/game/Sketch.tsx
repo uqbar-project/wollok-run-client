@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import p5 from 'p5'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id } from 'wollok-ts'
@@ -10,6 +10,7 @@ import { GameSound, SoundState, SoundStatus } from './GameSound'
 import { DrawableMessage, drawMessage } from './messages'
 import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, hexaToColor, baseDrawable, draw, moveAllTo, write, resizeCanvas } from './SketchUtils'
 import Menu from '../Menu'
+import { SketchContext } from '../../context/SketchContext'
 
 const { round } = Math
 
@@ -176,12 +177,10 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: SketchProps) => {
   const [stop, setStop] = useState(false)
-  let gamePaused = false
-  let audioMuted = false
   const images = new Map<string, p5.Image>()
   const sounds = new Map<Id, GameSound>()
   let interpreter = new Interpreter(initialEvaluation.copy())
-  const menuSize = 4
+  const { menuSize, gamePaused, audioMuted, setAudioMuted } = useContext(SketchContext)
 
   useEffect(() => {
     setInterval(() => {
@@ -242,27 +241,16 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
   }
 
   function pauseAndExit() {
-    audioMuted = true
+    setAudioMuted(true)
     updateSound({ gameProject, interpreter, sounds, audioMuted })
     exit()
   }
 
-  function toggleAudio() {
-    audioMuted = !audioMuted
-  }
-
-  function togglePause() {
-    gamePaused = !gamePaused
-  }
-
   return <div>
     <Menu
-      menuSize={menuSize}
       restart={restart}
       exit={pauseAndExit}
       gameDescription={gameProject.description}
-      toggleAudio={toggleAudio}
-      togglePause={togglePause}
     />
     <div>
       {stop

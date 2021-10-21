@@ -5,11 +5,10 @@ import { Problem } from 'wollok-ts/dist/validator'
 import { clearGitRepo } from '../components/filesSelector/GitSelector'
 import interpret from 'wollok-ts/dist/interpreter/interpreter'
 import { File } from '../components/filesSelector/FilesSelector'
-import { RouteComponentProps } from '@reach/router'
 
 const { warn, info } = console
 
-type GameProviderProps = RouteComponentProps & {
+type GameProviderProps = {
   children: ReactNode
 }
 

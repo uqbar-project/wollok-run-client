@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import ReplayIcon from '@material-ui/icons/Replay'
 import CloseIcon from '@material-ui/icons/Close'
 import VolumeOffIcon from '@material-ui/icons/VolumeOff'
@@ -12,29 +12,18 @@ import MenuBookIcon from '@material-ui/icons/MenuBook'
 import { DrawerReadme } from './DrawerReadme'
 import { AppBar, IconButton, Toolbar, Tooltip } from '@material-ui/core'
 import $ from './Menu.module.scss'
+import { SketchContext } from '../context/SketchContext'
 // import { ModalFileSelector } from './ModalFileSelector'
 
 type MenuProps = {
   restart: () => void
   exit: () => void
-  toggleAudio: () => void
-  togglePause: () => void
   gameDescription: string
-  menuSize: number
 }
 
 export default function SimpleMenu(props: MenuProps) {
-  const [mute, setMute] = useState(false)
-  const [pause, setPause] = useState(false)
   const [fullscreen, setFullscreen] = useState(false)
-
-  const toggleAudio = () => {
-    setMute(!mute)
-  }
-
-  const togglePause = () => {
-    setPause(!pause)
-  }
+  const { audioMuted, gamePaused, menuSize, toggleAudio, togglePause } = useContext(SketchContext)
 
   const toggleFullscreen = () => {
     if (document.fullscreenElement === null) {
@@ -47,7 +36,7 @@ export default function SimpleMenu(props: MenuProps) {
   }
 
   const AudioItem = () => {
-    if(mute) {
+    if(audioMuted) {
       return <>
         <Tooltip title="Reanudar audio">
           <VolumeOffIcon />
@@ -62,7 +51,7 @@ export default function SimpleMenu(props: MenuProps) {
   }
 
   const TogglePauseItem = () => {
-    if(pause) {
+    if(gamePaused) {
       return <>
         <Tooltip title="Reanudar juego">
           <PlayCircleFilledIcon />
@@ -93,17 +82,17 @@ export default function SimpleMenu(props: MenuProps) {
 
   return (
     <div>
-      <AppBar className={$.navContainer} position="static" style={{ height: `${props.menuSize}vh` }}>
+      <AppBar className={$.navContainer} position="static" style={{ height: `${menuSize}vh` }}>
         <Toolbar className={$.toolbar}>
           <DrawerReadme description={props.gameDescription} >
             <Tooltip title="Abrir README">
               <MenuBookIcon />
             </Tooltip>
           </DrawerReadme>
-          <IconButton onClick={event => { event.preventDefault(); props.togglePause(); togglePause() }}>
+          <IconButton onClick={event => { event.preventDefault(); togglePause(); togglePause() }}>
             <TogglePauseItem />
           </IconButton>
-          <IconButton onClick={event => { event.preventDefault(); props.toggleAudio(); toggleAudio() }}>
+          <IconButton onClick={event => { event.preventDefault(); toggleAudio(); toggleAudio() }}>
             <AudioItem/>
           </IconButton>
           {/* <ModalFileSelector>
