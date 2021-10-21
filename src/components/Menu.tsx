@@ -89,10 +89,10 @@ export default function SimpleMenu(props: MenuProps) {
               <MenuBookIcon />
             </Tooltip>
           </DrawerReadme>
-          <IconButton onClick={event => { event.preventDefault(); togglePause(); togglePause() }}>
+          <IconButton onClick={event => { event.preventDefault(); togglePause() }}>
             <TogglePauseItem />
           </IconButton>
-          <IconButton onClick={event => { event.preventDefault(); toggleAudio(); toggleAudio() }}>
+          <IconButton onClick={event => { event.preventDefault(); toggleAudio() }}>
             <AudioItem/>
           </IconButton>
           {/* <ModalFileSelector>

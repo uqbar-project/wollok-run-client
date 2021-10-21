@@ -10,7 +10,7 @@ import { GameSound, SoundState, SoundStatus } from './GameSound'
 import { DrawableMessage, drawMessage } from './messages'
 import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, hexaToColor, baseDrawable, draw, moveAllTo, write, resizeCanvas } from './SketchUtils'
 import Menu from '../Menu'
-import { SketchContext } from '../../context/SketchContext'
+import { SketchContext, SketchProvider } from '../../context/SketchContext'
 
 const { round } = Math
 
@@ -71,6 +71,8 @@ interface SoundAssets {
 
 function step(assets: StepAssets) {
   const { sketch, gameProject, interpreter, sounds, images, audioMuted, gamePaused } = assets
+  console.log(audioMuted)
+  console.log(gamePaused)
 
   if(!gamePaused) {
     window.performance.mark('update-start')
@@ -176,11 +178,11 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 // COMPONENTS
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: SketchProps) => {
+  const { menuSize, gamePaused, audioMuted, setAudioMuted } = useContext(SketchContext)
   const [stop, setStop] = useState(false)
   const images = new Map<string, p5.Image>()
   const sounds = new Map<Id, GameSound>()
   let interpreter = new Interpreter(initialEvaluation.copy())
-  const { menuSize, gamePaused, audioMuted, setAudioMuted } = useContext(SketchContext)
 
   useEffect(() => {
     setInterval(() => {
@@ -246,18 +248,23 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
     exit()
   }
 
-  return <div>
-    <Menu
-      restart={restart}
-      exit={pauseAndExit}
-      gameDescription={gameProject.description}
-    />
-    <div>
-      {stop
-        ? <h1>Se terminó el juego</h1>
-        : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
-    </div>
-  </div>
+  return (
+    <SketchProvider>
+      <div>
+        <Menu
+          restart={restart}
+          exit={pauseAndExit}
+          gameDescription={gameProject.description}
+        />
+        <div>
+          {stop
+            ? <h1>Se terminó el juego</h1>
+            : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
+        </div>
+      </div>
+    </SketchProvider>
+  )
+
 }
 
 export default SketchComponent

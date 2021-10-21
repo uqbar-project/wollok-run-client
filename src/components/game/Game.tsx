@@ -31,14 +31,16 @@ const Game = (_: GameProps) => {
       <FeaturedGames />
     </FilesSelector>
 
-  return <div className={$.container}>
-    <div>
-      {/* <Menu /> */}
-      <SketchProvider>
-        <Sketch gameProject={game} evaluation={evaluation} exit={backToFS} />
-      </SketchProvider>
-    </div>
-  </div>
+  return (
+    <SketchProvider>
+      <div className={$.container}>
+        <div>
+          {/* <Menu /> */}
+          <Sketch gameProject={game} evaluation={evaluation} exit={backToFS} />
+        </div>
+      </div>
+    </SketchProvider>
+  )
 }
 
 function configTitle(evaluation: Evaluation | undefined) {
