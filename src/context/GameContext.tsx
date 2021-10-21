@@ -97,9 +97,6 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     loadGame,
   }
 
-  console.log(value)
-  console.log('DENTRO DEL PROVIDER')
-
   return (
     <GameContext.Provider value={value}>
       {children}

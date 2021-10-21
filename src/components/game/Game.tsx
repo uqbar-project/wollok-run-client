@@ -10,9 +10,6 @@ import { GameContext } from '../../context/GameContext'
 
 type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
-
-  console.log('LLEGAMOS A GAME')
-
   const {
     problems, error, evaluation, game,
     runGameAnyway, reloadGame, loadGame, backToFS,

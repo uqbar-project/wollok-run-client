@@ -1,9 +1,6 @@
 import { Button, ButtonGroup } from '@material-ui/core'
 import { Link, RouteComponentProps } from '@reach/router'
 import React from 'react'
-import { Provider } from '../../context/Context'
-import { Contador } from '../Contador'
-
 import $ from './Home.module.scss'
 
 export const WollokLogo = ({ }: RouteComponentProps) => {
@@ -23,9 +20,6 @@ export const Home = ({ }: RouteComponentProps) => {
         <Button component={Link} to={'/debugger'} variant="contained" color="primary" >Debugger</Button>
         <Button component={Link} to={'/worksheet'} variant="contained" color="primary">Worksheet</Button>
       </ButtonGroup>
-      <Provider>
-        <Contador />
-      </Provider>
     </div>
   </div>
 }
