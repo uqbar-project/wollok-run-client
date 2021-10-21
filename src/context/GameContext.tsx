@@ -34,10 +34,16 @@ export const GameProvider = ({ children }: GameProviderProps) => {
   const [error, setError] = useState<Error>()
   const [problems, setProblems] = useState<List<Problem>>()
 
-  const backToFS = () => {
-    clearGitRepo()
+  const clear = () => {
     setGame(undefined)
     setEvaluation(undefined)
+    setError(undefined)
+    setProblems(undefined)
+  }
+
+  const backToFS = () => {
+    clearGitRepo()
+    clear()
   }
 
   const reloadGame = (files: File[], program: string) => {
