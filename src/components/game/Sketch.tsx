@@ -1,47 +1,20 @@
 /* eslint-disable no-console */
 import p5 from 'p5'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext } from 'react'
 import Sketch from 'react-p5'
 import 'p5/lib/addons/p5.sound'
 import { Evaluation, Id } from 'wollok-ts'
 import { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
-import { GameProject, DEFAULT_GAME_ASSETS_DIR } from './gameProject'
+import { GameProject } from './gameProject'
 import { GameSound, SoundState, SoundStatus } from './GameSound'
 import { DrawableMessage, drawMessage } from './messages'
-import { buildKeyPressEvent, visualState, flushEvents, canvasResolution, queueEvent, hexaToColor, baseDrawable, draw, moveAllTo, write, resizeCanvas } from './SketchUtils'
+import { buildKeyPressEvent, visualState, flushEvents, hexaToColor, baseDrawable, draw, moveAllTo, write } from './SketchUtils'
 import Menu from '../Menu'
 import { SketchContext, SketchProvider } from '../../context/SketchContext'
 
 const { round } = Math
 
-const defaultImgs = [
-  'ground.png',
-  'wko.png',
-  'speech.png',
-  'speech2.png',
-  'speech3.png',
-  'speech4.png',
-]
-
-function wKeyCode(key: string, keyCode: number): string {
-  if (keyCode >= 48 && keyCode <= 57) return `Digit${key}`
-  if (keyCode >= 65 && keyCode <= 90) return `Key${key.toUpperCase()}`
-  if (keyCode === 18) return 'AltLeft'
-  if (keyCode === 225) return 'AltRight'
-  if (keyCode === 8) return 'Backspace'
-  if (keyCode === 17) return 'Control'
-  if (keyCode === 46) return 'Delete'
-  if (keyCode >= 37 && keyCode <= 40) return key
-  if (keyCode === 13) return 'Enter'
-  if (keyCode === 189) return 'Minus'
-  if (keyCode === 187) return 'Plus'
-  if (keyCode === 191) return 'Slash'
-  if (keyCode === 32) return 'Space'
-  if (keyCode === 16) return 'Shift'
-  return '' //If an unknown key is pressed, a string should be returned
-}
-
-interface SketchProps {
+export interface SketchProps {
   gameProject: GameProject
   evaluation: Evaluation
   exit: () => void
@@ -69,7 +42,7 @@ interface SoundAssets {
 // GAME CYCLE
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
-function step(assets: StepAssets) {
+export function step(assets: StepAssets) {
   const { sketch, gameProject, interpreter, sounds, images, audioMuted, gamePaused } = assets
 
   if(!gamePaused) {
@@ -90,7 +63,7 @@ function step(assets: StepAssets) {
   return undefined
 }
 
-function updateSound(assets: SoundAssets) {
+export function updateSound(assets: SoundAssets) {
   const { gameProject, interpreter, sounds, audioMuted, gamePaused } = assets
   const soundInstances = gamePaused ? [] : interpreter.object('wollok.game.game').get('sounds')?.innerCollection ?? []
 
@@ -175,84 +148,16 @@ function render(interpreter: Interpreter, sketch: p5, images: Map<string, p5.Ima
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // COMPONENTS
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: SketchProps) => {
-  const { menuSize, gamePaused, audioMuted, setAudioMuted } = useContext(SketchContext)
-  const [stop, setStop] = useState(false)
-  const images = new Map<string, p5.Image>()
-  const sounds = new Map<Id, GameSound>()
-  let interpreter = new Interpreter(initialEvaluation.copy())
-
-  useEffect(() => {
-    setInterval(() => {
-      const measures = performance.getEntriesByType('measure')
-      performance.clearMeasures()
-
-      function inform(measureName: string) {
-        const selectedMeasures = measures.filter(measure => measure.name === measureName)
-        const totalTime = selectedMeasures.reduce((sum, measure) => sum + measure.duration, 0)
-        const averageDuration = selectedMeasures.length ? totalTime / selectedMeasures.length : 0
-        const durationPercentage = totalTime * 100 / 1000
-        return `${Math.round(averageDuration)}ms (${durationPercentage.toFixed(2)}%)`
-      }
-
-      const instances = interpreter.evaluation.allInstances()
-      console.log(`
-        FPS: ${measures.filter(measure => measure.name === 'draw-start-to-end').length}
-        Average Draw Time: ${inform('draw-start-to-end')}
-        Average Update Time: ${inform('update-start-to-end')}
-        Average Key Time: ${inform('key-start-to-end')}
-        Instances: ${instances.size}
-      `)
-    }, 1000)
-  }, [interpreter])
-
-  function setup(sketch: p5, canvasParentRef: Element) {
-    const { width, height } = canvasResolution(interpreter)
-    sketch.createCanvas(width, height).parent(canvasParentRef)
-
-    defaultImgs.forEach(path => images.set(path, sketch.loadImage(DEFAULT_GAME_ASSETS_DIR + path)))
-
-    gameProject.images.forEach(({ possiblePaths, url }) =>
-      possiblePaths.forEach(path =>
-        images.set(path, sketch.loadImage(url))
-      )
-    )
-    resizeCanvas(width, height, menuSize)
-  }
-
-  function draw(sketch: p5) {
-    if (!interpreter.object('wollok.game.game').get('running')!.innerBoolean!) setStop(true)
-    else step({ sketch, gameProject, interpreter, sounds, images, audioMuted, gamePaused })
-  }
-
-  function keyPressed(sketch: p5) {
-    if(!gamePaused) {
-      window.performance.mark('key-start')
-      queueEvent(interpreter, buildKeyPressEvent(interpreter, wKeyCode(sketch.key, sketch.keyCode)), buildKeyPressEvent(interpreter, 'ANY'))
-      window.performance.mark('key-end')
-      window.performance.measure('key-start-to-end', 'key-start', 'key-end')
-    }
-
-    return false
-  }
-
-  function restart() {
-    interpreter = new Interpreter(initialEvaluation.copy())
-  }
-
-  function pauseAndExit() {
-    setAudioMuted(true)
-    updateSound({ gameProject, interpreter, sounds, audioMuted })
-    exit()
-  }
+const SketchComponent = (props: SketchProps) => {
+  const { restart, pauseAndExit, stop, setup, draw, keyPressed } = useContext(SketchContext)
 
   return (
-    <SketchProvider>
+    //<SketchProvider {... props}>
       <div>
         <Menu
           restart={restart}
           exit={pauseAndExit}
-          gameDescription={gameProject.description}
+          gameDescription={props.gameProject.description}
         />
         <div>
           {stop
@@ -260,9 +165,8 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
             : <Sketch setup={setup} draw={draw} keyPressed={keyPressed} />}
         </div>
       </div>
-    </SketchProvider>
+    //</SketchProvider>
   )
-
 }
 
 export default SketchComponent

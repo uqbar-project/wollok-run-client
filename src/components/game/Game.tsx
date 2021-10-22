@@ -32,14 +32,16 @@ const Game = (_: GameProps) => {
     </FilesSelector>
 
   return (
-    <SketchProvider>
+    
       <div className={$.container}>
         <div>
           {/* <Menu /> */}
-          <Sketch gameProject={game} evaluation={evaluation} exit={backToFS} />
+          <SketchProvider gameProject={game} evaluation={evaluation} exit={backToFS}>
+            <Sketch gameProject={game} evaluation={evaluation} exit={backToFS} />
+          </SketchProvider>
         </div>
       </div>
-    </SketchProvider>
+    
   )
 }
 

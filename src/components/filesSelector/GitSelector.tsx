@@ -21,7 +21,7 @@ export function clearGitRepo() {
 
 export function clearURL() {
   const search = document.location.search
-  windows.history.pushState({}, '', search.split(GIT)[0]);
+  window.history.pushState({}, '', search.split(GIT)[0]);
 }
 
 const setGitSearch = (url?: string) => {
