@@ -29,7 +29,7 @@ const setGitSearch = (url?: string) => {
     } else {
       params.set(GIT, url)
     }
-    newSearch = params.toString()
+    newSearch = decodeURIComponent(params.toString())
   }
   else {
     // Internet explorer does not support URLSearchParams
