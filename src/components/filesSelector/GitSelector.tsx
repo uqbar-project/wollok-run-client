@@ -19,6 +19,11 @@ export function clearGitRepo() {
   setGitSearch()
 }
 
+export function clearURL() {
+  const search = document.location.search
+  windows.history.pushState({}, '', search.split(GIT)[0]);
+}
+
 const setGitSearch = (url?: string) => {
   const search = document.location.search
   let newSearch

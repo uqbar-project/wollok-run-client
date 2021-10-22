@@ -71,8 +71,6 @@ interface SoundAssets {
 
 function step(assets: StepAssets) {
   const { sketch, gameProject, interpreter, sounds, images, audioMuted, gamePaused } = assets
-  console.log(audioMuted)
-  console.log(gamePaused)
 
   if(!gamePaused) {
     window.performance.mark('update-start')

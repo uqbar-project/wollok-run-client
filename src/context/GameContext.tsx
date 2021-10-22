@@ -2,7 +2,7 @@ import React, { createContext, ReactNode, useState } from 'react'
 import { buildEnvironment, Environment, Evaluation, List, validate, WRENatives } from 'wollok-ts'
 import { buildGameProject, GameProject, getProgramIn } from '../components/game/gameProject'
 import { Problem } from 'wollok-ts/dist/validator'
-import { clearGitRepo } from '../components/filesSelector/GitSelector'
+import { clearGitRepo, clearURL } from '../components/filesSelector/GitSelector'
 import interpret from 'wollok-ts/dist/interpreter/interpreter'
 import { File } from '../components/filesSelector/FilesSelector'
 
@@ -23,6 +23,7 @@ interface GameState {
   runGame: (environment: Environment, project: GameProject) => void
   validateGame: (environment: Environment) => void
   loadGame: (files: File[], program?: string | undefined) => void
+  changeGame: (files: File[], program?: string | undefined) => void
 }
 
 export const GameContext = createContext<GameState>({} as GameState)
@@ -33,10 +34,16 @@ export const GameProvider = ({ children }: GameProviderProps) => {
   const [error, setError] = useState<Error>()
   const [problems, setProblems] = useState<List<Problem>>()
 
-  const backToFS = () => {
-    clearGitRepo()
+  const clear = () => {
     setGame(undefined)
     setEvaluation(undefined)
+    setError(undefined)
+    setProblems(undefined)
+  }
+
+  const backToFS = () => {
+    clearGitRepo()
+    clear()
   }
 
   const reloadGame = (files: File[], program: string) => {
@@ -69,6 +76,13 @@ export const GameProvider = ({ children }: GameProviderProps) => {
       setProblems(errors)
   }
 
+  const changeGame = (files: File[], program?: string) => {
+    console.log("change")
+    clear()
+    clearURL()
+    loadGame(files, program)
+  }
+
   const loadGame = (files: File[], program?: string) => {
     try {
       const project = buildGameProject(files, program)
@@ -94,6 +108,7 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     runGame,
     validateGame,
     loadGame,
+    changeGame,
   }
 
   return (
