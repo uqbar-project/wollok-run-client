@@ -14,6 +14,12 @@ import { AppBar, IconButton, Toolbar, Tooltip } from '@material-ui/core'
 import $ from './Menu.module.scss'
 // import { ModalFileSelector } from './ModalFileSelector'
 
+//Buttons id's
+const pauseID = 'pauseID'
+const audioID = 'audioID'
+const fullscreenID = 'fullscreenID'
+const restartGameID = 'restartGameID'
+
 type MenuProps = {
   restart: () => void
   exit: () => void
@@ -90,7 +96,6 @@ export default function SimpleMenu(props: MenuProps) {
       </Tooltip>
     </>
   }
-
   return (
     <div>
       <AppBar className={$.navContainer} position="static" style={{ height: `${props.menuSize}vh` }}>
@@ -100,10 +105,10 @@ export default function SimpleMenu(props: MenuProps) {
               <MenuBookIcon />
             </Tooltip>
           </DrawerReadme>
-          <IconButton onClick={event => { event.preventDefault(); props.togglePause(); togglePause() }}>
+          <IconButton id={pauseID} onClick={event => { buttonStuff(event, pauseID); props.togglePause(); togglePause() }}>
             <TogglePauseItem />
           </IconButton>
-          <IconButton onClick={event => { event.preventDefault(); props.toggleAudio(); toggleAudio() }}>
+          <IconButton id={audioID} onClick={event => { buttonStuff(event, audioID); props.toggleAudio(); toggleAudio(); }}>
             <AudioItem/>
           </IconButton>
           {/* <ModalFileSelector>
@@ -111,10 +116,10 @@ export default function SimpleMenu(props: MenuProps) {
               <PublishIcon />
             </Tooltip>
           </ModalFileSelector> */}
-          <IconButton onClick={event => { event.preventDefault(); toggleFullscreen() }}>
+          <IconButton id={fullscreenID} onClick={event => { buttonStuff(event, fullscreenID); toggleFullscreen() }}>
             <FullscreenItem/>
           </IconButton>
-          <IconButton onClick={event => { event.preventDefault(); props.restart() }}>
+          <IconButton id={restartGameID} onClick={event => { buttonStuff(event, restartGameID); props.restart() }}>
             <Tooltip title="Reiniciar juego">
               <ReplayIcon />
             </Tooltip>
@@ -128,4 +133,13 @@ export default function SimpleMenu(props: MenuProps) {
       </AppBar>
     </div>
   )
+}
+
+export function unselectButton(button: string) {
+  document.getElementById(button)?.blur()
+}
+
+function buttonStuff(event: React.MouseEvent, button: string) {
+  event.preventDefault()
+  unselectButton(button)
 }
