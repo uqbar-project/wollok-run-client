@@ -1,9 +1,10 @@
-import React, { memo, useState, useEffect } from 'react'
-import { LoadingError, SelectorProps } from './FilesSelector'
+import React, { memo, useState, useEffect, useContext } from 'react'
+import { FilesCallback, LoadFilesType, LoadingError, SelectorProps } from './FilesSelector'
 import * as BrowserFS from 'browserfs'
 import { clone } from 'isomorphic-git'
 import http from 'isomorphic-git/http/web'
 import $ from './FilesSelector.module.scss'
+import { GameContext } from '../../context/GameContext'
 
 const DEFAULT_GAME_URI = 'https://github.com/wollok/pepitagame'
 const GIT = 'git'
@@ -42,7 +43,7 @@ const setGitSearch = (url?: string) => {
   document.location.search = newSearch
 }
 
-const loadGitFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (repoUrl: string) => {
+const loadGitFiles = ({ onFilesLoad, onStartLoad }: LoadFilesType) => async (repoUrl: string) => {
   const corsProxy = process.env.REACT_APP_PROXY_URL || 'http://localhost:9999'
   onStartLoad()
   await clone({
@@ -81,6 +82,8 @@ const getAllFilePathsFrom = (rootDirectory: string): string[] => {
 const GitSelector = (props: GitSelectorProps) => {
   const [gitUrl, setGitUrl] = useState<string>()
   const repoUri = new URLSearchParams(document.location.search).get(GIT)
+  const { loadGame } = useContext(GameContext)
+
 
   const repoNotFoundError = () => {
     const error = {
@@ -96,7 +99,7 @@ const GitSelector = (props: GitSelectorProps) => {
     BrowserFS.configure({ fs: 'InMemory', options: {} }, (err: any) => {
       if (err) throw new Error('FS error')
       fs = BrowserFS.BFSRequire('fs')
-      if (repoUri) loadGitFiles(props)(repoUri).catch(() => props.onFailureDo(repoNotFoundError()))
+      if (repoUri) loadGitFiles({...props, onFilesLoad: loadGame})(repoUri).catch(() => props.onFailureDo(repoNotFoundError()))
     })
   }, [props, repoUri])
 

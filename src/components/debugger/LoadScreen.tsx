@@ -26,7 +26,7 @@ const LoadScreen = ({ onTestSelected }: LoadScreenProps) => {
 
   return (
     !tests.length
-      ? <FilesSelector onFilesLoad={onFilesLoad} />
+      ? <FilesSelector />
       : (
         <div className={$.container}>
           {tests.length} tests found:

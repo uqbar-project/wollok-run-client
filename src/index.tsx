@@ -11,6 +11,7 @@ import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles'
 import { Home } from './components/Home/Home'
 import Debugger from './components/debugger/Debugger'
 import Game from './components/game/Game'
+import FileSelector from './components/filesSelector/FilesSelector'
 import { GameProvider } from './context/GameContext'
 
 const wollokTheme = createMuiTheme({
@@ -27,7 +28,8 @@ const Routes = () => (
     <GameProvider>
       <Router>
         <Home path='/' />
-        <Game path='/game' />
+        <FileSelector path='/game' />
+        <Game path='/game/running' />
         <Debugger path='/debugger' />
         <Worksheet path='/worksheet' />
       </Router>

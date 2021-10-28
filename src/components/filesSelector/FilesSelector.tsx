@@ -7,6 +7,8 @@ import { WollokLogo } from '../Home/Home'
 import { BackArrow } from '../BackArrow'
 import { BaseErrorScreen } from '../ErrorScreen'
 import { Parent } from '../utils'
+import { RouteComponentProps } from '@reach/router'
+import FeaturedGames from '../game/FeaturedGames'
 
 export type File = {
   name: string
@@ -15,7 +17,7 @@ export type File = {
 
 export type FilesCallback = (files: File[]) => void
 
-export type SelectorProps = FilesSelectorProps & { onStartLoad: () => void }
+export type SelectorProps = { onStartLoad: () => void }
 
 export interface LoadingError {
   title: string
@@ -23,8 +25,13 @@ export interface LoadingError {
   children: ReactNode
 }
 
-type FilesSelectorProps = { onFilesLoad: FilesCallback }
-const FilesSelector = ({ children, ...props }: FilesSelectorProps & Parent) => {
+export type LoadFilesType = SelectorProps & {
+  onFilesLoad: FilesCallback
+}
+
+
+type FilesSelectorProps = RouteComponentProps
+const FilesSelector = ( _: FilesSelectorProps & Parent) => {
   const [loadingError, setloadingError] = useState<LoadingError>()
   const [loading, setLoading] = useState<boolean>(false)
   const onStartLoad = () => setLoading(true)
@@ -43,11 +50,11 @@ const FilesSelector = ({ children, ...props }: FilesSelectorProps & Parent) => {
       <div><BackArrow returnPath='/' /></div>
       <WollokLogo />
       <div>
-        <GitSelector {...props} onStartLoad={onStartLoad} onFailureDo={onFailureDo}/>
-        <LocalSelector {...props} onStartLoad={onStartLoad} />
+        <GitSelector onStartLoad={onStartLoad} onFailureDo={onFailureDo}/>
+        <LocalSelector onStartLoad={onStartLoad} />
       </div>
       <div className={$.breaker} />
-      {children}
+      <FeaturedGames />
     </div>
 }
 
