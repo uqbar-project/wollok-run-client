@@ -81,6 +81,7 @@ Una vez hecho eso, conectarse por SSH y descomprimir el archivo, haciendo:
 
 ```
 ssh deploy@server.wollok.org
+cd /var/wollok-run-client/
 rm -rf build
 unzip 20211027.zip
 ```
