@@ -4,6 +4,7 @@ import interpret, { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { visualState, flushEvents, canvasResolution, wKeyCode, buildKeyPressEvent, queueEvent } from '../components/game/SketchUtils'
 import { buildGameProject, GameProject, getProgramIn, NoProgramException, MultiProgramException } from '../components/game/gameProject'
 import { MessageDrawer, messageTextPosition } from '../components/game/messages'
+import { newSearch } from '../components/filesSelector/GitSelector'
 
 const readFiles = (files: string[]) => files.map(file => ({
   name: file,
@@ -175,6 +176,19 @@ describe('VisualState', () => {
     })
   })
 
+})
+
+describe('search', () => {
+  const repoURL = 'https://github.com/wollok/pepitagame'
+  const repoSearch = `git=${repoURL}`
+
+  test('search should be decoded', () => {
+    expect(newSearch('', repoURL)).toEqual(repoSearch)
+  })
+
+  test('if no url is provided, current search should be deleted', () => {
+    expect(newSearch(repoSearch)).toEqual('')
+  })
 })
 
 /*
