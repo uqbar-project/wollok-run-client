@@ -103,14 +103,16 @@ const GitSelector = (props: GitSelectorProps) => {
   const navigateToGame = () => {
     console.log("navegamos")
     console.log(history)
-    //history.push('/running')
-    window.location.href = '/running'
+    //history.push('/game/running')
     const repoUri = gitUrl || DEFAULT_GAME_URI
-    loadGitRepo(repoUri)
+    //loadGitRepo(repoUri)
     BrowserFS.configure({ fs: 'InMemory', options: {} }, (err: any) => {
       if (err) throw new Error('FS error')
       fs = BrowserFS.BFSRequire('fs')
-      loadGitFiles({...props, onFilesLoad: loadGame})(repoUri).catch(() => props.onFailureDo(repoNotFoundError()))
+      loadGitFiles({...props, onFilesLoad: loadGame})(repoUri)
+      .then(() => history.push('/game/running'))
+      .then(() => loadGitRepo(repoUri))
+      .catch(() => props.onFailureDo(repoNotFoundError()))
     })
   }
 
@@ -127,8 +129,6 @@ const GitSelector = (props: GitSelectorProps) => {
     </div>
   )
 }
-
-const SubmitButton = () => ( <button type='submit' />)
 
 export default memo(GitSelector)
 
