@@ -1,6 +1,6 @@
 {
   "name": "wollok-run-client",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "@isomorphic-git/cors-proxy": "^2.6.1",

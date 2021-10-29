@@ -63,6 +63,30 @@ REACT_APP_PROXY_URL=https://game.wollok.org/content npm run build
 
 Eso va a generar una version estática en el directorio build.
 
+Luego hay que comprimir dicho instalable con:
+
+```
+zip -9 -y -r 20211027.zip build/
+```
+
+Cambiando la fecha para que sea la nueva.
+
+Vamos luego a copiar el archivo usando SCP, para eso la clave publica debe estar registrada en el servidor. Por lo tanto, hablar con alguien que ya este adentro :D
+
+```
+scp -i ~/.ssh/deploy-ec2 20211027.zip deploy@server.wollok.org:/var/wollok-run-client/
+```
+
+Una vez hecho eso, conectarse por SSH y descomprimir el archivo, haciendo:
+
+```
+ssh deploy@server.wollok.org
+cd /var/wollok-run-client/
+rm -rf build
+unzip 20211027.zip
+```
+
+
 ## Alternativa usando Docker
 
 ### TL;DR

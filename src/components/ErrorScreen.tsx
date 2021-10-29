@@ -1,5 +1,6 @@
-import React, { ReactNode } from 'react'
-import { BackArrow } from './BackArrow'
+import React, { ReactNode, useContext } from 'react'
+import { GameContext } from '../context/GameContext'
+import { BackArrowTo } from './BackArrow'
 import $ from './ErrorScreen.module.scss'
 import { WollokLogo } from './Home/Home'
 
@@ -45,9 +46,10 @@ export const BaseErrorScreen = (props: BaseErrorProps) => {
 }
 
 export const ErrorBottom = (props: ErrorBottomProps) => {
+  const { backToFS } = useContext(GameContext)
   return (
     <div style={{ paddingTop: '2%' }}>
-      <BackArrow returnPath='/' />
+      <BackArrowTo action={backToFS} />
       { props.children }
     </div>
   )
