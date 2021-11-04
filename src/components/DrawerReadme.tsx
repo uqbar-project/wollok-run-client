@@ -3,9 +3,8 @@ import Drawer from '@material-ui/core/Drawer'
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import $ from './DrawerReadme.module.scss'
-import { IconButton } from '@material-ui/core'
 import { Parent } from './utils'
-import { unselectButton } from './Menu'
+import { MenuButton, unselectButton } from './Menu'
 
 
 interface DescriptionProps extends Parent {
@@ -27,7 +26,7 @@ export const DrawerReadme = ({ description, children }: DescriptionProps) => {
   return (
     <div>
       <React.Fragment key={'right'}>
-        <IconButton id={readmeID} style={{ color: 'white' }} onClick={ toggleDrawer(true) }>{ children }</IconButton>
+        <MenuButton id={readmeID} style={{ color: 'white' }} action={ toggleDrawer(true) }>{ children }</MenuButton>
         <Drawer
           anchor={'right'}
           open={state['right']}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 import ReplayIcon from '@material-ui/icons/Replay'
 import CloseIcon from '@material-ui/icons/Close'
 import VolumeOffIcon from '@material-ui/icons/VolumeOff'
@@ -105,25 +105,25 @@ export default function SimpleMenu(props: MenuProps) {
               <MenuBookIcon />
             </Tooltip>
           </DrawerReadme>
-          <IconButton id={pauseID} onClick={event => { buttonStuff(event, pauseID); props.togglePause(); togglePause() }}>
+          <MenuButton id={pauseID} action={ () => { props.togglePause(); togglePause() }}>
             <TogglePauseItem />
-          </IconButton>
-          <IconButton id={audioID} onClick={event => { buttonStuff(event, audioID); props.toggleAudio(); toggleAudio(); }}>
+          </MenuButton>
+          <MenuButton id={audioID} action={ () => { props.toggleAudio(); toggleAudio() }}>
             <AudioItem/>
-          </IconButton>
+          </MenuButton>
           {/* <ModalFileSelector>
             <Tooltip title="Cargar juego">
               <PublishIcon />
             </Tooltip>
           </ModalFileSelector> */}
-          <IconButton id={fullscreenID} onClick={event => { buttonStuff(event, fullscreenID); toggleFullscreen() }}>
+          <MenuButton id={fullscreenID} action={ toggleFullscreen }>
             <FullscreenItem/>
-          </IconButton>
-          <IconButton id={restartGameID} onClick={event => { buttonStuff(event, restartGameID); props.restart() }}>
+          </MenuButton>
+          <MenuButton id={restartGameID} action={ props.restart }>
             <Tooltip title="Reiniciar juego">
               <ReplayIcon />
             </Tooltip>
-          </IconButton>
+          </MenuButton>
           <IconButton onClick={event => { event.preventDefault(); props.exit() }}>
             <Tooltip title="Cerrar juego">
               <CloseIcon />
@@ -132,6 +132,21 @@ export default function SimpleMenu(props: MenuProps) {
         </Toolbar>
       </AppBar>
     </div>
+  )
+}
+
+interface MenuButtonProps{
+  id: string
+  action: () => void
+  style?: { color: string }
+  children: ReactNode
+}
+
+export const MenuButton = ({ id, action, style, children }: MenuButtonProps) => {
+  return(
+    <IconButton id={id} style={style} onClick={event => { buttonStuff(event, pauseID); action() }}>
+      { children }
+    </IconButton>
   )
 }
 
