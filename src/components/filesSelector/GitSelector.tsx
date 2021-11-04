@@ -19,23 +19,23 @@ export function clearGitRepo() {
   setGitSearch()
 }
 
-export const newSearch = (currentSearch: string, url?: string) => {
+export const newGitSearch = (currentSearch: string, repoUrl?: string) => {
   let newSearch
   if (typeof URLSearchParams !== 'undefined') {
     const params = new URLSearchParams(currentSearch)
-    if (!url) {
+    if (!repoUrl) {
       params.delete(GIT)
     } else {
-      params.set(GIT, url)
+      params.set(GIT, repoUrl)
     }
     newSearch = decodeURIComponent(params.toString())
   }
   else {
     // Internet explorer does not support URLSearchParams
-    if (!url) {
+    if (!repoUrl) {
       newSearch = currentSearch.split(GIT)[0]
     } else {
-      newSearch = `${GIT}=${url}`
+      newSearch = `${GIT}=${repoUrl}`
     }
   }
 
@@ -44,7 +44,7 @@ export const newSearch = (currentSearch: string, url?: string) => {
 
 const setGitSearch = (url?: string) => {
   const search = document.location.search
-  document.location.search = newSearch(search, url)
+  document.location.search = newGitSearch(search, url)
 }
 
 const loadGitFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (repoUrl: string) => {
