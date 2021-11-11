@@ -1,6 +1,7 @@
 import { File } from '../filesSelector/FilesSelector'
 import { Environment, Node, Package } from 'wollok-ts'
 import parse, { Attributes } from 'xml-parser'
+import { name } from 'wollok-ts/dist/parser'
 
 // TODO: Move to more general place
 const WOLLOK_FILE_EXTENSION = 'wlk'
@@ -64,7 +65,7 @@ export const buildGameProject = (allFiles: File[], programName?: string): GamePr
   if (wpgmFiles.length === 1) wpgmFile = wpgmFiles[0]
   if (!wpgmFile) throw new NoProgramException('Program file not found')
   const main = wpgmFile.name.replace(`.${WOLLOK_PROGRAM_EXTENSION}`, '').replace(/\//gi, '.')
-  const description = allFiles.find(withExtension('md'))?.content.toString('utf8') || '## No description found'
+  const description = allFiles.find(isREADME())?.content.toString('utf8') || '## No description found'
   const images = getMediaFiles(allFiles, VALID_IMAGE_EXTENSIONS, 'image/png')
   const sounds = getMediaFiles(allFiles, VALID_SOUND_EXTENSIONS, 'audio/mp3')
 
@@ -108,6 +109,8 @@ function getSourcePaths(files: File[]): string[] {
 function getClasspathFile(files: File[]): File {
   return files.find(withExtension(CLASSPATH_NAME))!
 }
+
+const isREADME = () => ({ name }: File | SourceFile) => name.endsWith('README.md')
 
 const withExtension = (...extensions: string[]) => ({ name }: File | SourceFile) =>
   extensions.some(extension => name.endsWith(`.${extension}`))
