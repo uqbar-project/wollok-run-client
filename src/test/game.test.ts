@@ -4,6 +4,7 @@ import interpret, { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { visualState, flushEvents, canvasResolution, wKeyCode, buildKeyPressEvent, queueEvent } from '../components/game/SketchUtils'
 import { buildGameProject, GameProject, getProgramIn, NoProgramException, MultiProgramException } from '../components/game/gameProject'
 import { MessageDrawer, messageTextPosition } from '../components/game/messages'
+import { newGitSearch } from '../components/filesSelector/GitSelector'
 
 const readFiles = (files: string[]) => files.map(file => ({
   name: file,
@@ -175,6 +176,29 @@ describe('VisualState', () => {
     })
   })
 
+})
+
+describe('search', () => {
+  const pepitaRepoURL = 'https://github.com/wollok/pepitagame'
+  const titanicRepoURL = 'https://github.com/wollok/TitanicGame'
+  const pepitaRepoSearch = `git=${pepitaRepoURL}`
+  const param = 'happy=true'
+
+  test('search should be decoded', () => {
+    expect(newGitSearch('', pepitaRepoURL)).toEqual(pepitaRepoSearch)
+  })
+
+  test('if no url is provided, current search should be deleted', () => {
+    expect(newGitSearch(pepitaRepoSearch)).toEqual('')
+  })
+
+  test("if a url already exists, it should be replaced", () => {
+    expect(newGitSearch(pepitaRepoSearch, titanicRepoURL)).toEqual(`git=${titanicRepoURL}`)
+  })
+
+  test('different params should be added', () => {
+    expect(newGitSearch(param, pepitaRepoURL)).toEqual(`${param}&${pepitaRepoSearch}`)
+  })
 })
 
 /*
