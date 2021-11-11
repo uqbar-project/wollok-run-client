@@ -2,7 +2,7 @@ import fs from 'fs'
 import { buildEnvironment, WRENatives } from 'wollok-ts'
 import interpret, { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
 import { visualState, flushEvents, canvasResolution, wKeyCode, buildKeyPressEvent, queueEvent } from '../components/game/SketchUtils'
-import { buildGameProject, GameProject, getProgramIn, NoProgramException, MultiProgramException } from '../components/game/gameProject'
+import { buildGameProject, GameProject, getProgramIn, NoProgramException, MultiProgramException, filesWithExtension, VALID_IMAGE_EXTENSIONS, mediaSourcePaths } from '../components/game/gameProject'
 import { MessageDrawer, messageTextPosition } from '../components/game/messages'
 
 const readFiles = (files: string[]) => files.map(file => ({
@@ -75,13 +75,15 @@ describe('game', () => {
 
 describe('buildGameProject', () => {
   let gameProject: GameProject
+  let filePaths: string[] = []
+  let _allFiles: { name: string; content: Buffer;}[] = []
 
   const expectEqualElements = (list1: any[], list2: any[]) =>
     expect(list1.sort()).toEqual(list2.sort())
 
   beforeAll(() => {
-    const filePaths = addPrefix('gameProject/', ['src/pepita.wlk', 'src/juego.wpgm', 'assets/pepita.png', 'src/sound.mp3', '.classpath', 'README.md'])
-    const _allFiles = allFiles(filePaths)
+    filePaths = addPrefix('gameProject/', ['src/pepita.wlk', 'src/juego.wpgm', 'assets/pepita.png', 'src/sound.mp3', '.classpath', 'README.md', 'assets/comidas/alpiste.png'])
+    _allFiles = allFiles(filePaths)
     URL.createObjectURL = jest.fn().mockReturnValue('asd')
     gameProject = buildGameProject(_allFiles)
   })
@@ -92,7 +94,16 @@ describe('buildGameProject', () => {
 
   test('media paths', () => {
     expectEqualElements(gameProject.images[0].possiblePaths, ['assets/pepita.png', 'pepita.png'])
+    expectEqualElements(gameProject.images[1].possiblePaths, ['assets/comidas/alpiste.png', 'comidas/alpiste.png'])
     expectEqualElements(gameProject.sounds[0].possiblePaths, ['src/sound.mp3', 'sound.mp3'])
+  })
+
+  test('media files names', () => {
+    expectEqualElements(filesWithExtension(_allFiles, VALID_IMAGE_EXTENSIONS).map(file => file.name), ['gameProject/assets/pepita.png', 'gameProject/assets/comidas/alpiste.png'])
+  })
+
+  test('media source files', () => {
+    expectEqualElements(mediaSourcePaths(_allFiles), ['gameProject/', 'gameProject/assets/', 'gameProject/src/'])
   })
 
   test('main', () => {
