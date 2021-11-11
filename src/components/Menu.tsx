@@ -98,7 +98,7 @@ export default function SimpleMenu(props: MenuProps) {
   }
   return (
     <div>
-      <AppBar className={$.navContainer} position="static" style={{ height: `${props.menuSize}vh` }}>
+      <AppBar className={$.navContainer} position="static" style={{ height: `${props.menuSize}vh`, minHeight: '25px' }}>  
         <Toolbar className={$.toolbar}>
           <DrawerReadme description={props.gameDescription} >
             <Tooltip title="Abrir README">
