@@ -25,10 +25,7 @@
       justify-content: center;
       margin-left: 1vw;
       margin-right: 1vw;
-      padding-top: 40rem;
-      padding-bottom: 3rem;
-      padding-left: 3rem;
-      padding-right: 3rem;
+      padding: 3rem;
       border-left: 2px solid $color-primary;
       overflow: auto;
       
@@ -38,9 +35,6 @@
 
       h1{
         font-size: 3em;
-      }
-      h2{
-        margin: 2vw 2vw 1vw 0;
       }
     }
   }
