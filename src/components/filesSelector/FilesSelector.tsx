@@ -40,7 +40,7 @@ const FilesSelector = ({ children, ...props }: FilesSelectorProps & Parent) => {
   return loading
     ? <Spinner />
     : <div className={$.container}>
-      <Link  to={'/'}>
+      <Link to={'/'}>
         <WollokLogo />
       </Link>
       <div>
