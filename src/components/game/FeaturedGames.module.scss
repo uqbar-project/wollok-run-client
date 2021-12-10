@@ -70,17 +70,32 @@ $key-size: 10px;
     border: 1px solid black;
 }
 
-.stick1 {
+.stick {
     display: flex;
     flex-direction: column;
     justify-content: center;
     margin-left: 10px;
 }
 
+.palito {
+    height: 6px;
+    width: 3px;
+    background-color: black;
+}
+
 .pelotitaBase1 {
     height: 6px;
     width: 10px;
     background-color: red;
+    border-radius: 50%;
+    display: inline-block;
+    border: 1px solid black;
+}
+
+.pelotitaBase2 {
+    height: 6px;
+    width: 10px;
+    background-color: blue;
     border-radius: 50%;
     display: inline-block;
     border: 1px solid black;

@@ -63,27 +63,29 @@ const FeaturedGames = () => (<div style={{ display: 'block' }}>
                       <span className={$.key1} />
                       <span className={$.key1} />
                     </div>
-                    <div className={$.stick1}>
+                    <div className={$.stick}>
                       <span className={$.key1} />
+                      <span className={$.palito} />
                       <span className={$.pelotitaBase1} />
                     </div>
                   </div>
                   <div className={$.player}>
                     <div className={$.keyColumn}>
-                      <span className={$.key1} />
-                      <span className={$.key1} />
+                      <span className={$.key2} />
+                      <span className={$.key2} />
                     </div>
                     <div className={$.keyColumn}>
-                      <span className={$.key1} />
-                      <span className={$.key1} />
+                      <span className={$.key2} />
+                      <span className={$.key2} />
                     </div>
                     <div className={$.keyColumn}>
-                      <span className={$.key1} />
-                      <span className={$.key1} />
+                      <span className={$.key2} />
+                      <span className={$.key2} />
                     </div>
-                    <div className={$.stick1}>
-                      <span className={$.key1} />
-                      <span className={$.pelotitaBase1} />
+                    <div className={$.stick}>
+                      <span className={$.key2} />
+                      <span className={$.palito} />
+                      <span className={$.pelotitaBase2} />
                     </div>
                   </div>
                 </div>
