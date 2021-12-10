@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 import ReplayIcon from '@material-ui/icons/Replay'
 import CloseIcon from '@material-ui/icons/Close'
 import VolumeOffIcon from '@material-ui/icons/VolumeOff'
@@ -13,6 +13,12 @@ import { DrawerReadme } from './DrawerReadme'
 import { AppBar, IconButton, Toolbar, Tooltip } from '@material-ui/core'
 import $ from './Menu.module.scss'
 // import { ModalFileSelector } from './ModalFileSelector'
+
+//Buttons id's
+const pauseID = 'pauseID'
+const audioID = 'audioID'
+const fullscreenID = 'fullscreenID'
+const restartGameID = 'restartGameID'
 
 type MenuProps = {
   restart: () => void
@@ -90,35 +96,34 @@ export default function SimpleMenu(props: MenuProps) {
       </Tooltip>
     </>
   }
-
   return (
     <div>
-      <AppBar className={$.navContainer} position="static" style={{ height: `${props.menuSize}vh` }}>
+      <AppBar className={$.navContainer} position="static" style={{ height: `${props.menuSize}vh`, minHeight: '25px' }}>  
         <Toolbar className={$.toolbar}>
           <DrawerReadme description={props.gameDescription} >
             <Tooltip title="Abrir README">
               <MenuBookIcon />
             </Tooltip>
           </DrawerReadme>
-          <IconButton onClick={event => { event.preventDefault(); props.togglePause(); togglePause() }}>
+          <MenuButton id={pauseID} action={ () => { props.togglePause(); togglePause() }}>
             <TogglePauseItem />
-          </IconButton>
-          <IconButton onClick={event => { event.preventDefault(); props.toggleAudio(); toggleAudio() }}>
+          </MenuButton>
+          <MenuButton id={audioID} action={ () => { props.toggleAudio(); toggleAudio() }}>
             <AudioItem/>
-          </IconButton>
+          </MenuButton>
           {/* <ModalFileSelector>
             <Tooltip title="Cargar juego">
               <PublishIcon />
             </Tooltip>
           </ModalFileSelector> */}
-          <IconButton onClick={event => { event.preventDefault(); toggleFullscreen() }}>
+          <MenuButton id={fullscreenID} action={ toggleFullscreen }>
             <FullscreenItem/>
-          </IconButton>
-          <IconButton onClick={event => { event.preventDefault(); props.restart() }}>
+          </MenuButton>
+          <MenuButton id={restartGameID} action={ props.restart }>
             <Tooltip title="Reiniciar juego">
               <ReplayIcon />
             </Tooltip>
-          </IconButton>
+          </MenuButton>
           <IconButton onClick={event => { event.preventDefault(); props.exit() }}>
             <Tooltip title="Cerrar juego">
               <CloseIcon />
@@ -128,4 +133,28 @@ export default function SimpleMenu(props: MenuProps) {
       </AppBar>
     </div>
   )
+}
+
+interface MenuButtonProps{
+  id: string
+  action: () => void
+  style?: { color: string }
+  children: ReactNode
+}
+
+export const MenuButton = ({ id, action, style, children }: MenuButtonProps) => {
+  return(
+    <IconButton id={id} style={style} onClick={event => { buttonStuff(event, pauseID); action() }}>
+      { children }
+    </IconButton>
+  )
+}
+
+export function unselectButton(button: string) {
+  document.getElementById(button)?.blur()
+}
+
+function buttonStuff(event: React.MouseEvent, button: string) {
+  event.preventDefault()
+  unselectButton(button)
 }
