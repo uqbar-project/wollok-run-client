@@ -47,7 +47,9 @@ const FeaturedGames = () => (<div style={{ display: 'block' }}>
                   {title}
                 </p>
                 <ButtonBase onClick={() => loadGitRepo(url)}>
-                  <img className={$.screen} src={image} alt="" />
+                  <div className={$.screenBox}>
+                    <img className={$.screen} src={image} alt="" />
+                  </div>
                 </ButtonBase>
                 <div className={$.keyboard}>
                   <div className={$.player}>
