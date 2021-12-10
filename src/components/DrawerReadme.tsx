@@ -34,7 +34,7 @@ export const DrawerReadme = ({ description, children }: DescriptionProps) => {
           className={$.container}
         >
           <div style={{ backgroundColor: '#1c1a1c', height:'100%' }}>
-            <ReactMarkdown source={description} className={$.description}/>
+            <ReactMarkdown escapeHtml={false} source={description} className={$.description}/>
           </div>
         </Drawer>
       </React.Fragment>
