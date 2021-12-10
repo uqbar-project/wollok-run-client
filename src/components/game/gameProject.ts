@@ -7,7 +7,7 @@ import { name } from 'wollok-ts/dist/parser'
 const WOLLOK_FILE_EXTENSION = 'wlk'
 const WOLLOK_PROGRAM_EXTENSION = 'wpgm'
 const EXPECTED_WOLLOK_EXTENSIONS = [WOLLOK_FILE_EXTENSION, WOLLOK_PROGRAM_EXTENSION]
-const VALID_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
+export const VALID_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
 const VALID_SOUND_EXTENSIONS = ['mp3', 'ogg', 'wav']
 export const DEFAULT_GAME_ASSETS_DIR = 'https://raw.githubusercontent.com/uqbar-project/wollok/dev/org.uqbar.project.wollok.game/assets/'
 const CLASSPATH_NAME = 'classpath'
@@ -73,14 +73,22 @@ export const buildGameProject = (allFiles: File[], programName?: string): GamePr
 }
 
 function getMediaFiles(allFiles: File[], validExtensions: string[], type: string): MediaFile[] {
-  const mediaFiles = allFiles.filter(withExtension(...validExtensions))
-  const mediaSourcePaths = getSourcePaths(allFiles).concat(getRootPath(allFiles))
+  const mediaFiles = filesWithExtension(allFiles, validExtensions)
+  const _mediaSourcePaths = mediaSourcePaths(allFiles)
   return mediaFiles.map(({ name, content }) => (
     {
-      possiblePaths: possiblePathsToFile(name, mediaSourcePaths),
+      possiblePaths: possiblePathsToFile(name, _mediaSourcePaths),
       url: URL.createObjectURL(new Blob([content], { type: type })),
     }
   ))
+}
+
+export function filesWithExtension(files: File[], validExtensions: string[]) {
+  return files.filter(withExtension(...validExtensions))
+}
+
+export function mediaSourcePaths(files: File[]){
+  return getSourcePaths(files).concat(getRootPath(files))
 }
 
 function getAllSourceFiles(files: File[]): File[] {
