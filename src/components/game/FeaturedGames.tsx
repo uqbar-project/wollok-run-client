@@ -5,6 +5,7 @@ import snakeImage from './assets/snake.png'
 import pepeMueveCajasImage from './assets/pepeMueveCajas.png'
 import { loadGitRepo } from '../filesSelector/GitSelector'
 import { ButtonBase, Grid, Paper, Typography } from '@material-ui/core'
+import $ from './FeaturedGames.module.scss'
 
 const games = [
   {
@@ -36,26 +37,62 @@ const games = [
 const FeaturedGames = () => (<div style={{ display: 'block' }}>
   <h1>También podés probar algunos de los juegos ya creados!</h1>
   <br />
-  <Grid container spacing={2} justify="center">
+  <Grid container spacing={2} className={$.container}>
     {games.map(({ image, title, description, url }, index) => (
       <Grid item style={{ maxWidth: '300px', height: '350px' }} key={index}>
-        <Paper style={{ height: '100%' }}>
-          <ButtonBase onClick={() => loadGitRepo(url)}>
-            <img style={{ maxWidth: '98%', marginTop: '1%', maxHeight: '175px' }} src={image} alt="" />
-          </ButtonBase>
-          <Grid item xs={12} sm container style={{ marginTop: '2%' }}>
+        <Grid item xs={12} sm container style={{ marginTop: '2%' }}>
             <Grid item xs container direction="column" spacing={1}>
               <Grid item xs >
-                <Typography gutterBottom variant="h6">
+                <p className={$.title}>
                   {title}
-                </Typography>
-                <Typography style={{ paddingLeft: '5px', paddingRight: '5px' }} align="justify" variant="body1">
+                </p>
+                <ButtonBase onClick={() => loadGitRepo(url)}>
+                  <img className={$.screen} src={image} alt="" />
+                </ButtonBase>
+                <div className={$.keyboard}>
+                  <div className={$.player}>
+                    <div className={$.keyColumn}>
+                      <span className={$.key1} />
+                      <span className={$.key1} />
+                    </div>
+                    <div className={$.keyColumn}>
+                      <span className={$.key1} />
+                      <span className={$.key1} />
+                    </div>
+                    <div className={$.keyColumn}>
+                      <span className={$.key1} />
+                      <span className={$.key1} />
+                    </div>
+                    <div className={$.stick1}>
+                      <span className={$.key1} />
+                      <span className={$.pelotitaBase1} />
+                    </div>
+                  </div>
+                  <div className={$.player}>
+                    <div className={$.keyColumn}>
+                      <span className={$.key1} />
+                      <span className={$.key1} />
+                    </div>
+                    <div className={$.keyColumn}>
+                      <span className={$.key1} />
+                      <span className={$.key1} />
+                    </div>
+                    <div className={$.keyColumn}>
+                      <span className={$.key1} />
+                      <span className={$.key1} />
+                    </div>
+                    <div className={$.stick1}>
+                      <span className={$.key1} />
+                      <span className={$.pelotitaBase1} />
+                    </div>
+                  </div>
+                </div>
+                <Typography className={$.description} variant="body1">
                   {description}
                 </Typography>
               </Grid>
             </Grid>
           </Grid>
-        </Paper>
       </ Grid>
     ))}
   </Grid>

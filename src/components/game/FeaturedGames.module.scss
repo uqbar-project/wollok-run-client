@@ -1,0 +1,97 @@
+@import "../../_theme.scss";
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+$border: #fe04fc;
+$background: #16007e;
+$key-size: 10px;
+
+
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.title {
+    display: flex;
+    border: 3px solid $border;
+    font-family: 'Press Start 2P', cursive;
+    background-color: $background;
+    height: 32px;
+    font-size: 12px;
+    justify-content: center;
+    align-items: center;
+}
+
+.screen {
+    border: 3px solid $border;
+    height: 175px;
+    max-width: 98%;
+    background-color: $background;
+}
+
+.keyboard {
+    border: 3px solid $border;
+    height: 32px;
+    background-color: $background;
+    display: flex;
+    flex-direction: row;
+}
+
+.player {
+    width: 50%;
+    display: flex;
+    flex-direction: row;
+    margin-left: 10px;
+}
+
+.keyColumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.key1 {
+    height: $key-size;
+    width: $key-size;
+    background-color: red;
+    border-radius: 50%;
+    display: inline-block;
+    border: 1px solid black;
+}
+
+.key2 {
+    height: $key-size;
+    width: $key-size;
+    background-color: blue;
+    border-radius: 50%;
+    display: inline-block;
+    border: 1px solid black;
+}
+
+.stick1 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-left: 10px;
+}
+
+.pelotitaBase1 {
+    height: 6px;
+    width: 10px;
+    background-color: red;
+    border-radius: 50%;
+    display: inline-block;
+    border: 1px solid black;
+}
+
+.description {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border: 3px solid $border;
+    height: 180px;
+    background-color: $background;
+}
