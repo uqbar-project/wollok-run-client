@@ -94,7 +94,7 @@ export function write(sketch: p5, drawableText: DrawableText): void {
 
 export function baseDrawable(images: Map<string, p5.Image>, path?: string): Drawable {
   const origin: Position = { x: 0, y: 0 }
-  const p5Image = path && images.get(path)
+  const p5Image = path && images.get(removeIfStartsWith(path, './'))
 
   if (!p5Image) {
     const drawableText = {
@@ -170,4 +170,12 @@ export function resizeCanvas(gameWidth: number, gameHeight: number, menuSize: nu
   canvas?.style.removeProperty('height')
   canvas!.style.width = `${gameWidth * ratio}px`
   canvas!.style.height = `${gameHeight * ratio - menuOffset}px`
+}
+
+export function removeIfStartsWith(path: string, prefix: string): string {
+  if(path.startsWith(prefix)){
+    return path.replace(prefix, '')
+  }
+
+  return path
 }

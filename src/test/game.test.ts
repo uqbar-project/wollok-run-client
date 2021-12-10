@@ -1,7 +1,7 @@
 import fs from 'fs'
 import { buildEnvironment, WRENatives } from 'wollok-ts'
 import interpret, { Interpreter } from 'wollok-ts/dist/interpreter/interpreter'
-import { visualState, flushEvents, canvasResolution, wKeyCode, buildKeyPressEvent, queueEvent } from '../components/game/SketchUtils'
+import { visualState, flushEvents, canvasResolution, wKeyCode, buildKeyPressEvent, queueEvent, removeIfStartsWith } from '../components/game/SketchUtils'
 import { buildGameProject, GameProject, getProgramIn, NoProgramException, MultiProgramException, filesWithExtension, VALID_IMAGE_EXTENSIONS, mediaSourcePaths } from '../components/game/gameProject'
 import { MessageDrawer, messageTextPosition } from '../components/game/messages'
 
@@ -186,6 +186,24 @@ describe('VisualState', () => {
     })
   })
 
+})
+
+describe('Image path', () => {
+  const undesirablePath = './assets/photo.png'
+  const desirablePath = 'assets/photo.png'
+  const prefix = './'
+
+  test('prefix should be removed if a string starts with it', () => {
+    expect(removeIfStartsWith(undesirablePath, prefix)).toEqual(desirablePath)
+  })
+
+  test('path should not be changed if it does not start with prefix', () => {
+    expect(removeIfStartsWith(desirablePath, prefix)).toEqual(desirablePath)
+  })
+
+  test('if prefix is empty, path should not be changed', () => {
+    expect(removeIfStartsWith(undesirablePath, '')).toEqual(undesirablePath)
+  })
 })
 
 /*
