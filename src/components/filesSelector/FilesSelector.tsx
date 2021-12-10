@@ -4,9 +4,9 @@ import LocalSelector from './LocalSelector'
 import Spinner from '../Spinner'
 import $ from './FilesSelector.module.scss'
 import { WollokLogo } from '../Home/Home'
-import { BackArrow } from '../BackArrow'
 import { BaseErrorScreen } from '../ErrorScreen'
 import { Parent } from '../utils'
+import { Link } from '@reach/router'
 
 export type File = {
   name: string
@@ -40,8 +40,9 @@ const FilesSelector = ({ children, ...props }: FilesSelectorProps & Parent) => {
   return loading
     ? <Spinner />
     : <div className={$.container}>
-      <div><BackArrow returnPath='/' /></div>
-      <WollokLogo />
+      <Link to={'/'}>
+        <WollokLogo />
+      </Link>
       <div>
         <GitSelector {...props} onStartLoad={onStartLoad} onFailureDo={onFailureDo}/>
         <LocalSelector {...props} onStartLoad={onStartLoad} />
