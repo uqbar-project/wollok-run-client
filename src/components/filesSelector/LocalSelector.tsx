@@ -1,8 +1,9 @@
-import React, { ChangeEvent } from 'react'
-import { File, SelectorProps } from './FilesSelector'
+import React, { ChangeEvent, useContext } from 'react'
+import { GameContext } from '../../context/GameContext'
+import { File, LoadFilesType, SelectorProps } from './FilesSelector'
 import $ from './FilesSelector.module.scss'
 
-const loadLocalFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (event: ChangeEvent<HTMLInputElement>) => {
+const loadLocalFiles = ({ onFilesLoad, onStartLoad }: LoadFilesType) => async (event: ChangeEvent<HTMLInputElement>) => {
   onStartLoad()
   const files = await Promise.all([...event.target.files!]
     // .filter(file => file.name.match(/\.(?:wlk|wtest|wpgm)$/))
@@ -19,9 +20,11 @@ const loadLocalFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (e
 }
 
 const LocalSelector = (props: SelectorProps) => {
+  const { loadGame } = useContext(GameContext)
+  
   return <div className={$.selector}>
     <label>Cargá un proyecto Wollok desde tu máquina (° ͜ʖ °)</label>
-    <input className={$.loadButton} type='file' {...{ webkitdirectory:'' }} multiple onChange={loadLocalFiles(props)} />
+    <input className={$.loadButton} type='file' {...{ webkitdirectory:'' }} multiple onChange={loadLocalFiles({...props, onFilesLoad: loadGame})} />
   </div>
 }
 

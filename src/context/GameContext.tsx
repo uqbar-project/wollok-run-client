@@ -78,12 +78,16 @@ export const GameProvider = ({ children }: GameProviderProps) => {
 
   const loadGame = (files: File[], program?: string) => {
     try {
+      console.log('CARGANDO EL JUEGO')
       const project = buildGameProject(files, program)
       const environment = buildEnvironment(project.sources)
       validateGame(environment)
       runGame(environment, project)
+      console.log({game})
+      console.log({evaluation})
     }
     catch (exception) {
+      console.log('SE PRODUJO UN ERROR')
       if (exception instanceof Error) {
         setError(exception)
       }

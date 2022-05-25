@@ -12,7 +12,7 @@ type GameProps = RouteComponentProps
 const Game = (_: GameProps) => {
   const {
     problems, error, evaluation, game,
-    runGameAnyway, reloadGame, loadGame, backToFS,
+    runGameAnyway, reloadGame, backToFS,
   } = useContext(GameContext)
 
   useEffect(() => {
@@ -26,9 +26,7 @@ const Game = (_: GameProps) => {
     return <LoadError error={error} reload={reloadGame} />
 
   if (!evaluation || !game)
-    return <FilesSelector onFilesLoad={loadGame} >
-      <FeaturedGames />
-    </FilesSelector>
+    return <FilesSelector />
 
   return <div className={$.container}>
     <div>

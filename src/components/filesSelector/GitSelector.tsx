@@ -1,9 +1,12 @@
-import React, { memo, useState, useEffect } from 'react'
-import { LoadingError, SelectorProps } from './FilesSelector'
+import React, { memo, useState, useEffect, useContext } from 'react'
+import { LoadFilesType, LoadingError, SelectorProps } from './FilesSelector'
 import * as BrowserFS from 'browserfs'
 import { clone } from 'isomorphic-git'
 import http from 'isomorphic-git/http/web'
 import $ from './FilesSelector.module.scss'
+import { GameContext } from '../../context/GameContext'
+import { Link } from '@reach/router'
+import { useHistory } from "react-router-dom"
 
 const DEFAULT_GAME_URI = 'https://github.com/wollok/pepitagame'
 const GIT = 'git'
@@ -47,7 +50,7 @@ const setGitSearch = (url?: string) => {
   document.location.search = newGitSearch(search, url)
 }
 
-const loadGitFiles = ({ onFilesLoad, onStartLoad }: SelectorProps) => async (repoUrl: string) => {
+const loadGitFiles = ({ onFilesLoad, onStartLoad }: LoadFilesType) => async (repoUrl: string) => {
   const corsProxy = process.env.REACT_APP_PROXY_URL || 'http://localhost:9999'
   onStartLoad()
   await clone({
@@ -86,6 +89,9 @@ const getAllFilePathsFrom = (rootDirectory: string): string[] => {
 const GitSelector = (props: GitSelectorProps) => {
   const [gitUrl, setGitUrl] = useState<string>()
   const repoUri = new URLSearchParams(document.location.search).get(GIT)
+  const { loadGame } = useContext(GameContext)
+  const history = useHistory()
+
 
   const repoNotFoundError = () => {
     const error = {
@@ -97,16 +103,22 @@ const GitSelector = (props: GitSelectorProps) => {
     return error
   }
 
-  useEffect(() => {
+
+
+  const navigateToGame = () => {
+    console.log("navegamos")
+    console.log(history)
+    //history.push('/game/running')
+    const repoUri = gitUrl || DEFAULT_GAME_URI
+    //loadGitRepo(repoUri)
     BrowserFS.configure({ fs: 'InMemory', options: {} }, (err: any) => {
       if (err) throw new Error('FS error')
       fs = BrowserFS.BFSRequire('fs')
-      if (repoUri) loadGitFiles(props)(repoUri).catch(() => props.onFailureDo(repoNotFoundError()))
+      loadGitFiles({...props, onFilesLoad: loadGame})(repoUri)
+      .then(() => history.push('/game/running'))
+      .then(() => loadGitRepo(repoUri))
+      .catch(() => props.onFailureDo(repoNotFoundError()))
     })
-  }, [props, repoUri])
-
-  const navigateToGame = () => {
-    loadGitRepo(gitUrl || DEFAULT_GAME_URI)
   }
 
   return (
@@ -116,10 +128,12 @@ const GitSelector = (props: GitSelectorProps) => {
           <label>Pegá la URL del repositorio del juego a correr</label>
           <input type='text' placeholder={DEFAULT_GAME_URI} onChange={event => setGitUrl(event.target.value)} />
         </div>
-        <button type='submit'>Cargar Juego</button>
+        <button className="$.selector" type="submit">
+        </button>
       </form>
     </div>
   )
 }
 
 export default memo(GitSelector)
+
