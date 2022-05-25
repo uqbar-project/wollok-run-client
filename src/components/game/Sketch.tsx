@@ -54,6 +54,9 @@ interface StepAssets {
   images: Map<Id, p5.Image>
   audioMuted: boolean
   gamePaused: boolean
+  width: number
+  height: number
+  menuSize: number
 }
 
 interface SoundAssets {
@@ -69,7 +72,9 @@ interface SoundAssets {
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
 function step(assets: StepAssets) {
-  const { sketch, gameProject, interpreter, sounds, images, audioMuted, gamePaused } = assets
+  const { sketch, gameProject, interpreter, sounds, images, audioMuted, gamePaused, width, height, menuSize } = assets
+
+  resizeCanvas(width, height, menuSize)
 
   if(!gamePaused) {
     window.performance.mark('update-start')
@@ -222,8 +227,9 @@ const SketchComponent = ({ gameProject, evaluation: initialEvaluation, exit }: S
   }
 
   function draw(sketch: p5) {
+    const { width, height } = canvasResolution(interpreter)
     if (!interpreter.object('wollok.game.game').get('running')!.innerBoolean!) setStop(true)
-    else step({ sketch, gameProject, interpreter, sounds, images, audioMuted, gamePaused })
+    else step({ sketch, gameProject, interpreter, sounds, images, audioMuted, gamePaused, width, height, menuSize })
   }
 
   function keyPressed(sketch: p5) {
