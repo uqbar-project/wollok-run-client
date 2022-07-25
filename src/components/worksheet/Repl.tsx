@@ -2,7 +2,8 @@ import React, { KeyboardEvent, memo, useState } from 'react'
 import Slider from 'react-input-slider'
 import SimpleCodeEditor from 'react-simple-code-editor'
 import Splitter from 'react-splitter-layout'
-import { WRENatives, Environment, Evaluation, link, List, parse, Sentence, RuntimeObject, Singleton, Method, Body, Return, Reference, Package } from 'wollok-ts'
+import { WRENatives, Environment, Evaluation, link, parse, Sentence, RuntimeObject, Singleton, Method, Body, Return, Reference, Package } from 'wollok-ts'
+import { List } from 'wollok-ts/dist/extensions'
 import $ from './Repl.module.scss'
 
 

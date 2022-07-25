@@ -18,7 +18,7 @@ const Inspect = () => {
     try {
       const expression = parse.Expression.tryParse(expressionText)
       expression.forEach((node, parent) => {
-        if(parent) node.cache.set('parent()', parent)
+        if(parent) node.parent = parent
         Object.assign(node, { scope: new LocalScope(parent?.scope ?? interpreter.evaluation.currentNode.scope) })
       })
 

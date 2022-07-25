@@ -1,7 +1,6 @@
 import { File } from '../filesSelector/FilesSelector'
 import { Environment, Node, Package } from 'wollok-ts'
 import parse, { Attributes } from 'xml-parser'
-import { name } from 'wollok-ts/dist/parser'
 
 // TODO: Move to more general place
 const WOLLOK_FILE_EXTENSION = 'wlk'

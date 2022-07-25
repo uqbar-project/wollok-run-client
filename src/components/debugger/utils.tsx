@@ -10,7 +10,7 @@ export function nodeLabel(node: Node): string {
     Method: node => `${node.name}/${node.parameters.length}`,
     Field: node => `${node.name}`,
     Variable: node => `${node.name}`,
-    Body: node => nodeLabel(node.parent()),
+    Body: node => nodeLabel(node.parent),
     Node: () => '',
   })}${node.isSynthetic() ? ' %synth%' : ''}`
 }

@@ -1,9 +1,10 @@
 import React, { memo, useState } from 'react'
-import { buildEnvironment, is, List, Test, Environment } from 'wollok-ts'
+import { buildEnvironment, is, Test, Environment } from 'wollok-ts'
 import { FiPlayCircle as RunIcon } from 'react-icons/fi'
 import $ from './LoadScreen.module.scss'
 import FilesSelector, { File } from '../filesSelector/FilesSelector'
 import { SourceFile } from './Debugger'
+import { List } from 'wollok-ts/dist/extensions'
 
 export type LoadScreenProps = {
   onTestSelected(files: List<SourceFile>, environment: Environment, test: Test): void
