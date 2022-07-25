@@ -4,11 +4,11 @@ import { MultiProgramException, NoProgramException } from './gameProject'
 import { BaseErrorScreen } from '../ErrorScreen'
 import $ from './Game.module.scss'
 import { ProgramSelector } from '../ProgramSelector'
-import { List } from 'wollok-ts'
-import { Problem } from 'wollok-ts/dist/validator'
 import { Button } from '@material-ui/core'
 import PublishIcon from '@material-ui/icons/Publish'
 import Parsimmon from 'parsimmon'
+import { List } from 'wollok-ts/dist/extensions'
+import { Problem } from 'wollok-ts'
 
 export interface ValidationErrorProps {
   problems: List<Problem>
@@ -97,9 +97,9 @@ function humanizedLocation(num: number | undefined){
 }
 
 function sourceMapStart(problem: Problem) {
-  return problem.source?.start
+  return problem.node.sourceMap?.start
 }
 
 function sourceMapEnd(problem: Problem) {
-  return problem.source?.end
+  return problem.node.sourceMap?.end
 }

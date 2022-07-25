@@ -5,7 +5,7 @@ import 'flexlayout-react/style/dark.css'
 import $ from './Debugger.module.scss'
 import classNames from 'classnames'
 import LoadScreen from './LoadScreen'
-import { Environment, Evaluation, List, Name, Test, WRENatives } from 'wollok-ts'
+import { Environment, Evaluation, Name, Test, WRENatives } from 'wollok-ts'
 import SourceDisplay from './SourceDisplay'
 import ASTDisplay from './ASTDisplay'
 import Toolbar from './Toolbar'
@@ -14,6 +14,7 @@ import FrameStackDisplay from './FrameStackDisplay'
 import BreakpointList from './BreakpointList'
 import ObjectDiagramDisplay from './ObjectDiagramDisplay'
 import { DirectedInterpreter, ExecutionDirector } from 'wollok-ts/dist/interpreter/interpreter'
+import { List } from 'wollok-ts/dist/extensions'
 
 
 const WREFiles = async (): Promise<List<SourceFile>> => {

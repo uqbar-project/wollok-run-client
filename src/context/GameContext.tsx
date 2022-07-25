@@ -1,11 +1,11 @@
 import React, { createContext, ReactNode, useState } from 'react'
-import { buildEnvironment, Environment, Evaluation, List, validate, WRENatives } from 'wollok-ts'
+import { buildEnvironment, Environment, Evaluation, Problem, validate, WRENatives } from 'wollok-ts'
 import { buildGameProject, GameProject, getProgramIn } from '../components/game/gameProject'
-import { Problem } from 'wollok-ts/dist/validator'
 import { clearGitRepo } from '../components/filesSelector/GitSelector'
 import interpret from 'wollok-ts/dist/interpreter/interpreter'
 import { File } from '../components/filesSelector/FilesSelector'
 import { RouteComponentProps } from '@reach/router'
+import { List } from 'wollok-ts/dist/extensions'
 
 const { warn, info } = console
 
@@ -64,8 +64,8 @@ export const GameProvider = ({ children }: GameProviderProps) => {
 
   const validateGame = (environment: Environment) => {
     const validationProblems = validate(environment)
-    const warnings = validationProblems.filter(problem => problem.level === 'Warning')
-    const errors = validationProblems.filter(problem => problem.level === 'Error')
+    const warnings = validationProblems.filter(problem => problem.level === 'warning')
+    const errors = validationProblems.filter(problem => problem.level === 'error')
 
     if (warnings.length) {
       warn(`FOUND ${warnings.length} WARNINGS IN LOADED GAME!`, warnings)
