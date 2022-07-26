@@ -130,7 +130,7 @@ export function visualState(interpreter: Interpreter, visual: RuntimeObject): Vi
 export function flushEvents(interpreter: Interpreter, ms: number): void {
   interpreter.send(
     'flushEvents',
-    interpreter.object('wollok.gameMirror.gameMirror'),
+    interpreter.object('wollok.game.game'),
     interpreter.reify(ms),
   )
 }
@@ -149,7 +149,7 @@ export function canvasResolution(interpreter: Interpreter): CanvasResolution {
 }
 
 export function queueEvent(interpreter: Interpreter, ...events: RuntimeObject[]): void {
-  const io = interpreter.object('wollok.io.io')
+  const io = interpreter.object('wollok.lang.io')
   events.forEach(e => interpreter.send('queueEvent', io, e))
 }
 
